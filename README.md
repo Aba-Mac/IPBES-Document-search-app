@@ -328,7 +328,7 @@ document-search/
 ├── ingestion/
 │   ├── __init__.py
 │   ├── ocr.py
-│   ├── extracting.py
+│   ├── extractor.py
 │   ├── cleaning.py
 │   ├── chunking.py
 │   ├── metadata.py

@@ -131,7 +131,7 @@ class ExtractionConfig:
 
 
 @dataclass(slots=True)
-class DocumentMetadata:
+class PDFMetadata:
     """
     Document metadata.
 
@@ -200,7 +200,7 @@ class ExtractedDocument:
 
     source_pdf: Path
 
-    metadata: DocumentMetadata
+    metadata: PDFMetadata
 
     pages: list[ExtractedPage]
 
@@ -229,7 +229,7 @@ class ExtractedDocument:
 
 def extract_document_metadata(
     pdf_path: Path,
-) -> DocumentMetadata:
+) -> PDFMetadata:
     """
     Read document metadata using PyMuPDF.
     """
@@ -246,7 +246,7 @@ def extract_document_metadata(
 
     metadata = document.metadata or {}
 
-    result = DocumentMetadata(
+    result = PDFMetadata(
         title=metadata.get("title"),
         author=metadata.get("author"),
         subject=metadata.get("subject"),
@@ -793,9 +793,9 @@ def extract_with_pymupdf(
 ###############################################################################
 
 def _merge_metadata(
-    primary: DocumentMetadata,
-    secondary: DocumentMetadata,
-) -> DocumentMetadata:
+    primary: PDFMetadata,
+    secondary: PDFMetadata,
+) -> PDFMetadata:
     """
     Merge two metadata objects.
 
@@ -803,7 +803,7 @@ def _merge_metadata(
     secondary source.
     """
 
-    return DocumentMetadata(
+    return PDFMetadata(
         title=primary.title or secondary.title,
         author=primary.author or secondary.author,
         subject=primary.subject or secondary.subject,
@@ -827,7 +827,7 @@ def _merge_metadata(
 
 def enrich_document(
     document: ExtractedDocument,
-    metadata: DocumentMetadata,
+    metadata: PDFMetadata,
 ) -> ExtractedDocument:
     """
     Replace incomplete metadata using an enriched metadata
@@ -1052,7 +1052,7 @@ def extract(
 ###############################################################################
 
 __all__ = [
-    "DocumentMetadata",
+    "PDFMetadata",
     "ExtractedDocument",
     "ExtractedElement",
     "ExtractedPage",

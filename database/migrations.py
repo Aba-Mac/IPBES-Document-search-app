@@ -229,6 +229,24 @@ def optimize_fts(connection: sqlite3.Connection) -> None:
         )
 
 
+def _fts_is_populated(connection: sqlite3.Connection) -> bool:
+    """
+    Return True if the FTS index already contains entries.
+    """
+
+    cursor = connection.execute(
+        """
+        SELECT EXISTS(
+            SELECT 1
+            FROM paragraphs_fts
+            LIMIT 1
+        );
+        """
+    )
+
+    return bool(cursor.fetchone()[0])
+
+
 # ---------------------------------------------------------------------
 # Migration entry point
 # ---------------------------------------------------------------------
@@ -249,7 +267,9 @@ def migrate() -> None:
 
         validate_schema(connection)
 
-        rebuild_fts(connection)
+        if not _fts_is_populated(connection):
+            LOGGER.info("Building FTS index...")
+            rebuild_fts(connection)
 
     LOGGER.info("Database migration completed successfully.")
 

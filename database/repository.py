@@ -35,6 +35,7 @@ from typing import Any
 from typing import Generator
 from typing import Iterable
 from typing import Sequence
+from typing import Mapping
 
 from core.config import settings
 
@@ -644,6 +645,109 @@ def update_document_metadata(
         ),
         connection=connection,
     )
+
+
+def insert_metadata_provenance(
+    connection: sqlite3.Connection,
+    document_id: int,
+    fields: Mapping[
+        str,
+        tuple[str | int | None, str | None],
+    ],
+) -> None:
+    """
+    Store metadata extraction provenance.
+
+    Parameters
+    ----------
+    connection:
+        SQLite database connection.
+
+    document_id:
+        Parent document identifier.
+
+    fields:
+        Mapping of metadata field names to:
+            (extracted value, extraction source)
+
+        Example:
+            {
+                "title": ("Annual Report", "pymupdf"),
+                "year": (2024, "llm"),
+            }
+    """
+
+    for field_name, (value, source) in fields.items():
+
+        if value is None:
+            continue
+
+        connection.execute(
+            """
+            INSERT INTO metadata_provenance(
+                document_id,
+                field_name,
+                extraction_source,
+                extracted_value
+            )
+            VALUES (?, ?, ?, ?)
+
+            ON CONFLICT(
+                document_id,
+                field_name
+            )
+            DO UPDATE SET
+
+                extraction_source = excluded.extraction_source,
+
+                extracted_value = excluded.extracted_value
+            """,
+            (
+                document_id,
+                field_name,
+                source,
+                str(value),
+            ),
+        )
+
+    connection.commit()
+
+
+def get_metadata_provenance(
+    connection: sqlite3.Connection,
+    document_id: int,
+) -> dict[str, dict[str, str | None]]:
+    """
+    Retrieve metadata provenance for a document.
+
+    Returns:
+        {
+            "title": {
+                "value": "Annual Report",
+                "source": "pymupdf",
+            }
+        }
+    """
+
+    rows = connection.execute(
+        """
+        SELECT
+            field_name,
+            extracted_value,
+            extraction_source
+        FROM metadata_provenance
+        WHERE document_id = ?
+        """,
+        (document_id,),
+    ).fetchall()
+
+    return {
+        row["field_name"]: {
+            "value": row["extracted_value"],
+            "source": row["extraction_source"],
+        }
+        for row in rows
+    }
 
 
 def delete_document(

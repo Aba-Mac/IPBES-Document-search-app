@@ -89,6 +89,31 @@ PARAGRAPHS_TABLE = dedent(
 """
 )
 
+
+METADATA_PROVENANCE_TABLE = dedent(
+    """
+    CREATE TABLE IF NOT EXISTS document_metadata_provenance (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        document_id INTEGER NOT NULL,
+
+        field_name TEXT NOT NULL,
+
+        field_value TEXT,
+
+        extraction_source TEXT NOT NULL,
+
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY(document_id)
+            REFERENCES documents(id)
+            ON DELETE CASCADE
+    );
+    """
+)
+
+
 TERMS_TABLE = dedent(
     """
     CREATE TABLE IF NOT EXISTS terms (
@@ -370,6 +395,13 @@ INDEXES = [
         ON embeddings(model_name);
         """
     ),
+
+    dedent(
+    """
+    CREATE INDEX IF NOT EXISTS idx_metadata_provenance_document
+    ON metadata_provenance(document_id);
+    """
+    ),
 ]
 
 ###############################################################################
@@ -379,6 +411,8 @@ INDEXES = [
 SCHEMA = [
 
     DOCUMENTS_TABLE,
+
+    METADATA_PROVENANCE_TABLE,
 
     PARAGRAPHS_TABLE,
 
