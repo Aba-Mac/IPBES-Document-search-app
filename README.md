@@ -101,10 +101,18 @@ The application is designed to provide:
                   Metadata Extraction
                            │
                            ▼
+         Glossary Exact-Match Indexing
+        (terms.csv → paragraph_terms)
+                           │
+                           ▼
            Topic Tagging & Embeddings
                            │
                            ▼
                  SQLite + SQLite FTS5
+                           │
+                           ▼
+              Rendering Module
+      (Highlighting + Hyperlink Generation)
                            │
                            ▼
                Shiny for Python Interface
@@ -122,12 +130,13 @@ Detailed implementation of each module is documented separately.
 
 | Module | Responsibility |
 |---------|----------------|
-| Configuration | Central application configuration |
-| Database Layer | SQLite schema, persistence and indexing |
-| Ingestion Pipeline | OCR → extraction → cleaning → chunking → metadata |
-| Topic Tagging | Topic classification and embeddings |
+| Configuration | Core Infrastructure (configuration, paths, environment, logging) |
+| Database Layer | SQLite schema, persistence and FTS5 indexing |
+| Ingestion Pipeline | OCR → extraction → cleaning → chunking → metadata → glossary exact-match indexing |
+| Topic Tagging | Anchor matching, embeddings and LLM verification |
+| Rendering | Search-term highlighting and glossary hyperlink generation |
 | Search Engine | Boolean parsing, FTS queries and ranking |
-| Shiny UI | User interface and interaction |
+| Shiny UI | Typography-first user interface |
 
 ---
 
@@ -225,8 +234,25 @@ Features include:
 - SQLite FTS5 indexing
 - Paragraph-level search
 - Highlighted search terms
+- Hyperlinks to other glossary terms included in text
 
 Semantic ranking is intentionally excluded from live search.
+
+---
+
+## Rendering
+
+The rendering module is responsible for transforming stored search results into display-ready HTML for the Shiny interface.
+
+Responsibilities include:
+
+- Highlighting search terms
+- Inserting glossary hyperlinks
+- Preserving paragraph formatting
+- Preventing nested or overlapping markup
+- Generating safe HTML fragments
+
+Separating rendering from UI components keeps presentation logic independent of application layout and simplifies testing.
 
 ---
 
@@ -239,7 +265,6 @@ Within search results:
 - Glossary terms are automatically detected
 - Terms become clickable hyperlinks
 - Selecting a glossary term launches a new search for that term
-- Definitions are presented by the user interface module
 
 ---
 
@@ -259,7 +284,9 @@ The resulting:
 - Confidence scores
 - Embedding vectors
 
-are stored in the database for future semantic search capabilities but are not currently incorporated into search or ranking.
+are stored in the database for future semantic search capabilities.
+
+These data are intentionally excluded from the live search and ranking pipeline but provide forward-compatible infrastructure for future Elasticsearch or hybrid lexical–semantic retrieval.
 
 ---
 
@@ -270,7 +297,20 @@ document-search/
 │
 ├── app.py
 ├── README.md
+├── requirements.txt
+├── .gitignore
 │
+├── core/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── env.py
+│   ├── logging.py
+│   └── paths.py
+|
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+|
 ├── data/
 │   ├── pdfs/
 │   ├── glossary/
@@ -288,11 +328,19 @@ document-search/
 ├── ingestion/
 │   ├── __init__.py
 │   ├── ocr.py
-│   ├── extractor.py
+│   ├── extracting.py
 │   ├── cleaning.py
 │   ├── chunking.py
 │   ├── metadata.py
+│   ├── glossary.py
 │   └── pipeline.py
+|
+├── renderer/
+│   ├── __init__.py
+│   ├── hyperlinks.py
+│   ├── highlighting.py
+│   ├── html.py
+│   └── renderer.py
 │
 ├── tagging/
 │   ├── __init__.py
@@ -306,7 +354,6 @@ document-search/
 │   ├── parser.py
 │   ├── boolean.py
 │   ├── ranking.py
-│   ├── glossary.py
 │   └── service.py
 │
 ├── ui/
@@ -325,9 +372,12 @@ document-search/
 │   └── validation.py
 │
 └── tests/
+    │
     ├── __init__.py
+    ├── test_database.py
     ├── test_ingestion.py
     ├── test_search.py
+    ├── test_renderer.py
     ├── test_tagging.py
     └── test_ui.py
 ```
@@ -391,6 +441,23 @@ shiny run app.py
 
 ---
 
+# Continuous Integration
+
+The repository includes a GitHub Actions workflow from the initial project scaffold.
+
+The CI pipeline executes automatically on every push and pull request.
+
+The workflow performs:
+
+- Dependency installation
+- Ruff linting
+- Unit testing
+- Package validation
+
+This ensures that every commit satisfies the project's coding and testing standards before deployment to Posit Connect.
+
+---
+
 # Deployment
 
 The application is designed for deployment using:
@@ -412,6 +479,16 @@ Production Deployment
 ```
 
 No code modifications should be required between local development and production deployment.
+
+---
+
+# Application Health Check
+
+The Shiny application exposes a lightweight health-check endpoint for deployment monitoring.
+
+The endpoint reports basic application status and is intended for use by deployment infrastructure, monitoring systems and automated availability checks.
+
+It performs no database modifications and returns only minimal operational information required to verify that the application has started successfully.
 
 ---
 

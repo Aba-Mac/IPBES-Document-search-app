@@ -1,7 +1,10 @@
 """
 Database package.
 
-Provides the SQLite database layer for the application, including
-schema management, repositories, migrations, and persistence
-utilities. The implementation is documented separately.
+Provides the SQLite persistence layer for the application, including
+database schema, migrations, repositories, full-text search (FTS5)
+integration, glossary indexing tables, topic-tagging storage, and
+database integrity support.
+
+The implementation of the database layer is documented separately.
 """

@@ -1,7 +1,15 @@
 """
 Utility package.
 
-Provides shared helper functions used throughout the application,
-including filesystem utilities, text processing helpers,
-and validation functions.
+Provides shared helper functions used throughout the application.
+
+Typical responsibilities include:
+
+- filesystem utilities
+- common text helpers
+- validation utilities
+- reusable helper functions
+- shared constants and application-wide utilities
+
+Utilities are intentionally generic and contain no business logic.
 """
