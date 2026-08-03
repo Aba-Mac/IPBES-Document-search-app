@@ -1,0 +1,180 @@
+"""
+ui.app
+======
+
+Assemble the Shiny for Python application.
+
+This module composes the user interface and server logic while
+delegating all business logic to the project's service modules.
+
+Responsibilities
+----------------
+* Assemble the application UI.
+* Wire together the layout, search controls, glossary panel and
+  result cards.
+* Coordinate reactive search execution.
+* Populate filter controls from the search service.
+* Delegate search execution to ``search.service``.
+* Delegate paragraph rendering to ``ui.cards`` (which in turn uses
+  ``renderer.renderer``).
+
+This module intentionally contains no SQL, Boolean parsing,
+highlighting logic or HTML rendering.
+"""
+
+from __future__ import annotations
+
+import logging
+
+from shiny import App, reactive
+
+from search.service import (
+    SearchServiceError,
+    get_available_sources,
+    get_available_years,
+    search,
+)
+
+from ui.cards import register_card_renderer
+from ingestion.glossary import build_glossary_panel
+from ui.layouts import build_page
+from ui.search import (
+    build_search_controls,
+    boolean_query,
+    current_page,
+    page_size,
+    search_query,
+    selected_source,
+    selected_year,
+)
+from ui.styles import app_css
+
+logger = logging.getLogger(__name__)
+
+
+###############################################################################
+# Static application data
+###############################################################################
+
+#
+# These values change only when the corpus is re-ingested, so they are loaded
+# once during application start rather than on every reactive execution.
+#
+
+_AVAILABLE_SOURCES = tuple(get_available_sources())
+_AVAILABLE_YEARS = tuple(get_available_years())
+
+
+###############################################################################
+# User interface
+###############################################################################
+
+app_ui = build_page(
+    search_controls=build_search_controls(
+        sources=_AVAILABLE_SOURCES,
+        years=_AVAILABLE_YEARS,
+    ),
+    glossary_panel=build_glossary_panel(),
+    css=app_css(),
+)
+
+
+###############################################################################
+# Server
+###############################################################################
+
+def server(input, output, session) -> None:
+    """
+    Main Shiny server.
+
+    The server coordinates reactive state only. All searching is
+    delegated to ``search.service``.
+    """
+
+    #
+    # Static lookup values exposed reactively for future use.
+    #
+
+    available_sources = reactive.value(_AVAILABLE_SOURCES)
+    available_years = reactive.value(_AVAILABLE_YEARS)
+
+    @reactive.calc
+    def search_results():
+        """
+        Execute a search using the public search service API.
+
+        Returns
+        -------
+        SearchResponse
+            Search results from the service layer.
+        """
+        filters: dict[str, object] = {}
+
+        if selected_source(input):
+            filters["source"] = selected_source(input)
+
+        if selected_year(input):
+            filters["year"] = selected_year(input)
+
+        query = boolean_query(input).strip()
+
+        #
+        # If no Boolean query is supplied, fall back to the simple
+        # search box.
+        #
+        if not query:
+            query = search_query(input).strip()
+
+        logger.info(
+            "Executing search "
+            "(query=%r, page=%s)",
+            query,
+            current_page(input),
+        )
+
+        try:
+            return search(
+                query=query,
+                filters=filters or None,
+                page=current_page(input),
+                page_size=page_size(input),
+            )
+
+        except SearchServiceError:
+            logger.exception("Search failed.")
+            raise
+
+    #
+    # Register output renderers.
+    #
+    # ui.cards owns presentation logic. It will call
+    # renderer.renderer internally.
+    #
+
+    register_card_renderer(
+        output=output,
+        results=search_results,
+    )
+
+    #
+    # Future extension points
+    #
+    # * search statistics
+    # * search duration
+    # * saved searches
+    # * semantic search toggle
+    # * topic filter panel
+    #
+
+    _ = available_sources
+    _ = available_years
+
+
+###############################################################################
+# Application
+###############################################################################
+
+app = App(
+    ui=app_ui,
+    server=server,
+)

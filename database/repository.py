@@ -215,7 +215,7 @@ def _execute_insert(
 
     try:
 
-        cursor = connection.execute(...)
+        cursor = connection.execute(sql, parameters)
 
         if owns_connection:
             connection.commit()
