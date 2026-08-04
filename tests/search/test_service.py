@@ -122,7 +122,7 @@ class TestSearchPipeline:
         "search.service.parse_search_request"
     )
     @patch(
-        "search.service.parse_boolean_expression"
+        "search.service.BooleanParser"
     )
     @patch(
         "search.service.to_fts5_query"
@@ -225,7 +225,7 @@ class TestBooleanErrors:
         "search.service.parse_search_request"
     )
     @patch(
-        "search.service.parse_boolean_expression"
+        "search.service.BooleanParser"
     )
     def test_boolean_error_becomes_service_error(
         self,
@@ -263,7 +263,7 @@ class TestRankingErrors:
         "search.service.parse_search_request"
     )
     @patch(
-        "search.service.parse_boolean_expression"
+        "search.service.BooleanParser"
     )
     @patch(
         "search.service.to_fts5_query"

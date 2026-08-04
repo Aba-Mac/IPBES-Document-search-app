@@ -13,7 +13,7 @@ It composes the search pipeline:
 parse_search_request()
       │
       ▼
-search.boolean.parse_boolean_expression()
+search.boolean.BooleanParser()
       │
       ▼
 search.boolean.to_fts5_query()
@@ -42,8 +42,9 @@ import logging
 from typing import Any, Protocol
 
 from search.boolean import (
+    BooleanParser,
     BooleanSyntaxError,
-    parse_boolean_expression,
+    BooleanParser,
     to_fts5_query,
 )
 
@@ -260,9 +261,7 @@ class SearchService:
         Convert Boolean syntax into an SQLite FTS5 query.
         """
         try:
-            ast = parse_boolean_expression(
-                request.query
-            )
+            ast = BooleanParser().parse(request.query)
 
             return to_fts5_query(ast)
 
