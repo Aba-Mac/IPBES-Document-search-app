@@ -405,7 +405,7 @@ a:focus {
 """
 
 
-def stylesheet_tag() -> ui.Tag:
+def app_css() -> ui.Tag:
     """
     Return the stylesheet as a Shiny UI tag.
 
