@@ -31,6 +31,11 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 
+from search.service import configure
+from database import repository
+
+configure(repository)
+
 from ui.app import app as shiny_app
 
 ###############################################################################

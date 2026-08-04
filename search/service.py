@@ -44,7 +44,6 @@ from typing import Any, Protocol
 from search.boolean import (
     BooleanParser,
     BooleanSyntaxError,
-    BooleanParser,
     SQLiteFTS5Compiler,
 )
 
@@ -70,6 +69,7 @@ __all__ = [
     "get_available_sources",
     "get_available_years",
     "get_available_documents",
+    "configure"
 ]
 
 ###############################################################################
@@ -200,7 +200,7 @@ class SearchService:
         response = execute_ranked_search(
             repository=self._repository,
             request=request,
-            fts_query=fts_query,
+            fts_query=fts_query[1][0],
         )
 
         #
@@ -256,14 +256,14 @@ class SearchService:
     def _build_fts_query(
         self,
         request: SearchRequest,
-    ) -> str:
+    ) -> tuple[str, list[str]]:
         """
         Convert Boolean syntax into an SQLite FTS5 query.
         """
         try:
             ast = BooleanParser().parse(request.query)
 
-            return SQLiteFTS5Compiler(ast)
+            return SQLiteFTS5Compiler().compile(ast)
 
         except BooleanSyntaxError as exc:
             logger.warning(

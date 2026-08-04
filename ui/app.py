@@ -56,27 +56,44 @@ logger = logging.getLogger(__name__)
 # Static application data
 ###############################################################################
 
-#
-# These values change only when the corpus is re-ingested, so they are loaded
-# once during application start rather than on every reactive execution.
-#
+def _load_sources() -> tuple[str, ...]:
+    """
+    Load available document sources.
 
-_AVAILABLE_SOURCES = tuple(get_available_sources())
-_AVAILABLE_YEARS = tuple(get_available_years())
+    Loaded lazily after the application has started.
+    """
+    return tuple(get_available_sources())
+
+
+def _load_years() -> tuple[int, ...]:
+    """
+    Load available document years.
+
+    Loaded lazily after the application has started.
+    """
+    return tuple(get_available_years())
 
 
 ###############################################################################
 # User interface
 ###############################################################################
 
-app_ui = build_page(
-    search_controls=build_search_controls(
-        sources=_AVAILABLE_SOURCES,
-        years=_AVAILABLE_YEARS,
-    ),
-    glossary_panel=build_glossary_panel(),
-    css=app_css(),
-)
+def build_app_ui():
+    """
+    Build the Shiny UI after services are configured.
+    """
+
+    sources = _load_sources()
+    years = _load_years()
+
+    return build_page(
+        search_controls=build_search_controls(
+            sources=sources,
+            years=years,
+        ),
+        glossary_panel=build_glossary_panel(),
+        css=app_css(),
+    )
 
 
 ###############################################################################
@@ -95,8 +112,8 @@ def server(input, output, session) -> None:
     # Static lookup values exposed reactively for future use.
     #
 
-    available_sources = reactive.value(_AVAILABLE_SOURCES)
-    available_years = reactive.value(_AVAILABLE_YEARS)
+    available_sources = reactive.value(_load_sources())
+    available_years = reactive.value(_load_years())
 
     @reactive.calc
     def search_results():
@@ -175,6 +192,6 @@ def server(input, output, session) -> None:
 ###############################################################################
 
 app = App(
-    ui=app_ui,
+    ui=build_app_ui(),
     server=server,
 )
