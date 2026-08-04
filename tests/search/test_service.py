@@ -125,7 +125,7 @@ class TestSearchPipeline:
         "search.service.BooleanParser"
     )
     @patch(
-        "search.service.to_fts5_query"
+        "search.service.SQLiteFTS5Compiler"
     )
     def test_search_executes_pipeline(
         self,
@@ -266,7 +266,7 @@ class TestRankingErrors:
         "search.service.BooleanParser"
     )
     @patch(
-        "search.service.to_fts5_query"
+        "search.service.SQLiteFTS5Compiler"
     )
     def test_ranking_failure_is_propagated(
         self,

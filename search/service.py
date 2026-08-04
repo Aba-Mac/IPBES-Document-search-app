@@ -16,7 +16,7 @@ parse_search_request()
 search.boolean.BooleanParser()
       │
       ▼
-search.boolean.to_fts5_query()
+search.boolean.SQLiteFTS5Compiler()
       │
       ▼
 execute_ranked_search()
@@ -45,7 +45,7 @@ from search.boolean import (
     BooleanParser,
     BooleanSyntaxError,
     BooleanParser,
-    to_fts5_query,
+    SQLiteFTS5Compiler,
 )
 
 from search.parser import (
@@ -263,7 +263,7 @@ class SearchService:
         try:
             ast = BooleanParser().parse(request.query)
 
-            return to_fts5_query(ast)
+            return SQLiteFTS5Compiler(ast)
 
         except BooleanSyntaxError as exc:
             logger.warning(
