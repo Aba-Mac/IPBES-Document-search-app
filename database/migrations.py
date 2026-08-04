@@ -76,7 +76,7 @@ def _connect() -> sqlite3.Connection:
     sqlite3.Connection
     """
 
-    database_path = Path(settings.database_path)
+    database_path = Path(settings.database.path)
     database_path.parent.mkdir(parents=True, exist_ok=True)
 
     connection = sqlite3.connect(

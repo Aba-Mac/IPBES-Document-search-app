@@ -73,7 +73,7 @@ def connect() -> sqlite3.Connection:
     >>> conn.execute("SELECT 1")
     """
 
-    database_path = Path(settings.database_path)
+    database_path = Path(settings.database.path)
 
     database_path.parent.mkdir(
         parents=True,
@@ -323,7 +323,7 @@ def database_exists() -> bool:
     Return True if the configured database file exists.
     """
 
-    return Path(settings.database_path).exists()
+    return Path(settings.database.path).exists()
 
 
 def close(connection: sqlite3.Connection) -> None:
