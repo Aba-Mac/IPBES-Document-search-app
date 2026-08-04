@@ -236,7 +236,7 @@ class TestBooleanErrors:
         mock_request.return_value = Mock()
 
         mock_boolean.side_effect = (
-            service.BooleanParseError(
+            service.BooleanSyntaxError(
                 "bad syntax"
             )
         )

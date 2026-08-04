@@ -42,7 +42,7 @@ import logging
 from typing import Any, Protocol
 
 from search.boolean import (
-    BooleanParseError,
+    BooleanSyntaxError,
     parse_boolean_expression,
     to_fts5_query,
 )
@@ -266,7 +266,7 @@ class SearchService:
 
             return to_fts5_query(ast)
 
-        except BooleanParseError as exc:
+        except BooleanSyntaxError as exc:
             logger.warning(
                 "Boolean parser rejected query."
             )
