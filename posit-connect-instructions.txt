@@ -1,0 +1,46 @@
+# Posit Connect Deployment
+
+## Overview
+
+Deployment flow:
+
+Developer
+|
+v
+GitHub Repository
+|
+v
+Posit Connect
+|
+v
+Production Shiny Application
+
+
+The application is deployed directly from GitHub through Posit Connect.
+
+---
+
+# Prerequisites
+
+The Posit Connect server must provide:
+
+- Python 3.11+
+- SQLite support
+- OCR system dependencies if ingestion runs on Connect
+
+Required system packages:
+
+- Tesseract OCR
+- Ghostscript
+- qpdf
+
+
+## Important
+
+`pip install ocrmypdf` does not install operating-system OCR binaries.
+
+Confirm:
+
+```bash
+ocrmypdf --version
+tesseract --version

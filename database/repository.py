@@ -688,7 +688,7 @@ def insert_metadata_provenance(
                 document_id,
                 field_name,
                 extraction_source,
-                extracted_value
+                field_value
             )
             VALUES (?, ?, ?, ?)
 
@@ -700,7 +700,7 @@ def insert_metadata_provenance(
 
                 extraction_source = excluded.extraction_source,
 
-                extracted_value = excluded.extracted_value
+                field_value = excluded.field_value
             """,
             (
                 document_id,
@@ -733,7 +733,7 @@ def get_metadata_provenance(
         """
         SELECT
             field_name,
-            extracted_value,
+            field_value,
             extraction_source
         FROM metadata_provenance
         WHERE document_id = ?
@@ -743,7 +743,7 @@ def get_metadata_provenance(
 
     return {
         row["field_name"]: {
-            "value": row["extracted_value"],
+            "value": row["field_value"],
             "source": row["extraction_source"],
         }
         for row in rows

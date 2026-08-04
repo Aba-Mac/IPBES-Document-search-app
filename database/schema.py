@@ -92,7 +92,7 @@ PARAGRAPHS_TABLE = dedent(
 
 METADATA_PROVENANCE_TABLE = dedent(
     """
-    CREATE TABLE IF NOT EXISTS document_metadata_provenance (
+    CREATE TABLE IF NOT EXISTS metadata_provenance (
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
