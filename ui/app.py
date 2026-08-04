@@ -36,7 +36,7 @@ from search.service import (
 )
 
 from ui.cards import register_card_renderer
-from ingestion.glossary import build_glossary_panel
+from ui.glossary import build_glossary_panel
 from ui.layouts import build_page
 from ui.search import (
     build_search_controls,
