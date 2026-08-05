@@ -27,6 +27,7 @@ from __future__ import annotations
 import logging
 
 from shiny import App, reactive
+from database import repository
 
 from search.service import (
     SearchServiceError,
