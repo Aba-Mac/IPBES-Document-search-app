@@ -75,14 +75,13 @@ def build_glossary_panel():
             class_="section-description",
         ),
 
-        ui.input_text(
+        ui.input_selectize(
             id=GLOSSARY_SEARCH_ID,
             label="Browse glossary terms",
-            placeholder=(
-                "Search glossary terms..."
-            ),
+            choices=[],
+            multiple=False,
             width="100%",
-        ),
+        )
 
         ui.div(
             ui.output_ui(
