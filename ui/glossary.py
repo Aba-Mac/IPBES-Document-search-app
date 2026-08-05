@@ -81,10 +81,8 @@ def build_glossary_panel():
         ui.input_selectize(
             id=GLOSSARY_SEARCH_ID,
             label="Browse glossary terms",
-            choices=[row["term"] for row in terms],
-            multiple=False,
-            width="100%",
-        ),
+            choices=[],
+        )
 
         ui.div(
             ui.output_ui(

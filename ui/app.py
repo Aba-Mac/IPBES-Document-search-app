@@ -118,16 +118,17 @@ def server(input, output, session) -> None:
     available_years = reactive.value(_load_years())
 
     @reactive.effect
-    def glossary_search():
-        term = getattr(input, GLOSSARY_SEARCH_ID)()
+    def _update_glossary_terms():
 
-        if not term:
-            return
+        terms = [
+            row["term"]
+            for row in repository.list_terms()
+        ]
 
-        ui.update_text(
-            SEARCH_QUERY_ID,
-            value=term,
-            session=session,
+        ui.update_selectize(
+            GLOSSARY_SEARCH_ID,
+            choices=terms,
+            server=True,
         )
 
     @reactive.calc

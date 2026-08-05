@@ -35,24 +35,46 @@ from search.service import configure
 from database import repository
 from database.migrations import migrate
 
+from ingestion.pipeline import ingest_directory
+
 LOGGER = logging.getLogger(__name__)
 LOGGER.info("Running database migration...")
 migrate()
 LOGGER.info("Migration finished.")
 
-print(
-    "Documents:",
-    repository.table_row_count("documents")
-)
+from pathlib import Path
 
-print(
-    "Paragraphs:",
-    repository.table_row_count("paragraphs")
-)
+pdf_dir = Path("data/pdfs")
 
-print(
-    "Terms:",
-    repository.table_row_count("terms")
+print("PDF directory:", pdf_dir.resolve())
+print("Exists:", pdf_dir.exists())
+
+if pdf_dir.exists():
+    print("PDFs:", list(pdf_dir.glob("*.pdf")))
+
+def _debug_database(repository):
+    print("DEBUG DATABASE")
+
+    print(
+        "documents:",
+        repository.count_documents()
+    )
+
+    print(
+        "terms:",
+        repository.count_terms()
+    )
+
+    print(
+        "paragraphs:",
+        repository.count_paragraphs()
+    )
+
+_debug_database(repository)
+
+ingest_directory(
+    directory="data/pdfs",
+    terms_csv="data/glossary.txt",
 )
 
 configure(repository)
