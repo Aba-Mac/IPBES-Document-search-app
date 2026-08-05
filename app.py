@@ -33,6 +33,12 @@ from starlette.routing import Mount, Route
 
 from search.service import configure
 from database import repository
+from database.migrations import migrate
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.info("Running database migration...")
+migrate()
+LOGGER.info("Migration finished.")
 
 configure(repository)
 

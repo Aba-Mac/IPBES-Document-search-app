@@ -74,6 +74,7 @@ def connect() -> sqlite3.Connection:
     """
 
     database_path = Path(settings.database.path)
+    LOGGER.info("Repository database: %s", settings.database.path)
 
     database_path.parent.mkdir(
         parents=True,
