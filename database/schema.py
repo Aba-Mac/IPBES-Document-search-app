@@ -106,6 +106,8 @@ METADATA_PROVENANCE_TABLE = dedent(
 
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+        UNIQUE(document_id, field_name),
+
         FOREIGN KEY(document_id)
             REFERENCES documents(id)
             ON DELETE CASCADE

@@ -55,26 +55,30 @@ if pdf_dir.exists():
 def _debug_database(repository):
     LOGGER.info(
         "documents: %s",
-        repository.count_documents()
+        repository.table_row_count("documents")
     )
 
     LOGGER.info(
         "terms: %s",
-        repository.count_terms()
+        repository.table_row_count("terms")
     )
 
     LOGGER.info(
         "paragraphs: %s",
-        repository.count_paragraphs()
+        repository.table_row_count("paragraphs")
     )
 
 _debug_database(repository)
 
-if repository.count_documents() == 0:
+if repository.table_row_count("documents") == 0:
     ingest_directory(
         directory="data/pdfs",
         terms_csv="data/glossary/terms.txt",
     )
+
+LOGGER.info("Documents: %s", repository.table_row_count("documents"))
+LOGGER.info("Paragraphs: %s", repository.table_row_count("paragraphs"))
+LOGGER.info("Terms: %s", repository.table_row_count("terms"))
 
 configure(repository)
 
