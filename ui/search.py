@@ -227,7 +227,7 @@ def current_page(input) -> int:
     The initial implementation starts on page one.
     """
 
-    value = input.get(PAGE_ID)
+    value = getattr(input, PAGE_ID)()
 
     if value is None:
         return 1

@@ -31,6 +31,7 @@ This module only provides user-facing glossary controls.
 """
 
 from __future__ import annotations
+from database import repository
 
 from shiny import ui
 
@@ -78,10 +79,10 @@ def build_glossary_panel():
         ui.input_selectize(
             id=GLOSSARY_SEARCH_ID,
             label="Browse glossary terms",
-            choices=[],
+            choices = [row["term"] for row in repository.list_terms()],
             multiple=False,
             width="100%",
-        )
+        ),
 
         ui.div(
             ui.output_ui(

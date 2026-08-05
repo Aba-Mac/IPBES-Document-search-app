@@ -37,6 +37,7 @@ from search.service import (
 
 from ui.cards import register_card_renderer
 from ui.glossary import build_glossary_panel
+from ui.glossary import GLOSSARY_SEARCH_ID
 from ui.layouts import build_page
 from ui.search import (
     build_search_controls,
@@ -46,6 +47,7 @@ from ui.search import (
     search_query,
     selected_source,
     selected_year,
+    SEARCH_QUERY_ID,
 )
 from ui.styles import app_css
 
@@ -114,6 +116,19 @@ def server(input, output, session) -> None:
 
     available_sources = reactive.value(_load_sources())
     available_years = reactive.value(_load_years())
+
+    @reactive.effect
+    def glossary_search():
+        term = getattr(input, GLOSSARY_SEARCH_ID)()
+
+        if not term:
+            return
+
+        ui.update_text(
+            SEARCH_QUERY_ID,
+            value=term,
+            session=session,
+        )
 
     @reactive.calc
     def search_results():
