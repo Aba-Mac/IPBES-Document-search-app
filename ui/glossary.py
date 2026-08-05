@@ -60,6 +60,7 @@ def build_glossary_panel():
     shiny.ui.Tag
         Glossary UI component.
     """
+    terms = repository.list_terms()
 
     return ui.div(
         ui.h3(
@@ -76,13 +77,11 @@ def build_glossary_panel():
             class_="section-description",
         ),
 
-        terms = repository.list_terms()
-
         ui.input_selectize(
             id=GLOSSARY_SEARCH_ID,
             label="Browse glossary terms",
             choices=[],
-        )
+        ),
 
         ui.div(
             ui.output_ui(

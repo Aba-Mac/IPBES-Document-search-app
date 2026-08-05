@@ -46,25 +46,25 @@ from pathlib import Path
 
 pdf_dir = Path("data/pdfs")
 
-LOGGER.info("PDF directory:", pdf_dir.resolve())
-LOGGER.info("Exists:", pdf_dir.exists())
+LOGGER.info("PDF directory: %s", pdf_dir.resolve())
+LOGGER.info("Exists: %s", pdf_dir.exists())
 
 if pdf_dir.exists():
-    LOGGER.info("PDFs:", list(pdf_dir.glob("*.pdf")))
+    LOGGER.info("PDFs: %s", list(pdf_dir.glob("*.pdf")))
 
 def _debug_database(repository):
     LOGGER.info(
-        "documents:",
+        "documents: %s",
         repository.count_documents()
     )
 
     LOGGER.info(
-        "terms:",
+        "terms: %s",
         repository.count_terms()
     )
 
     LOGGER.info(
-        "paragraphs:",
+        "paragraphs: %s",
         repository.count_paragraphs()
     )
 
