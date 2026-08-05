@@ -286,15 +286,13 @@ def ingest_document(
 
     ocr_result = ocr.ensure_searchable_pdf(pdf_path)
 
-    processed_pdf = ocr_result.processed_pdf
-
     ####################################################################
     # Stage 2
     ####################################################################
 
     LOGGER.info("Extracting document...")
 
-    extraction = extractor.extract(processed_pdf)
+    extraction = extractor.extract(ocr_result)
 
     ####################################################################
     # Stage 3
@@ -329,7 +327,7 @@ def ingest_document(
     LOGGER.info("Extracting metadata...")
 
     document_metadata = metadata.build_metadata(
-        pdf_path=processed_pdf,
+        pdf_path=ocr_result.processed_pdf,
         extraction=extraction,
     )
 
