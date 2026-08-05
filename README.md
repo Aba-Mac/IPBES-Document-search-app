@@ -374,12 +374,34 @@ document-search/
 └── tests/
     │
     ├── __init__.py
-    ├── test_database.py
-    ├── test_ingestion.py
-    ├── test_search.py
-    ├── test_renderer.py
-    ├── test_tagging.py
-    └── test_ui.py
+    ├── database/
+    |    ├── test_fts.py
+    │    ├──test_migrations.py
+    │    ├──test_repository.py
+    │    ├──test_schema.py
+    ├── ingestion/
+    │    ├──test_chunking.py
+    │    ├──test_cleaning.py
+    │    ├──test_extractor.py
+    │    ├──test_glossary.py
+    │    ├──test_metadata.py
+    │    ├──test_pipeline.py
+    ├── renderer/
+    │    ├──test_highlighting.py
+    │    ├──test_html.py
+    │    ├──test_hyperlinks.py
+    │    ├──test_renderer.py
+    ├── search/
+    │    ├──test_boolean.py
+    │    ├──test_parser.py
+    │    ├──test_ranking.py
+    │    ├──test_service.py
+    ├── tagging/
+    │    ├──test_anchors.py
+    │    ├──test_embeddings.py
+    │    ├──test_pipeline.py
+    │    ├──test_verifier.py
+
 ```
 
 ---
