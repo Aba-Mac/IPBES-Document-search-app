@@ -40,6 +40,21 @@ LOGGER.info("Running database migration...")
 migrate()
 LOGGER.info("Migration finished.")
 
+print(
+    "Documents:",
+    repository.table_row_count("documents")
+)
+
+print(
+    "Paragraphs:",
+    repository.table_row_count("paragraphs")
+)
+
+print(
+    "Terms:",
+    repository.table_row_count("terms")
+)
+
 configure(repository)
 
 from ui.app import app as shiny_app

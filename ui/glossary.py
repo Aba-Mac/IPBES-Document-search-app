@@ -76,10 +76,12 @@ def build_glossary_panel():
             class_="section-description",
         ),
 
+        terms = repository.list_terms()
+
         ui.input_selectize(
             id=GLOSSARY_SEARCH_ID,
             label="Browse glossary terms",
-            choices = [row["term"] for row in repository.list_terms()],
+            choices=[row["term"] for row in terms],
             multiple=False,
             width="100%",
         ),
