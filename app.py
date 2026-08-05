@@ -16,15 +16,18 @@ from starlette.routing import Mount, Route
 from database import repository
 from database.migrations import migrate
 from search.service import configure
-from ui.app import app as shiny_app
 
-LOGGER: Final = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 LOGGER.info("Running database migration...")
 migrate()
-LOGGER.info("Migration complete.")
 
+LOGGER.info("Configuring search service...")
 configure(repository)
+
+LOGGER.info("Importing UI...")
+from ui.app import app as shiny_app
 
 
 async def healthcheck(request):
