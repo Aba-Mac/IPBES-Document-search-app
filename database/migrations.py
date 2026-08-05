@@ -109,19 +109,18 @@ def apply_schema(connection: sqlite3.Connection) -> None:
     connection
         Open SQLite connection.
     """
+    with connection:
+        for statement in iter_schema():
+            connection.executescript(statement)
+
     tables = connection.execute("""
-    SELECT name
-    FROM sqlite_master
-    WHERE type='table'
-    ORDER BY name
+        SELECT name
+        FROM sqlite_master
+        WHERE type='table'
+        ORDER BY name
     """).fetchall()
 
     LOGGER.info("Tables after migration: %s", [t[0] for t in tables])
-
-    with connection:
-
-        for statement in iter_schema():
-            connection.executescript(statement)
 
 
 # ---------------------------------------------------------------------

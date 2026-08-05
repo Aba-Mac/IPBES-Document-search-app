@@ -74,7 +74,7 @@ _debug_database(repository)
 
 ingest_directory(
     directory="data/pdfs",
-    terms_csv="data/glossary.txt",
+    terms_csv="data/glossary/terms.txt",
 )
 
 configure(repository)
