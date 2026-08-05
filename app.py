@@ -1,25 +1,7 @@
 """
-Top-level application entry point.
+ASGI entry point for the IPBES Document Search application.
 
-This module is intentionally thin. It imports the fully assembled Shiny
-application from ``ui.app`` and exposes it as ``app`` for Posit Connect.
-
-It also exposes a lightweight health-check endpoint suitable for Posit
-Connect monitoring and external load balancers.
-
-Deployment:
-
-    GitHub
-        ↓
-    Posit Connect
-
-Posit Connect expects a top-level ``app`` object.
-
-Author:
-    Your Project
-
-License:
-    MIT
+Only lightweight startup work should occur here.
 """
 
 from __future__ import annotations
@@ -31,107 +13,34 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
 
-from search.service import configure
 from database import repository
 from database.migrations import migrate
-
-from ingestion.pipeline import ingest_directory
-
-LOGGER = logging.getLogger(__name__)
-LOGGER.info("Running database migration...")
-migrate()
-LOGGER.info("Migration finished.")
-
-from pathlib import Path
-
-pdf_dir = Path("data/pdfs")
-
-LOGGER.info("PDF directory: %s", pdf_dir.resolve())
-LOGGER.info("Exists: %s", pdf_dir.exists())
-
-if pdf_dir.exists():
-    LOGGER.info("PDFs: %s", list(pdf_dir.glob("*.pdf")))
-
-def _debug_database(repository):
-    LOGGER.info(
-        "documents: %s",
-        repository.table_row_count("documents")
-    )
-
-    LOGGER.info(
-        "terms: %s",
-        repository.table_row_count("terms")
-    )
-
-    LOGGER.info(
-        "paragraphs: %s",
-        repository.table_row_count("paragraphs")
-    )
-
-_debug_database(repository)
-
-if repository.table_row_count("documents") == 0:
-    ingest_directory(
-        directory="data/pdfs",
-        terms_csv="data/glossary/terms.txt",
-    )
-
-LOGGER.info("Documents: %s", repository.table_row_count("documents"))
-LOGGER.info("Paragraphs: %s", repository.table_row_count("paragraphs"))
-LOGGER.info("Terms: %s", repository.table_row_count("terms"))
-
-configure(repository)
-
+from search.service import configure
 from ui.app import app as shiny_app
-
-###############################################################################
-# Logging
-###############################################################################
 
 LOGGER: Final = logging.getLogger(__name__)
 
-###############################################################################
-# Health Check
-###############################################################################
+LOGGER.info("Running database migration...")
+migrate()
+LOGGER.info("Migration complete.")
+
+configure(repository)
 
 
 async def healthcheck(request):
-    """
-    Health endpoint.
-
-    Used by Posit Connect and reverse proxies to verify that the
-    application process is alive.
-
-    Returns
-    -------
-    JSONResponse
-        HTTP 200 with a simple JSON payload.
-    """
     return JSONResponse(
         {
             "status": "ok",
             "service": "document-search",
-        },
-        status_code=200,
+        }
     )
 
-
-###############################################################################
-# Combined ASGI application
-###############################################################################
 
 app = Starlette(
     debug=False,
     routes=[
-        Route(
-            "/health",
-            endpoint=healthcheck,
-            methods=["GET"],
-        ),
-        Mount(
-            "/",
-            app=shiny_app,
-        ),
+        Route("/health", endpoint=healthcheck),
+        Mount("/", app=shiny_app),
     ],
 )
 
