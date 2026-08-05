@@ -284,7 +284,9 @@ def ingest_document(
 
     LOGGER.info("Running OCR...")
 
-    processed_pdf = ocr.process(pdf_path)
+    ocr_result = ocr.ensure_searchable_pdf(pdf_path)
+
+    processed_pdf = ocr_result.processed_pdf
 
     ####################################################################
     # Stage 2
@@ -326,7 +328,7 @@ def ingest_document(
 
     LOGGER.info("Extracting metadata...")
 
-    document_metadata = metadata.extract_metadata(
+    document_metadata = metadata.build_metadata(
         pdf_path=processed_pdf,
         extraction=extraction,
     )
@@ -377,13 +379,13 @@ def ingest_document(
 
         document_id = repository.create_document(
             filename=pdf_path.name,
-            title=document_metadata.title,
-            plenary_session=document_metadata.plenary_session,
-            year=document_metadata.year,
-            date=document_metadata.date,
-            location=document_metadata.location,
-            source=document_metadata.source,
-            page_count=document_metadata.page_count,
+            title=document_metadata.title.value,
+            plenary_session=document_metadata.plenary_session.value,
+            year=document_metadata.year.value,
+            date=document_metadata.date.value,
+            location=document_metadata.location.value,
+            source=document_metadata.source.value,
+            page_count=document_metadata.page_count.value,
             connection=connection,
         )
 
@@ -399,7 +401,9 @@ def ingest_document(
             repository.insert_metadata_provenance(
                 connection=connection,
                 document_id=document_id,
-                fields=document_metadata.provenance,
+                fields=metadata.metadata_provenance_fields(
+                    document_metadata
+                ),
             )
 
         ################################################################
