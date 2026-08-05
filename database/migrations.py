@@ -49,7 +49,7 @@ _REQUIRED_TABLES = {
     "anchors",
     "paragraph_anchors",
     "embeddings",
-    metadata_provenance,
+    "metadata_provenance",
 }
 
 _REQUIRED_VIRTUAL_TABLES = {
