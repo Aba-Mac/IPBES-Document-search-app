@@ -46,36 +46,35 @@ from pathlib import Path
 
 pdf_dir = Path("data/pdfs")
 
-print("PDF directory:", pdf_dir.resolve())
-print("Exists:", pdf_dir.exists())
+LOGGER.info("PDF directory:", pdf_dir.resolve())
+LOGGER.info("Exists:", pdf_dir.exists())
 
 if pdf_dir.exists():
-    print("PDFs:", list(pdf_dir.glob("*.pdf")))
+    LOGGER.info("PDFs:", list(pdf_dir.glob("*.pdf")))
 
 def _debug_database(repository):
-    print("DEBUG DATABASE")
-
-    print(
+    LOGGER.info(
         "documents:",
         repository.count_documents()
     )
 
-    print(
+    LOGGER.info(
         "terms:",
         repository.count_terms()
     )
 
-    print(
+    LOGGER.info(
         "paragraphs:",
         repository.count_paragraphs()
     )
 
 _debug_database(repository)
 
-ingest_directory(
-    directory="data/pdfs",
-    terms_csv="data/glossary/terms.txt",
-)
+if repository.count_documents() == 0:
+    ingest_directory(
+        directory="data/pdfs",
+        terms_csv="data/glossary/terms.txt",
+    )
 
 configure(repository)
 
