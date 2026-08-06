@@ -63,12 +63,10 @@ configure(repository)
 
 @asynccontextmanager
 async def lifespan(app):
-    # Only the genuinely-deferrable, slow work belongs here.
-    # migrate()/configure() must NOT be here: ui.app needs them
-    # already done by the time it's imported below, which happens
-    # at module scope, not inside this context manager.
-    loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, _run_ingestion_sync)
+
+    await asyncio.to_thread(
+        _run_ingestion_sync
+    )
 
     yield
 
