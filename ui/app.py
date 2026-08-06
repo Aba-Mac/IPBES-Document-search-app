@@ -117,7 +117,7 @@ def server(input, output, session) -> None:
 
     available_sources = reactive.value(_load_sources())
     available_years = reactive.value(_load_years())
-
+    logger.info("repository module = %r", repository)
     @reactive.effect
     def _update_glossary_terms():
 
