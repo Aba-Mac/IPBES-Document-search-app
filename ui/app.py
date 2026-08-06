@@ -40,7 +40,6 @@ from ui.cards import register_card_renderer
 from ui.layouts import build_page
 from ui.search import (
     build_search_controls,
-    boolean_query,
     current_page,
     page_size,
     search_query,
@@ -125,7 +124,7 @@ def server(input, output, session) -> None:
         if selected_year(input):
             filters["year"] = selected_year(input)
 
-        query = boolean_query(input).strip()
+        query = search_query(input).strip()
 
         logger.info(
             "Executing search "
