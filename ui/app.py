@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import logging
 
-from shiny import App, reactive
+from shiny import App, reactive, ui
 from database import repository
 
 from search.service import (
@@ -117,7 +117,7 @@ def server(input, output, session) -> None:
 
     available_sources = reactive.value(_load_sources())
     available_years = reactive.value(_load_years())
-    logger.info("repository module = %r", repository)
+
     @reactive.effect
     def _update_glossary_terms():
 
