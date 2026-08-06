@@ -331,7 +331,7 @@ def ingest_document(
 
     LOGGER.info("Cleaning extracted text...")
 
-    cleaned_document = cleaning.clean_document(
+    cleaned_document = cleaning.clean_elements(
         extraction
     )
 
