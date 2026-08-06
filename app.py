@@ -26,18 +26,12 @@ logging.basicConfig(level=logging.INFO)
 LOGGER.info("Running database migration...")
 migrate()
 
-LOGGER.info("Running database migration...")
-migrate()
-
 LOGGER.info("Running ingestion...")
 pdf_dir = Path("data/pdfs")
 if pdf_dir.exists():
     ingest_directory(directory=pdf_dir, terms_txt="data/glossary/terms.txt")
 else:
     LOGGER.warning("PDF directory %s not found; skipping ingestion.", pdf_dir)
-
-LOGGER.info("Configuring search service...")
-configure(repository)
 
 LOGGER.info("Configuring search service...")
 configure(repository)
