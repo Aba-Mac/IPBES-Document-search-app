@@ -10,7 +10,7 @@ contains no search logic, rendering logic or business rules.
 Responsibilities
 ----------------
 * Build the overall page layout.
-* Arrange the search controls, glossary panel and results area.
+* Arrange the search controls and results area.
 * Provide a typography-first single-column layout.
 * Remain responsive.
 * Keep presentation separate from application logic.
@@ -18,8 +18,6 @@ Responsibilities
 The actual result cards are rendered by ``ui.cards``.
 
 The search controls are provided by ``ui.search``.
-
-The glossary panel is provided by ``ui.glossary``.
 """
 
 from __future__ import annotations
@@ -42,7 +40,6 @@ RESULTS_CONTAINER_ID = "results_container"
 def build_page(
     *,
     search_controls: Any,
-    glossary_panel: Any,
     css: Any,
 ):
     """
@@ -52,9 +49,6 @@ def build_page(
     ----------
     search_controls
         UI component returned by ``ui.search``.
-
-    glossary_panel
-        UI component returned by ``ui.glossary``.
 
     css
         CSS dependency returned by ``ui.styles``.
@@ -83,14 +77,6 @@ def build_page(
             ui.div(
                 search_controls,
                 class_="search-section",
-            ),
-
-            #
-            # Optional glossary browser
-            #
-            ui.div(
-                glossary_panel,
-                class_="glossary-section",
             ),
 
             #
