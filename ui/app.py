@@ -44,6 +44,7 @@ from ui.search import (
     search_query,
     selected_year,
     SEARCH_QUERY_ID,
+    YEAR_FILTER_ID,
 )
 from ui.styles import app_css
 
@@ -101,25 +102,28 @@ def server(input, output, session) -> None:
 
     @reactive.effect
     def _update_glossary_terms():
-
         terms = get_glossary_terms()
-
-        logger.info(
-            "Loaded glossary terms: %s",
-            len(terms),
-        )
-
-        logger.info(
-            "First terms: %s",
-            terms[:10],
-        )
-
+        logger.info("Loaded glossary terms: %s", len(terms))
+        logger.info("First terms: %s", terms[:10])
         ui.update_selectize(
-        SEARCH_QUERY_ID,
-        choices=terms,
-        selected=None,
-        server=False,
-    )
+            SEARCH_QUERY_ID,
+            choices=terms,
+            selected=None,
+            server=False,
+        )
+
+    @reactive.effect
+    def _update_year_choices():
+        years = _load_years()
+
+        logger.info("Loaded years: %s", years)
+
+        ui.update_select(
+            YEAR_FILTER_ID,
+            choices=["", *map(str, years)],
+            selected="",
+        )
+        
     @reactive.calc
     def search_results():
         """
