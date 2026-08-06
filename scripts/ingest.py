@@ -34,7 +34,7 @@ LOGGER.info(
 
 ingest_directory(
     directory=pdf_dir,
-    terms_csv="data/glossary/terms.txt",
+    terms_txt="data/glossary/terms.txt",
 )
 
 LOGGER.info(

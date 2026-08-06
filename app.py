@@ -17,11 +17,27 @@ from database import repository
 from database.migrations import migrate
 from search.service import configure
 
+from ingestion.pipeline import ingest_directory
+from pathlib import Path
+
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 LOGGER.info("Running database migration...")
 migrate()
+
+LOGGER.info("Running database migration...")
+migrate()
+
+LOGGER.info("Running ingestion...")
+pdf_dir = Path("data/pdfs")
+if pdf_dir.exists():
+    ingest_directory(directory=pdf_dir, terms_txt="data/glossary/terms.txt")
+else:
+    LOGGER.warning("PDF directory %s not found; skipping ingestion.", pdf_dir)
+
+LOGGER.info("Configuring search service...")
+configure(repository)
 
 LOGGER.info("Configuring search service...")
 configure(repository)

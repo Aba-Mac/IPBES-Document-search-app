@@ -1153,7 +1153,7 @@ def create_term(
 
     Notes
     -----
-    Terms are expected to be loaded from terms.csv during ingestion.
+    Terms are expected to be loaded from terms.txt during ingestion.
     """
 
     return _execute_insert(
