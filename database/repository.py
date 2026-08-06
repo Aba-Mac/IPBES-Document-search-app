@@ -1186,7 +1186,7 @@ def bulk_insert_terms(
         Iterable of:
 
         (
-            term,
+            term
         )
     """
 
