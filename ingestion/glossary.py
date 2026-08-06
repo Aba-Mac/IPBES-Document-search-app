@@ -31,7 +31,6 @@ FOREIGN KEY(term_id) REFERENCES terms(id)
 
 from __future__ import annotations
 
-import csv
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -42,12 +41,11 @@ from typing import Iterable
 @dataclass(frozen=True)
 class GlossaryTerm:
     """
-    Represents a glossary term loaded from CSV.
+    Represents a glossary term loaded from a text file.
     """
 
     term_id: int
     term: str
-    category: str
 
 
 @dataclass(frozen=True)
@@ -141,20 +139,16 @@ class GlossaryMatcher:
         ]
 
 
-def load_terms_csv(path: Path) -> list[GlossaryTerm]:
+def load_terms_txt(path: Path) -> list[GlossaryTerm]:
     """
-    Load glossary terms from CSV.
+    Load glossary terms from a plain text file.
 
-    Required columns:
-        term
-        category
+    Each line contains one glossary term.
 
-    Returns:
-        List of GlossaryTerm objects.
-
-    Raises:
-        ValueError:
-            Missing required columns.
+    Example:
+        biodiversity
+        ecosystem services
+        climate change
     """
 
     terms: list[GlossaryTerm] = []
@@ -162,20 +156,11 @@ def load_terms_csv(path: Path) -> list[GlossaryTerm]:
     with path.open(
         "r",
         encoding="utf-8-sig",
-        newline="",
     ) as file:
-        reader = csv.DictReader(file)
 
-        required = {"term", "category"}
+        for index, line in enumerate(file, start=1):
 
-        if not required.issubset(reader.fieldnames or set()):
-            raise ValueError(
-                "terms.csv must contain columns: term, category"
-            )
-
-        for index, row in enumerate(reader, start=1):
-            term = (row["term"] or "").strip()
-            category = (row["category"] or "").strip()
+            term = line.strip()
 
             if not term:
                 continue
@@ -184,7 +169,7 @@ def load_terms_csv(path: Path) -> list[GlossaryTerm]:
                 GlossaryTerm(
                     term_id=index,
                     term=term,
-                    category=category,
+                    category="general",
                 )
             )
 
@@ -237,7 +222,7 @@ def upsert_glossary_terms(
 def index_paragraph_glossary_terms(
     connection: sqlite3.Connection,
     paragraphs: Iterable[tuple[int, str]],
-    terms_csv: Path,
+    terms_txt: Path,
 ) -> int:
     """
     Compute glossary matches for paragraphs and store them.
@@ -253,14 +238,14 @@ def index_paragraph_glossary_terms(
             Iterable of:
                 (paragraph_id, paragraph_text)
 
-        terms_csv:
-            Path to terms.csv.
+        terms_txt:
+            Path to terms.txt.
 
     Returns:
         Number of stored matches.
     """
 
-    loaded_terms = load_terms_csv(terms_csv)
+    loaded_terms = load_terms_txt(terms_txt)
 
     database_ids = upsert_glossary_terms(
         connection,

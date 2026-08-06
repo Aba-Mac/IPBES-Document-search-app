@@ -27,7 +27,6 @@ from __future__ import annotations
 import logging
 
 from shiny import App, reactive, ui
-from database import repository
 from search.service import get_glossary_terms
 
 from search.service import (

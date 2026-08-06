@@ -585,23 +585,6 @@ def get_document_by_filename(
     )
 
 
-def get_available_sources(
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[str]:
-    rows = fetch_all(
-        """
-        SELECT DISTINCT source
-        FROM documents
-        WHERE source IS NOT NULL
-        ORDER BY source
-        """,
-        connection=connection,
-    )
-
-    return [row["source"] for row in rows]
-
-
 def get_available_years(
     *,
     connection: sqlite3.Connection | None = None,
