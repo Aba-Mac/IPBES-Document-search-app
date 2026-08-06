@@ -1193,7 +1193,7 @@ def bulk_insert_terms(
     executemany(
         """
         INSERT INTO terms (
-            term,
+            term
         )
         VALUES (?)
 
