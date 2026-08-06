@@ -103,9 +103,21 @@ def server(input, output, session) -> None:
     @reactive.effect
     def _update_glossary_terms():
 
+        terms = get_glossary_terms()
+
+        logger.info(
+            "Loaded glossary terms: %s",
+            len(terms),
+        )
+
+        logger.info(
+            "First terms: %s",
+            terms[:10],
+        )
+
         ui.update_selectize(
         SEARCH_QUERY_ID,
-        choices=get_glossary_terms(),
+        choices=terms,
         selected=None,
         server=False,
     )
