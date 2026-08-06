@@ -389,17 +389,24 @@ def extract_with_unstructured(
 
     for element in elements:
 
+        text = (element.text or "").strip()
+
+        if not text:
+            logger.debug(
+                "Skipping empty %s element on page %s",
+                _element_category(element),
+                _page_number(element),
+            )
+            continue
+
         current_section = _section_title(
             element,
             current_section,
         )
 
-        page_number = _page_number(
-            element,
-        )
+        page_number = _page_number(element)
 
         if page_number not in pages:
-
             pages[page_number] = ExtractedPage(
                 page_number=page_number,
             )
@@ -409,7 +416,7 @@ def extract_with_unstructured(
                 id=element_id,
                 page_number=page_number,
                 category=_element_category(element),
-                text=element.text.strip(),
+                text=text,
                 section_title=current_section,
                 metadata={
                     "coordinates": getattr(
@@ -971,7 +978,7 @@ def validate_document(
 
         for element in page.elements:
 
-            if not element.text.strip():
+            if not element.text:
 
                 raise ExtractionError(
                     "Encountered empty extracted element."
