@@ -209,7 +209,7 @@ def needs_reindex(
 def ingest_document(
     pdf_path: str | Path,
     *,
-    terms_csv: str | Path,
+    terms_txt: str | Path,
 ) -> IngestionResult:
     """
     Run the complete ingestion pipeline.
@@ -220,9 +220,9 @@ def ingest_document(
 
         PDF document.
 
-    terms_csv
+    terms_txt
 
-        Path to glossary CSV.
+        Path to glossary txt file.
 
     Returns
     -------
@@ -237,7 +237,7 @@ def ingest_document(
 
     pdf_path = Path(pdf_path)
 
-    terms_csv = Path(terms_csv)
+    terms_txt = Path(terms_txt)
 
     LOGGER.info(
         "Beginning ingestion: %s",
@@ -337,8 +337,8 @@ def ingest_document(
 
     LOGGER.info("Loading glossary...")
 
-    glossary_terms = glossary.load_terms_csv(
-        terms_csv
+    glossary_terms = glossary.load_terms_txt(
+        terms_txt
     )
 
     LOGGER.info("Matching glossary...")
@@ -579,7 +579,7 @@ def ingest_document(
 def ingest_directory(
     directory: str | Path,
     *,
-    terms_csv: str | Path,
+    terms_txt: str | Path,
     recursive: bool = True,
 ) -> list[IngestionResult]:
     """
@@ -590,8 +590,8 @@ def ingest_directory(
     directory
         Root directory.
 
-    terms_csv
-        Path to glossary CSV.
+    terms_txt
+        Path to glossary txt file.
 
     recursive
         Search subdirectories recursively.
@@ -619,7 +619,7 @@ def ingest_directory(
             results.append(
                 ingest_document(
                     pdf,
-                    terms_csv=terms_csv,
+                    terms_txt=terms_txt,
                 )
             )
 
@@ -643,7 +643,7 @@ def ingest_directory(
 def ingest_paths(
     paths: Iterable[str | Path],
     *,
-    terms_csv: str | Path,
+    terms_txt: str | Path,
 ) -> list[IngestionResult]:
     """
     Ingest an iterable of PDF paths.
@@ -653,8 +653,8 @@ def ingest_paths(
     paths
         Collection of PDF files.
 
-    terms_csv
-        Glossary CSV.
+    terms_txt
+        Glossary txt file.
 
     Returns
     -------
@@ -668,7 +668,7 @@ def ingest_paths(
         results.append(
             ingest_document(
                 path,
-                terms_csv=terms_csv,
+                terms_txt=terms_txt,
             )
         )
 
@@ -678,7 +678,7 @@ def ingest_paths(
 def reindex_document(
     pdf_path: str | Path,
     *,
-    terms_csv: str | Path,
+    terms_txt: str | Path,
 ) -> IngestionResult:
     """
     Force re-indexing of a document.
@@ -701,7 +701,7 @@ def reindex_document(
 
     return ingest_document(
         pdf_path,
-        terms_csv=terms_csv,
+        terms_txt=terms_txt,
     )
 
 
