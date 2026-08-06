@@ -40,15 +40,21 @@ def _run_ingestion_sync():
         LOGGER.exception("Background ingestion failed.")
 
 
+# --- Runs at import time, BEFORE ui.app is imported below. ---
+
+LOGGER.info("Running database migration...")
+migrate()
+
+LOGGER.info("Configuring search service...")
+configure(repository)
+
+
 @asynccontextmanager
 async def lifespan(app):
-    LOGGER.info("Running database migration...")
-    migrate()
-
-    LOGGER.info("Configuring search service...")
-    configure(repository)
-
-    # Fire-and-forget: don't block startup on this.
+    # Only the genuinely-deferrable, slow work belongs here.
+    # migrate()/configure() must NOT be here: ui.app needs them
+    # already done by the time it's imported below, which happens
+    # at module scope, not inside this context manager.
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, _run_ingestion_sync)
 
