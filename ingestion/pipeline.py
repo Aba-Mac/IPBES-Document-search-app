@@ -368,7 +368,6 @@ def ingest_document(
             (
                 (
                     term.term,
-                    term.category,
                 )
                 for term in glossary_terms
             ),

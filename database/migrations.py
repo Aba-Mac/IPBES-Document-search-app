@@ -29,7 +29,6 @@ from __future__ import annotations
 import logging
 import sqlite3
 from pathlib import Path
-from typing import Iterable
 
 from core.config import settings
 from database.schema import iter_schema

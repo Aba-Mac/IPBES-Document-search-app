@@ -122,9 +122,7 @@ TERMS_TABLE = dedent(
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        term TEXT NOT NULL UNIQUE COLLATE NOCASE,
-
-        category TEXT NOT NULL
+        term TEXT NOT NULL UNIQUE COLLATE NOCASE
     );
 """
 )

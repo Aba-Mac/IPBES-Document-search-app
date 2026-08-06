@@ -1135,7 +1135,6 @@ def search_phrase(
 
 def create_term(
     term: str,
-    category: str,
     *,
     connection: sqlite3.Connection | None = None,
 ) -> int:
@@ -1146,9 +1145,6 @@ def create_term(
     ----------
     term
         Glossary term.
-
-    category
-        Term category.
 
     Returns
     -------
@@ -1164,13 +1160,11 @@ def create_term(
         """
         INSERT INTO terms (
             term,
-            category
         )
-        VALUES (?, ?)
+        VALUES (?)
         """,
         (
             term,
-            category,
         ),
         connection=connection,
     )
@@ -1184,7 +1178,7 @@ def bulk_insert_terms(
     """
     Bulk insert glossary terms.
 
-    If a term already exists, update its category.
+    If a term already exists, no update is performed.
 
     Parameters
     ----------
@@ -1193,7 +1187,6 @@ def bulk_insert_terms(
 
         (
             term,
-            category
         )
     """
 
@@ -1201,14 +1194,11 @@ def bulk_insert_terms(
         """
         INSERT INTO terms (
             term,
-            category
         )
-        VALUES (?, ?)
+        VALUES (?)
 
         ON CONFLICT(term)
-        DO UPDATE SET
-
-            category = excluded.category
+        DO NOTHING
         """,
         rows,
         connection=connection,
@@ -1273,31 +1263,9 @@ def list_terms(
     )
 
 
-def list_terms_by_category(
-    category: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return glossary terms belonging to one category.
-    """
-
-    return fetch_all(
-        """
-        SELECT *
-        FROM terms
-        WHERE category = ?
-        ORDER BY term COLLATE NOCASE
-        """,
-        (category,),
-        connection=connection,
-    )
-
-
 def update_term(
     term_id: int,
     term: str,
-    category: str,
     *,
     connection: sqlite3.Connection | None = None,
 ) -> None:
@@ -1310,12 +1278,10 @@ def update_term(
         UPDATE terms
         SET
             term = ?,
-            category = ?
         WHERE id = ?
         """,
         (
             term,
-            category,
             term_id,
         ),
         connection=connection,
@@ -1444,8 +1410,6 @@ def get_paragraph_terms(
 
             t.term,
 
-            t.category,
-
             pt.occurrence_count
 
         FROM paragraph_terms pt
@@ -1532,7 +1496,6 @@ def glossary_statistics(
     Results include:
 
     - term
-    - category
     - number of paragraphs containing the term
     - total occurrences
 
@@ -1544,8 +1507,6 @@ def glossary_statistics(
         SELECT
 
             t.term,
-
-            t.category,
 
             COUNT(DISTINCT pt.paragraph_id)
                 AS paragraph_count,
@@ -1563,7 +1524,6 @@ def glossary_statistics(
 
             t.id,
             t.term,
-            t.category
 
         ORDER BY
 

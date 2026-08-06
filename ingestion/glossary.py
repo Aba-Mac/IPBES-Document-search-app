@@ -16,7 +16,6 @@ terms
 --------------
 id INTEGER PRIMARY KEY
 term TEXT NOT NULL UNIQUE
-category TEXT NOT NULL
 
 
 paragraph_terms
@@ -169,7 +168,6 @@ def load_terms_txt(path: Path) -> list[GlossaryTerm]:
                 GlossaryTerm(
                     term_id=index,
                     term=term,
-                    category="general",
                 )
             )
 
@@ -193,14 +191,13 @@ def upsert_glossary_terms(
     for term in terms:
         cursor.execute(
             """
-            INSERT INTO terms(term, category)
-            VALUES (?, ?)
+            INSERT INTO terms(term)
+            VALUES (?)
             ON CONFLICT(term)
-            DO UPDATE SET category = excluded.category
+            DO NOTHING
             """,
             (
                 term.term,
-                term.category,
             ),
         )
 
@@ -256,7 +253,6 @@ def index_paragraph_glossary_terms(
         GlossaryTerm(
             term_id=database_ids[term.term.lower()],
             term=term.term,
-            category=term.category,
         )
         for term in loaded_terms
     ]
