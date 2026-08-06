@@ -28,17 +28,15 @@ import logging
 
 from shiny import App, reactive, ui
 from database import repository
+from search.service import get_glossary_terms
 
 from search.service import (
     SearchServiceError,
-    get_available_sources,
     get_available_years,
     search,
 )
 
 from ui.cards import register_card_renderer
-from ui.glossary import build_glossary_panel
-from ui.glossary import GLOSSARY_SEARCH_ID
 from ui.layouts import build_page
 from ui.search import (
     build_search_controls,
@@ -46,7 +44,6 @@ from ui.search import (
     current_page,
     page_size,
     search_query,
-    selected_source,
     selected_year,
     SEARCH_QUERY_ID,
 )
@@ -58,15 +55,6 @@ logger = logging.getLogger(__name__)
 ###############################################################################
 # Static application data
 ###############################################################################
-
-def _load_sources() -> tuple[str, ...]:
-    """
-    Load available document sources.
-
-    Loaded lazily after the application has started.
-    """
-    return tuple(get_available_sources())
-
 
 def _load_years() -> tuple[int, ...]:
     """
@@ -85,16 +73,12 @@ def build_app_ui():
     """
     Build the Shiny UI after services are configured.
     """
-
-    sources = _load_sources()
     years = _load_years()
 
     return build_page(
         search_controls=build_search_controls(
-            sources=sources,
             years=years,
         ),
-        glossary_panel=build_glossary_panel(),
         css=app_css(),
     )
 
@@ -115,23 +99,17 @@ def server(input, output, session) -> None:
     # Static lookup values exposed reactively for future use.
     #
 
-    available_sources = reactive.value(_load_sources())
     available_years = reactive.value(_load_years())
 
     @reactive.effect
     def _update_glossary_terms():
 
-        terms = [
-            row["term"]
-            for row in repository.list_terms()
-        ]
-
         ui.update_selectize(
-            GLOSSARY_SEARCH_ID,
-            choices=terms,
-            server=True,
-        )
-
+        SEARCH_QUERY_ID,
+        choices=get_glossary_terms(),
+        selected=None,
+        server=False,
+    )
     @reactive.calc
     def search_results():
         """
@@ -144,20 +122,10 @@ def server(input, output, session) -> None:
         """
         filters: dict[str, object] = {}
 
-        if selected_source(input):
-            filters["source"] = selected_source(input)
-
         if selected_year(input):
             filters["year"] = selected_year(input)
 
         query = boolean_query(input).strip()
-
-        #
-        # If no Boolean query is supplied, fall back to the simple
-        # search box.
-        #
-        if not query:
-            query = search_query(input).strip()
 
         logger.info(
             "Executing search "
@@ -200,7 +168,6 @@ def server(input, output, session) -> None:
     # * topic filter panel
     #
 
-    _ = available_sources
     _ = available_years
 
 

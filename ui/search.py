@@ -8,7 +8,7 @@ Responsibilities
 ----------------
 * Define search input widgets.
 * Define Boolean search controls.
-* Define document source/year filters.
+* Define document year filter.
 * Define pagination controls.
 * Expose helper functions for reading reactive input values.
 
@@ -32,9 +32,7 @@ from shiny import ui
 ###############################################################################
 
 SEARCH_QUERY_ID = "search_query"
-BOOLEAN_QUERY_ID = "boolean_query"
 
-SOURCE_FILTER_ID = "source_filter"
 YEAR_FILTER_ID = "year_filter"
 
 PAGE_ID = "result_page"
@@ -47,7 +45,6 @@ PAGE_SIZE_ID = "page_size"
 
 def build_search_controls(
     *,
-    sources: Iterable[str] = (),
     years: Iterable[int] = (),
 ):
     """
@@ -55,9 +52,6 @@ def build_search_controls(
 
     Parameters
     ----------
-    sources
-        Available document sources.
-
     years
         Available document years.
 
@@ -71,68 +65,34 @@ def build_search_controls(
         #
         # Main search input
         #
-        ui.div(
-            ui.input_text(
-                id=SEARCH_QUERY_ID,
-                label="Search documents",
-                placeholder=(
-                    "Enter search terms..."
-                ),
-                width="100%",
-            ),
-            class_="search-primary",
-        ),
-
-        #
-        # Boolean query
-        #
-        ui.div(
-            ui.input_text(
-                id=BOOLEAN_QUERY_ID,
-                label="Boolean search",
-                placeholder=(
-                    "Example: "
-                    "(data OR information) AND governance"
-                ),
-                width="100%",
-            ),
-            ui.help_text(
-                (
-                    "Supports AND, OR, NOT, NOR and "
-                    "parentheses."
-                )
-            ),
-            class_="search-boolean",
+        ui.input_selectize(
+            id=SEARCH_QUERY_ID,
+            label="Search documents. Supports AND, OR, NOT, NOR and parentheses",
+            choices=[],
+            selected=None,
+            multiple=False,
+            options={
+                "create": True,
+                "createOnBlur": False,
+                "placeholder": "Example: (data OR information) AND governance",
+            },
+            width="100%",
         ),
 
         #
         # Filters
         #
         ui.div(
-            ui.input_select(
-                id=SOURCE_FILTER_ID,
-                label="Source",
-                choices=[
-                    "",
-                    *sources,
-                ],
-                selected="",
+            ui.div(
+                ui.input_select(
+                    id=YEAR_FILTER_ID,
+                    label="Year",
+                    choices=["", *map(str, years)],
+                    selected="",
+                ),
+                class_="search-filters",
             ),
-            ui.input_select(
-                id=YEAR_FILTER_ID,
-                label="Year",
-                choices=[
-                    "",
-                    *[
-                        str(year)
-                        for year in years
-                    ],
-                ],
-                selected="",
-            ),
-            class_="search-filters",
         ),
-
         #
         # Pagination
         #
@@ -169,28 +129,6 @@ def search_query(input) -> str:
 
     value = input[SEARCH_QUERY_ID]()
     return value or ""
-
-
-def boolean_query(input) -> str:
-    """
-    Return the Boolean search query.
-    """
-
-    value = input[BOOLEAN_QUERY_ID]()
-    return value or ""
-
-
-def selected_source(input) -> str | None:
-    """
-    Return the selected source filter.
-    """
-
-    value = input[SOURCE_FILTER_ID]()
-
-    if not value:
-        return None
-
-    return value
 
 
 def selected_year(input) -> int | None:

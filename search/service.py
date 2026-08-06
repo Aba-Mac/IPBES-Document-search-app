@@ -59,6 +59,8 @@ from search.ranking import (
     execute_ranked_search,
 )
 
+from database import repository
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -490,6 +492,13 @@ def get_available_documents() -> list[dict[str, Any]]:
         raise SearchServiceError(
             "Unable to retrieve document list."
         ) from exc
+
+
+def get_glossary_terms() -> list[str]:
+    return [
+        row["term"]
+        for row in repository.list_terms()
+    ]
 
 
 ###############################################################################
