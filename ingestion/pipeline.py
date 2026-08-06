@@ -202,6 +202,37 @@ def needs_reindex(
 
 
 ###############################################################################
+# Glossary initialisation
+###############################################################################
+
+def initialise_glossary(
+    terms_txt: str | Path,
+) -> None:
+    """
+    Load glossary terms into the database.
+
+    Safe to call multiple times because bulk_insert_terms()
+    uses ON CONFLICT to ignore duplicates.
+    """
+
+    terms_txt = Path(terms_txt)
+
+    LOGGER.info("Loading glossary terms...")
+
+    glossary_terms = glossary.load_terms_txt(terms_txt)
+
+    with repository.transaction() as connection:
+        repository.bulk_insert_terms(
+            ((term.term,) for term in glossary_terms),
+            connection=connection,
+        )
+
+    LOGGER.info(
+        "Inserted %d glossary terms.",
+        len(glossary_terms),
+    )
+
+###############################################################################
 # Pipeline
 ###############################################################################
 
@@ -363,16 +394,6 @@ def ingest_document(
         #
         # ON CONFLICT inside repository prevents duplicates.
         #
-
-        repository.bulk_insert_terms(
-            (
-                (
-                    term.term,
-                )
-                for term in glossary_terms
-            ),
-            connection=connection,
-        )
 
         document_id = repository.create_document(
             filename=pdf_path.name,

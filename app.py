@@ -15,7 +15,7 @@ from starlette.routing import Mount, Route
 
 from database import repository
 from database.migrations import migrate
-from ingestion.pipeline import ingest_directory
+from ingestion.pipeline import ingest_directory, initialise_glossary
 from search.service import configure
 
 LOGGER = logging.getLogger(__name__)
@@ -27,14 +27,26 @@ _ingestion_state = {"status": "not_started"}
 def _run_ingestion_sync():
     LOGGER.info("Background ingestion starting...")
     _ingestion_state["status"] = "running"
-    pdf_dir = Path("data/pdfs")
+
     try:
+        initialise_glossary("data/glossary/terms.txt")
+
+        pdf_dir = Path("data/pdfs")
+
         if pdf_dir.exists():
-            ingest_directory(directory=pdf_dir, terms_txt="data/glossary/terms.txt")
+            ingest_directory(
+                directory=pdf_dir,
+                terms_txt="data/glossary/terms.txt",
+            )
         else:
-            LOGGER.warning("PDF directory %s not found; skipping ingestion.", pdf_dir)
+            LOGGER.warning(
+                "PDF directory %s not found; skipping ingestion.",
+                pdf_dir,
+            )
+
         _ingestion_state["status"] = "complete"
         LOGGER.info("Background ingestion finished.")
+
     except Exception:
         _ingestion_state["status"] = "failed"
         LOGGER.exception("Background ingestion failed.")
