@@ -122,7 +122,8 @@ def server(input, output, session) -> None:
             YEAR_FILTER_ID,
             min=min(years),
             max=max(years),
-            value=(min,max)
+            value=(min(years), max(years)),
+            step=1,
         )
         
     @reactive.calc
