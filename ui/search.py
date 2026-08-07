@@ -69,24 +69,19 @@ def build_search_controls(
         #
         # Main search input
         #
-        ui.input_text(
-            id=SEARCH_QUERY_ID,
-            label="Search documents. Supports AND, OR, NOT, NOR and parentheses",
-            value="",
-            placeholder="Example: (data OR information) AND governance",
-            width="100%",
-        ),
-
         ui.input_selectize(
             id=SEARCH_QUERY_ID,
             label="Search documents. Supports AND, OR, NOT, NOR and parentheses",
             choices=[],
-            selected=None,
-            multiple=True,
+            selected="",
+            multiple=False,
             options={
                 "create": True,
                 "createOnBlur": False,
-                "placeholder": "Example: (data OR information) AND governance",
+                "persist": False,
+                "placeholder": (
+                    "Type Boolean query or select glossary term..."
+                ),
             },
             width="100%",
         ),
@@ -145,11 +140,22 @@ def search_query(input) -> str:
     return value or ""
 
 
-def selected_year_range(input, full_range: tuple[int, int]) -> tuple[int, int] | None:
+def selected_year_range(
+    input,
+    full_range: tuple[int, int] | None = None,
+) -> tuple[int, int] | None:
+
     value = input[YEAR_FILTER_ID]()
-    if not value or tuple(value) == full_range:
-        return None  # full span selected == no filter
-    return tuple(value)
+
+    if not value:
+        return None
+
+    value = tuple(value)
+
+    if full_range and value == full_range:
+        return None
+
+    return value
 
 
 def page_size(input) -> int:
