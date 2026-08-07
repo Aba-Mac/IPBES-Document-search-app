@@ -360,9 +360,15 @@ def extract_with_unstructured(
 
     try:
 
+        strategy = (
+            "hi_res"
+            if pdf.inspection.needs_ocr
+            else "fast"
+        )
+
         elements = partition_pdf(
             filename=str(pdf.processed_pdf),
-            strategy=config.strategy,
+            strategy=strategy,
             infer_table_structure=config.infer_table_structure,
             include_page_breaks=config.include_page_breaks,
             max_characters=config.max_characters,

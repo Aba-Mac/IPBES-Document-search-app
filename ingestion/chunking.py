@@ -27,6 +27,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Iterable, Sequence
+from ingestion.extractor import ExtractedElement, ExtractedDocument
+from ingestion.cleaning import CleanedElement
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from unstructured.chunking.title import chunk_by_title
@@ -83,7 +85,7 @@ class ChunkCandidate:
 def chunk_document(
     *,
     document_id: int,
-    elements: Sequence[Element],
+    elements: Sequence[CleanedElement],
     max_chunk_characters: int = DEFAULT_MAX_CHUNK_CHARACTERS,
     max_pages_per_chunk: int = DEFAULT_MAX_PAGES_PER_CHUNK,
 ) -> list[ParagraphChunk]:
@@ -109,7 +111,7 @@ def chunk_document(
     list[ParagraphChunk]
         Database-compatible chunks.
     """
-
+    
     title_chunks = _chunk_by_title(elements)
 
     final_candidates: list[tuple[ChunkCandidate, str]] = []
@@ -145,30 +147,29 @@ def chunk_document(
 
 
 def _chunk_by_title(
-    elements: Sequence[Element],
+elements: Sequence[CleanedElement],
 ) -> list[ChunkCandidate]:
     """
     Apply Unstructured chunk_by_title.
-
-    Returns internal candidates preserving page metadata.
+    Converts cleaned internal elements into Unstructured-compatible
+    elements before chunking.
     """
-
+    unstructured_elements = []
+    for element in elements:
+        unstructured_elements.append(
+            element.to_unstructured()
+        )
     chunks = chunk_by_title(
-        elements,
+        unstructured_elements,
         max_characters=DEFAULT_MAX_CHUNK_CHARACTERS,
         combine_text_under_n_chars=500,
     )
-
     candidates: list[ChunkCandidate] = []
-
     for chunk in chunks:
         text = chunk.text.strip()
-
         if not text:
             continue
-
         pages = _extract_pages(chunk)
-
         candidates.append(
             ChunkCandidate(
                 text=text,
@@ -176,7 +177,6 @@ def _chunk_by_title(
                 section_title=_extract_section_title(chunk),
             )
         )
-
     return candidates
 
 

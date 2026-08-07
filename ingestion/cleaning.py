@@ -38,6 +38,13 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable, List, Sequence
+from ingestion.extractor import ExtractedDocument, ExtractedElement
+from unstructured.documents.elements import (
+    NarrativeText,
+    Title,
+    ListItem,
+    Text,
+    )
 
 import ftfy
 
@@ -84,19 +91,25 @@ OCR_GARBAGE_PATTERN = re.compile(
 
 @dataclass
 class CleanedElement:
-    """
-    Lightweight representation of a cleaned document element.
-
-    Attributes:
-        text:
-            Cleaned textual content.
-
-        category:
-            Original Unstructured category where available.
-    """
-
     text: str
-    category: str | None = None
+    category: str
+
+    def to_unstructured(self):
+        if self.category == "title":
+            return Title(
+                text=self.text
+            )
+        if self.category == "list":
+            return ListItem(
+                text=self.text
+            )
+        if self.category == "paragraph":
+            return NarrativeText(
+                text=self.text
+            )
+        return Text(
+            text=self.text
+        ) 
 
 
 # ---------------------------------------------------------------------------
@@ -104,8 +117,8 @@ class CleanedElement:
 # ---------------------------------------------------------------------------
 
 def clean_elements(
-    elements: Sequence[object],
-) -> List[CleanedElement]:
+    elements: ExtractedDocument,
+) -> list[CleanedElement]:
     """
     Clean extracted Unstructured document elements.
 
@@ -119,44 +132,41 @@ def clean_elements(
 
     Paragraph and section boundaries are preserved because each element is
     cleaned independently.
-
-    Args:
-        elements:
-            Iterable of Unstructured document elements.
-
-    Returns:
-        List of cleaned elements.
-
     """
 
-    extracted = [
-        _extract_element(element)
-        for element in elements
-    ]
+    extracted = []
+
+    for page in elements.pages:
+
+        for element in page.elements:
+            extracted.append(_extract_element(element))
 
     headers, footers = detect_headers_and_footers(
-        [item.text for item in extracted]
-    )
+            [
+                item.text
+                for item in extracted
+            ]
+        )
 
-    cleaned: list[CleanedElement] = []
+    cleaned = []
 
     for element in extracted:
-        text = element.text
 
-        if text in headers or text in footers:
-            continue
+            text = element.text
 
-        text = clean_text(text)
+            if text in headers or text in footers:
+                continue
 
-        if not text:
-            continue
+            text = clean_text(text)
 
-        cleaned.append(
-            CleanedElement(
-                text=text,
-                category=element.category,
+            if not text:
+                continue
+
+            cleaned.append(CleanedElement(
+                 text=text,
+                 category=element.category,
+                )
             )
-        )
 
     return cleaned
 

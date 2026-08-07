@@ -46,7 +46,6 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
-from typing import Sequence
 
 from database import repository
 
@@ -263,7 +262,9 @@ def ingest_document(
     -----
     Tagging and embeddings are intentionally excluded.
 
-    Repository transactions guarantee consistency.
+    All database writes for a single document happen inside ONE
+    repository transaction, so a connection is never reused after
+    it has already been committed/closed.
     """
 
     pdf_path = Path(pdf_path)
@@ -310,7 +311,7 @@ def ingest_document(
         )
 
     ####################################################################
-    # Stage 1
+    # Stage 1 - OCR
     ####################################################################
 
     LOGGER.info("Running OCR...")
@@ -318,7 +319,7 @@ def ingest_document(
     ocr_result = ocr.ensure_searchable_pdf(pdf_path)
 
     ####################################################################
-    # Stage 2
+    # Stage 2 - Extraction
     ####################################################################
 
     LOGGER.info("Extracting document...")
@@ -326,7 +327,20 @@ def ingest_document(
     extraction = extractor.extract(ocr_result)
 
     ####################################################################
-    # Stage 3
+    # Stage 3 - Metadata
+    ####################################################################
+
+    LOGGER.info("Extracting metadata...")
+
+    document_metadata = metadata.build_metadata(
+        pdf_path=ocr_result.processed_pdf,
+    )
+
+    ####################################################################
+    # Stage 4 - Cleaning
+    #
+    # clean_elements() expects the whole ExtractedDocument (it reads
+    # extraction.pages internally and flattens page.elements itself).
     ####################################################################
 
     LOGGER.info("Cleaning extracted text...")
@@ -336,64 +350,20 @@ def ingest_document(
     )
 
     ####################################################################
-    # Stage 4
-    ####################################################################
-
-    LOGGER.info("Chunking document...")
-
-    paragraph_chunks = chunking.chunk_document(
-        cleaned_document
-    )
-
-    if not paragraph_chunks:
-
-        raise RuntimeError(
-            f"No paragraphs produced for {pdf_path}"
-        )
-
-    ####################################################################
-    # Stage 5
-    ####################################################################
-
-    LOGGER.info("Extracting metadata...")
-
-    document_metadata = metadata.build_metadata(
-        pdf_path=ocr_result.processed_pdf,
-        extraction=extraction,
-    )
-
-    ####################################################################
-    # Stage 6
-    ####################################################################
-
-    LOGGER.info("Loading glossary...")
-
-    glossary_terms = glossary.load_terms_txt(
-        terms_txt
-    )
-
-    LOGGER.info("Matching glossary...")
-
-    glossary_matches = glossary.match_document(
-        paragraphs=paragraph_chunks,
-        glossary_terms=glossary_terms,
-    )
-
-    ####################################################################
     # Persistence
+    #
+    # Everything that touches the database for this document happens
+    # inside a single transaction: document creation, paragraph
+    # insertion, chunking's document_id assignment, glossary matching,
+    # provenance, and FTS verification. This guarantees the connection
+    # is always open for every call below, and that a failure at any
+    # point rolls back the whole document rather than leaving partial
+    # data behind.
     ####################################################################
 
-    LOGGER.info(
-        "Persisting document..."
-    )
+    LOGGER.info("Persisting document...")
 
     with repository.transaction() as connection:
-
-        #
-        # Load glossary once.
-        #
-        # ON CONFLICT inside repository prevents duplicates.
-        #
 
         document_id = repository.create_document(
             filename=pdf_path.name,
@@ -402,14 +372,75 @@ def ingest_document(
             year=document_metadata.year.value,
             date=document_metadata.date.value,
             location=document_metadata.location.value,
-            source=document_metadata.source.value,
-            page_count=document_metadata.page_count.value,
+            source=str(pdf_path),
+            page_count=extraction.page_count,
             connection=connection,
         )
 
+        ################################################################
+        # Stage 6 - Chunking
+        ################################################################
+
+        LOGGER.info("Chunking document...")
+
+        paragraph_chunks = chunking.chunk_document(
+            document_id=document_id,
+            elements=cleaned_document,
+        )
+
+        if not paragraph_chunks:
+
+            raise RuntimeError(
+                f"No paragraphs produced for {pdf_path}"
+            )
+
+        ################################################################
+        # Bulk paragraph insertion
         #
+        # return_ids=True gives back (paragraph_id, text) pairs
+        # generated by the database, so paragraph IDs used by the
+        # glossary matcher are always real, persisted IDs -- no
+        # separate paragraph_number -> paragraph_id remapping needed.
+        ################################################################
+
+        paragraph_rows = [
+            (
+                chunk.document_id,
+                chunk.page_number,
+                chunk.paragraph_number,
+                chunk.text,
+                chunk.chunk_method,
+            )
+            for chunk in paragraph_chunks
+        ]
+
+        paragraphs_for_glossary = repository.bulk_insert_paragraphs(
+            paragraph_rows,
+            return_ids=True,
+            connection=connection,
+        )
+
+        ################################################################
+        # Glossary matching
+        #
+        # index_paragraph_glossary_terms() loads terms.txt itself, so
+        # it takes the Path directly (not a pre-loaded list). It also
+        # inserts the resulting paragraph_terms rows itself and
+        # returns the number of matches stored, not GlossaryMatch
+        # objects -- so there is nothing further to insert here.
+        ################################################################
+
+        LOGGER.info("Matching glossary...")
+
+        glossary_match_count = glossary.index_paragraph_glossary_terms(
+            connection,
+            paragraphs_for_glossary,
+            terms_txt,
+        )
+
+        ################################################################
         # Metadata provenance
-        #
+        ################################################################
 
         if hasattr(
             document_metadata,
@@ -422,126 +453,6 @@ def ingest_document(
                 fields=metadata.metadata_provenance_fields(
                     document_metadata
                 ),
-            )
-
-        ################################################################
-        # Bulk paragraph insertion
-        ################################################################
-
-        paragraph_rows: list[
-            tuple[
-                int,
-                int,
-                int,
-                str,
-                str,
-            ]
-        ] = []
-
-        for paragraph_number, chunk in enumerate(
-            paragraph_chunks,
-            start=1,
-        ):
-
-            paragraph_rows.append(
-                (
-                    document_id,
-                    chunk.page_number,
-                    paragraph_number,
-                    chunk.text,
-                    chunk.chunk_method,
-                )
-            )
-
-        repository.bulk_insert_paragraphs(
-            paragraph_rows,
-            connection=connection,
-        )
-
-        ################################################################
-        # Retrieve generated paragraph IDs.
-        #
-        # Paragraphs are returned ordered exactly as inserted.
-        ################################################################
-
-        stored_paragraphs = repository.get_document_paragraphs(
-            document_id,
-            connection=connection,
-        )
-
-        if len(stored_paragraphs) != len(paragraph_chunks):
-
-            raise RuntimeError(
-                "Paragraph persistence failed. "
-                "Inserted paragraph count does not match "
-                "chunk count."
-            )
-
-        #
-        # Map chunk number -> paragraph id
-        #
-
-        paragraph_id_lookup: dict[int, int] = {
-            row["paragraph_number"]: row["id"]
-            for row in stored_paragraphs
-        }
-
-        ################################################################
-        # Build glossary lookup
-        ################################################################
-
-        term_lookup = {
-            row["term"]: row["id"]
-            for row in repository.list_terms(
-                connection=connection,
-            )
-        }
-
-        ################################################################
-        # Build paragraph_terms rows
-        ################################################################
-
-        paragraph_term_rows: list[
-            tuple[
-                int,
-                int,
-                int,
-            ]
-        ] = []
-
-        for match in glossary_matches:
-
-            paragraph_id = paragraph_id_lookup[
-                match.paragraph_number
-            ]
-
-            term_id = term_lookup.get(
-                match.term
-            )
-
-            if term_id is None:
-
-                LOGGER.warning(
-                    "Glossary term '%s' missing "
-                    "from terms table.",
-                    match.term,
-                )
-
-                continue
-
-            paragraph_term_rows.append(
-                (
-                    paragraph_id,
-                    term_id,
-                    match.occurrence_count,
-                )
-            )
-
-        if paragraph_term_rows:
-
-            repository.bulk_insert_paragraph_terms(
-                paragraph_term_rows,
-                connection=connection,
             )
 
         ################################################################
@@ -584,9 +495,7 @@ def ingest_document(
     return IngestionResult(
         document_id=document_id,
         paragraphs=len(paragraph_chunks),
-        glossary_matches=len(
-            paragraph_term_rows
-        ),
+        glossary_matches=glossary_match_count,
         updated=existing_document_id is not None,
         skipped=False,
     )

@@ -201,8 +201,6 @@ def upsert_glossary_terms(
             ),
         )
 
-    connection.commit()
-
     rows = cursor.execute(
         """
         SELECT id, term
@@ -241,6 +239,7 @@ def index_paragraph_glossary_terms(
     Returns:
         Number of stored matches.
     """
+    paragraphs = list(paragraphs)
 
     loaded_terms = load_terms_txt(terms_txt)
 
@@ -261,11 +260,17 @@ def index_paragraph_glossary_terms(
 
     cursor = connection.cursor()
 
-    cursor.execute(
-        """
-        DELETE FROM paragraph_terms
-        """
-    )
+    paragraph_ids = [paragraph_id for paragraph_id, _ in paragraphs]
+
+    if paragraph_ids:
+        placeholders = ",".join("?" for _ in paragraph_ids)
+        cursor.execute(
+            f"""
+            DELETE FROM paragraph_terms
+            WHERE paragraph_id IN ({placeholders})
+            """,
+            paragraph_ids,
+        )
 
     inserted = 0
 
@@ -293,7 +298,5 @@ def index_paragraph_glossary_terms(
             )
 
             inserted += 1
-
-    connection.commit()
 
     return inserted

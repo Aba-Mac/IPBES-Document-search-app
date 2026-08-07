@@ -847,15 +847,15 @@ def create_paragraph(
 def bulk_insert_paragraphs(
     rows: Iterable[Sequence[Any]],
     *,
+    return_ids: bool = False,
     connection: sqlite3.Connection | None = None,
-) -> None:
+) -> list[tuple[int, str]] | None:
     """
     Bulk insert paragraph records.
 
     Parameters
     ----------
-    rows
-
+    rows:
         Iterable of tuples:
 
         (
@@ -866,33 +866,77 @@ def bulk_insert_paragraphs(
             chunk_method,
         )
 
-    Notes
-    -----
-    This function should be used by the ingestion
-    pipeline instead of repeatedly calling
-    create_paragraph().
+    return_ids:
+        If True, return generated paragraph IDs with text.
+
+    Returns
+    -------
+    None
+        When return_ids=False.
+
+    list[tuple[int, str]]
+        When return_ids=True:
+
+        (
+            paragraph_id,
+            paragraph_text,
+        )
     """
 
-    executemany(
-        """
-        INSERT INTO paragraphs (
+    rows = list(rows)
 
-            document_id,
+    if not return_ids:
 
-            page_number,
-
-            paragraph_number,
-
-            text,
-
-            chunk_method
-
+        executemany(
+            """
+            INSERT INTO paragraphs (
+                document_id,
+                page_number,
+                paragraph_number,
+                text,
+                chunk_method
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            rows,
+            connection=connection,
         )
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        rows,
-        connection=connection,
-    )
+
+        return None
+
+
+    conn = connection or get_connection()
+
+    cursor = conn.cursor()
+
+    inserted: list[tuple[int, str]] = []
+
+    for row in rows:
+
+        cursor.execute(
+            """
+            INSERT INTO paragraphs (
+                document_id,
+                page_number,
+                paragraph_number,
+                text,
+                chunk_method
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            row,
+        )
+
+        inserted.append(
+            (
+                cursor.lastrowid,
+                row[3],   # paragraph text
+            )
+        )
+
+    conn.commit()
+
+    return inserted
 
 
 def get_paragraph(
@@ -1347,48 +1391,100 @@ def create_paragraph_term(
     )
 
 
-def bulk_insert_paragraph_terms(
+def bulk_insert_paragraphs(
     rows: Iterable[Sequence[Any]],
     *,
+    return_ids: bool = False,
     connection: sqlite3.Connection | None = None,
-) -> None:
+) -> list[tuple[int, str]] | None:
     """
-    Bulk insert paragraph glossary matches.
+    Bulk insert paragraph records.
 
     Parameters
     ----------
-    rows
+    rows:
+        Iterable of tuples:
 
-        Iterable of
+        (
+            document_id,
+            page_number,
+            paragraph_number,
+            text,
+            chunk_method,
+        )
+
+    return_ids:
+        If True, return generated paragraph IDs with text.
+
+    Returns
+    -------
+    None
+        When return_ids=False.
+
+    list[tuple[int, str]]
+        When return_ids=True:
 
         (
             paragraph_id,
-            term_id,
-            occurrence_count
+            paragraph_text,
         )
-
-    Notes
-    -----
-    This function should be used by the ingestion pipeline after
-    glossary matching has been completed.
     """
 
-    executemany(
-        """
-        INSERT INTO paragraph_terms (
+    rows = list(rows)
 
-            paragraph_id,
+    if not return_ids:
 
-            term_id,
-
-            occurrence_count
-
+        executemany(
+            """
+            INSERT INTO paragraphs (
+                document_id,
+                page_number,
+                paragraph_number,
+                text,
+                chunk_method
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            rows,
+            connection=connection,
         )
-        VALUES (?, ?, ?)
-        """,
-        rows,
-        connection=connection,
-    )
+
+        return None
+
+    conn = connection or get_connection()
+    owns_connection = connection is None
+
+    cursor = conn.cursor()
+
+    inserted: list[tuple[int, str]] = []
+
+    for row in rows:
+
+        cursor.execute(
+            """
+            INSERT INTO paragraphs (
+                document_id,
+                page_number,
+                paragraph_number,
+                text,
+                chunk_method
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            row,
+        )
+
+        inserted.append(
+            (
+                cursor.lastrowid,
+                row[3],   # paragraph text
+            )
+        )
+
+    if owns_connection:
+        conn.commit()
+
+    return inserted
 
 
 def get_paragraph_terms(
