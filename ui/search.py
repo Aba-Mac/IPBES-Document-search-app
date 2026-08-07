@@ -23,6 +23,7 @@ The UI only collects user input and passes it to the service layer.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Iterable
 
 from shiny import ui
@@ -61,16 +62,27 @@ def build_search_controls(
         Search control layout.
     """
 
+    years = tuple(years) or (2019, date.today().year)
+    y_min, y_max = min(years), max(years)
+
     return ui.div(
         #
         # Main search input
         #
+        ui.input_text(
+            id=SEARCH_QUERY_ID,
+            label="Search documents. Supports AND, OR, NOT, NOR and parentheses",
+            value="",
+            placeholder="Example: (data OR information) AND governance",
+            width="100%",
+        ),
+
         ui.input_selectize(
             id=SEARCH_QUERY_ID,
             label="Search documents. Supports AND, OR, NOT, NOR and parentheses",
             choices=[],
             selected=None,
-            multiple=False,
+            multiple=True,
             options={
                 "create": True,
                 "createOnBlur": False,
@@ -84,14 +96,16 @@ def build_search_controls(
         #
         ui.div(
             ui.div(
-                ui.input_select(
+                ui.input_slider(
                     id=YEAR_FILTER_ID,
-                    label="Year",
-                    choices=["", *map(str, years)],
-                    selected="",
+                    label="Year range",
+                    min=y_min,
+                    max=y_max,
+                    value=(y_min, y_max),
+                    step=1,
+                    sep="",
                 ),
-                class_="search-filters",
-            ),
+            )
         ),
         #
         # Pagination
@@ -131,17 +145,11 @@ def search_query(input) -> str:
     return value or ""
 
 
-def selected_year(input) -> int | None:
-    """
-    Return the selected year filter.
-    """
-
+def selected_year_range(input, full_range: tuple[int, int]) -> tuple[int, int] | None:
     value = input[YEAR_FILTER_ID]()
-
-    if not value:
-        return None
-
-    return int(value)
+    if not value or tuple(value) == full_range:
+        return None  # full span selected == no filter
+    return tuple(value)
 
 
 def page_size(input) -> int:
@@ -170,4 +178,4 @@ def current_page(input) -> int:
     if value is None:
         return 1
 
-    return int(value())
+    return int(value)

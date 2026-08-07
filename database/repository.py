@@ -737,8 +737,6 @@ def insert_metadata_provenance(
             ),
         )
 
-    connection.commit()
-
 
 def get_metadata_provenance(
     connection: sqlite3.Connection,
@@ -905,7 +903,7 @@ def bulk_insert_paragraphs(
         return None
 
 
-    conn = connection or get_connection()
+    conn = connection or connect()
 
     cursor = conn.cursor()
 
@@ -950,9 +948,25 @@ def get_paragraph(
 
     return fetch_one(
         """
-        SELECT *
-        FROM paragraphs
-        WHERE id = ?
+        SELECT
+            p.id AS paragraph_id,
+            p.document_id,
+            p.page_number,
+            p.paragraph_number,
+            p.text AS paragraph_text,
+            p.chunk_method,
+
+            d.title AS document_title,
+            d.filename,
+            d.source,
+            d.year,
+            d.date,
+            d.location,
+            d.plenary_session
+        FROM paragraphs p
+        JOIN documents d
+            ON d.id = p.document_id
+        WHERE p.id = ?
         """,
         (paragraph_id,),
         connection=connection,
@@ -970,10 +984,26 @@ def get_document_paragraphs(
 
     return fetch_all(
         """
-        SELECT *
-        FROM paragraphs
+        SELECT
+            p.id AS paragraph_id,
+            p.document_id,
+            p.page_number,
+            p.paragraph_number,
+            p.text AS paragraph_text,
+            p.chunk_method,
 
-        WHERE document_id = ?
+            d.title AS document_title,
+            d.filename,
+            d.source,
+            d.year,
+            d.date,
+            d.location,
+            d.plenary_session
+        FROM paragraphs p
+        JOIN documents d
+            ON d.id = p.document_id
+
+        WHERE p.document_id = ?
 
         ORDER BY
             page_number,
@@ -1040,71 +1070,71 @@ def delete_paragraph(
 ###############################################################################
 
 def search_paragraphs(
-    query: str,
+    fts_query: str,
     *,
+    source: str | None = None,
+    year: int | None = None,
+    document_id: int | None = None,
     limit: int = 100,
+    offset: int = 0,
     connection: sqlite3.Connection | None = None,
 ) -> list[sqlite3.Row]:
     """
-    Perform an FTS5 search.
+    Perform an FTS5 search with optional document filters.
 
-    Parameters
-    ----------
-    query
-
-        FTS5 query string.
-
-    limit
-
-        Maximum number of rows returned.
-
-    Returns
-    -------
-    list[sqlite3.Row]
-
-    Notes
-    -----
-    This function intentionally performs ONLY
-    FTS searching.
-
-    Boolean query parsing should occur in the
-    search module before calling this function.
+    Returns rows in the format expected by search.ranking.
     """
 
-    return fetch_all(
-        """
+    sql = """
         SELECT
-
-            p.id,
-
+            p.id AS paragraph_id,
             p.document_id,
-
+            d.title AS document_title,
+            d.filename,
+            d.source,
+            d.year,
             p.page_number,
-
             p.paragraph_number,
-
-            p.text,
-
+            p.text AS paragraph_text,
             p.chunk_method,
-
             bm25(paragraphs_fts) AS score
 
         FROM paragraphs_fts
 
-        JOIN paragraphs p
-
+        JOIN paragraphs AS p
             ON p.id = paragraphs_fts.rowid
 
+        JOIN documents AS d
+            ON d.id = p.document_id
+
         WHERE paragraphs_fts MATCH ?
+    """
 
+    parameters: list[Any] = [fts_query]
+
+    if source is not None:
+        sql += "\nAND d.source = ?"
+        parameters.append(source)
+
+    if year is not None:
+        sql += "\nAND d.year = ?"
+        parameters.append(year)
+
+    if document_id is not None:
+        sql += "\nAND d.id = ?"
+        parameters.append(document_id)
+
+    sql += """
         ORDER BY score
-
         LIMIT ?
-        """,
-        (
-            query,
-            limit,
-        ),
+        OFFSET ?
+    """
+
+    parameters.extend([limit, offset])
+
+    return fetch_all(
+        sql,
+        parameters,
         connection=connection,
     )
 
@@ -1124,16 +1154,31 @@ def search_document(
     return fetch_all(
         """
         SELECT
+            p.id AS paragraph_id,
+            p.document_id,
+            p.page_number,
+            p.paragraph_number,
+            p.text AS paragraph_text,
+            p.chunk_method,
 
-            p.*,
+            d.title AS document_title,
+            d.filename,
+            d.source,
+            d.year,
+            d.date,
+            d.location,
+            d.plenary_session,
 
             bm25(paragraphs_fts) AS score
 
         FROM paragraphs_fts
 
         JOIN paragraphs p
+        
+                    ON p.id = paragraphs_fts.rowid
 
-            ON p.id = paragraphs_fts.rowid
+        JOIN documents d
+                    ON d.id = p.document_id
 
         WHERE
 
@@ -1203,7 +1248,7 @@ def create_term(
     return _execute_insert(
         """
         INSERT INTO terms (
-            term,
+            term
         )
         VALUES (?)
         """,
@@ -1321,7 +1366,7 @@ def update_term(
         """
         UPDATE terms
         SET
-            term = ?,
+            term = ?
         WHERE id = ?
         """,
         (
@@ -1391,102 +1436,6 @@ def create_paragraph_term(
     )
 
 
-def bulk_insert_paragraphs(
-    rows: Iterable[Sequence[Any]],
-    *,
-    return_ids: bool = False,
-    connection: sqlite3.Connection | None = None,
-) -> list[tuple[int, str]] | None:
-    """
-    Bulk insert paragraph records.
-
-    Parameters
-    ----------
-    rows:
-        Iterable of tuples:
-
-        (
-            document_id,
-            page_number,
-            paragraph_number,
-            text,
-            chunk_method,
-        )
-
-    return_ids:
-        If True, return generated paragraph IDs with text.
-
-    Returns
-    -------
-    None
-        When return_ids=False.
-
-    list[tuple[int, str]]
-        When return_ids=True:
-
-        (
-            paragraph_id,
-            paragraph_text,
-        )
-    """
-
-    rows = list(rows)
-
-    if not return_ids:
-
-        executemany(
-            """
-            INSERT INTO paragraphs (
-                document_id,
-                page_number,
-                paragraph_number,
-                text,
-                chunk_method
-            )
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            rows,
-            connection=connection,
-        )
-
-        return None
-
-    conn = connection or get_connection()
-    owns_connection = connection is None
-
-    cursor = conn.cursor()
-
-    inserted: list[tuple[int, str]] = []
-
-    for row in rows:
-
-        cursor.execute(
-            """
-            INSERT INTO paragraphs (
-                document_id,
-                page_number,
-                paragraph_number,
-                text,
-                chunk_method
-            )
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            row,
-        )
-
-        inserted.append(
-            (
-                cursor.lastrowid,
-                row[3],   # paragraph text
-            )
-        )
-
-    if owns_connection:
-        conn.commit()
-
-    return inserted
-
-
 def get_paragraph_terms(
     paragraph_id: int,
     *,
@@ -1537,16 +1486,30 @@ def get_term_paragraphs(
     return fetch_all(
         """
         SELECT
+            p.id AS paragraph_id,
+            p.document_id,
+            p.page_number,
+            p.paragraph_number,
+            p.text AS paragraph_text,
+            p.chunk_method,
 
-            p.*,
+            d.title AS document_title,
+            d.filename,
+            d.source,
+            d.year,
+            d.date,
+            d.location,
+            d.plenary_session,
 
             pt.occurrence_count
 
         FROM paragraph_terms pt
 
         JOIN paragraphs p
-
             ON p.id = pt.paragraph_id
+
+        JOIN documents d
+            ON d.id = p.document_id
 
         WHERE pt.term_id = ?
 
@@ -1619,7 +1582,7 @@ def glossary_statistics(
         GROUP BY
 
             t.id,
-            t.term,
+            t.term
 
         ORDER BY
 

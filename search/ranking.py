@@ -69,26 +69,6 @@ class SearchRepositoryProtocol(Protocol):
     The concrete implementation is provided by
     ``database.repository``.
     """
-
-    def search_paragraphs(
-        self,
-        *,
-        fts_query: str,
-        source: str | None,
-        year: int | None,
-        document_id: int | None,
-        limit: int,
-        offset: int,
-    ) -> Iterable[dict[str, Any]]:
-        """
-        Execute an FTS5 BM25 search.
-
-        Returns
-        -------
-        iterable of dictionaries.
-        """
-        ...
-
     def count_paragraphs(
         self,
         *,

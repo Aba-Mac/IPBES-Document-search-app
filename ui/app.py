@@ -120,8 +120,9 @@ def server(input, output, session) -> None:
 
         ui.update_select(
             YEAR_FILTER_ID,
-            choices=["", *map(str, years)],
-            selected="",
+            min=min(years),
+            max=max(years),
+            value=(min,max)
         )
         
     @reactive.calc
