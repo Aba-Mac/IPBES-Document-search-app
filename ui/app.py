@@ -42,7 +42,7 @@ from ui.search import (
     current_page,
     page_size,
     search_query,
-    selected_year,
+    selected_year_range,
     SEARCH_QUERY_ID,
     YEAR_FILTER_ID,
 )
@@ -137,8 +137,8 @@ def server(input, output, session) -> None:
         """
         filters: dict[str, object] = {}
 
-        if selected_year(input):
-            filters["year"] = selected_year(input)
+        if selected_year_range(input):
+            filters["year"] = selected_year_range(input)
 
         query = search_query(input).strip()
 
