@@ -101,7 +101,7 @@ def server(input, output, session) -> None:
     available_years = reactive.value(_load_years())
 
     @reactive.effect
-    def _load_glossary_autocomplete():
+    def _update_glossary_terms():
         terms = get_glossary_terms()
 
         logger.info(
@@ -111,7 +111,9 @@ def server(input, output, session) -> None:
 
         session.send_custom_message(
             "glossary_terms",
-            terms,
+            {
+                "terms": terms,
+            }
         )
 
     @reactive.effect
