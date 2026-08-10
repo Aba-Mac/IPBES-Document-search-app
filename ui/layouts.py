@@ -184,13 +184,13 @@ def build_page(
             });
 
             if (window.Shiny) {
-                Shiny.addCustomMessageHandler("glossary_terms", function (terms) {
-                    glossaryTerms = Array.isArray(terms) ? terms : [];
+                Shiny.addCustomMessageHandler("glossary_terms", function (message) {
+                    glossaryTerms = Array.isArray(message.terms) ? message.terms : [];
                     console.log("Glossary autocomplete loaded:", glossaryTerms.length, "terms");
                     initialise();
-                });
-            }
-        })();
+        });
+    }
+})();
             """
         ),
 
