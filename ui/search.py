@@ -79,8 +79,9 @@ def build_search_controls(
                 "create": True,
                 "createOnBlur": False,
                 "persist": False,
+                "openOnFocus": True,
                 "placeholder": (
-                    "Type Boolean query or select glossary term..."
+                    "Example: biodiversity AND (climate OR environment)"
                 ),
             },
             width="100%",
@@ -152,7 +153,7 @@ def selected_year_range(
 
     value = tuple(value)
 
-    if full_range and value == full_range:
+    if full_range is not None and value == full_range:
         return None
 
     return value

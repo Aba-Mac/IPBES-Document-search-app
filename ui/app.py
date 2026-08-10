@@ -108,7 +108,6 @@ def server(input, output, session) -> None:
         ui.update_selectize(
             SEARCH_QUERY_ID,
             choices=terms,
-            selected=None,
             server=False,
         )
 
@@ -118,7 +117,7 @@ def server(input, output, session) -> None:
 
         logger.info("Loaded years: %s", years)
 
-        ui.update_select(
+        ui.update_slider(
             YEAR_FILTER_ID,
             min=min(years),
             max=max(years),
