@@ -69,17 +69,6 @@ def build_page(
             src="glossary_autocomplete.js"
         ),
 
-        ui.div(
-            search_controls,
-            ui.div(
-                id="glossary-autocomplete",
-                class_="glossary-autocomplete-dropdown",
-                style="display:none;",
-            ),
-            class_="search-section",
-            style="position: relative;",
-        ),
-
         #
         # Main application container
         #
