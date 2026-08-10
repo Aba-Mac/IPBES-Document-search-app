@@ -80,6 +80,8 @@ def build_search_controls(
                 "createOnBlur": False,
                 "persist": False,
                 "openOnFocus": True,
+                "closeAfterSelect": True,
+                "hideSelected": False,
                 "placeholder": (
                     "Example: biodiversity AND (climate OR environment)"
                 ),
