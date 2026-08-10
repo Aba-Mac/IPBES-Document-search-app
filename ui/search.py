@@ -79,6 +79,14 @@ def build_search_controls(
                 width="100%",
             ),
 
+            ui.div(
+                ui.input_action_button(
+                    id="search_button",
+                    label="Search",
+                    class_="search-button",
+                ),
+            ),
+
             # Container populated by the autocomplete JavaScript.
             ui.div(
                 id="glossary-autocomplete",
@@ -86,8 +94,9 @@ def build_search_controls(
             ),
 
             class_="search-input-container",
-        ),
 
+        ),
+            
         #
         # Filters
         #

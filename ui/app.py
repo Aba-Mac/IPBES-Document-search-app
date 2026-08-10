@@ -126,19 +126,14 @@ def server(input, output, session) -> None:
         )
         
     @reactive.calc
+    @reactive.event(input.search_button)
     def search_results():
-        """
-        Execute a search using the public search service API.
-
-        Returns
-        -------
-        SearchResponse
-            Search results from the service layer.
-        """
         filters: dict[str, object] = {}
 
-        if selected_year_range(input):
-            filters["year"] = selected_year_range(input)
+        year_range = selected_year_range(input)
+
+        if year_range:
+            filters["year"] = year_range
 
         query = search_query(input).strip()
 
