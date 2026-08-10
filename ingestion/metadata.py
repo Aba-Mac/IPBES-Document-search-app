@@ -113,24 +113,21 @@ def extract_pdf_metadata(pdf_path: Path) -> dict[str, Any]:
 
 def extract_first_page_text(pdf_path: Path) -> str:
     """
-    Extract first page text for fallback analysis.
+    Extract the beginning of the document for metadata extraction.
 
-    Parameters
-    ----------
-    pdf_path:
-        PDF document path.
-
-    Returns
-    -------
-    str
-        First page text.
+    The suggested citation is normally located near the beginning
+    of the report, so the first few pages are inspected.
     """
-
     with fitz.open(pdf_path) as document:
         if document.page_count == 0:
             return ""
 
-        return document[0].get_text("text")
+        pages = min(5, document.page_count)
+
+        return "\n".join(
+            document[index].get_text("text")
+            for index in range(pages)
+        )
 
 
 def detect_unstructured_title(pdf_path: Path) -> str | None:
@@ -217,11 +214,13 @@ def normalise_date(value: Any) -> tuple[str | None, int | None]:
         except ValueError:
             continue
 
-    year_match = re.search(r"\b(19|20)\d{2}\b", text)
+    year_match = re.search(
+        r"\b((?:19|20)\d{2})\b",
+        text,
+    )
 
     if year_match:
-        year = int(year_match.group())
-
+        year = int(year_match.group(1))
         return text, year
 
     return None, None
@@ -284,6 +283,22 @@ def build_metadata(
     """
     Extract complete document metadata.
 
+    Extraction priority
+    -------------------
+    title:
+        1. PyMuPDF
+        2. Unstructured
+        3. LLM
+
+    year:
+        1. Suggested citation
+        2. PyMuPDF creation date
+        3. LLM
+
+    date:
+        1. PyMuPDF creation date
+        2. LLM
+
     Parameters
     ----------
     pdf_path:
@@ -308,6 +323,10 @@ def build_metadata(
         "location": MetadataField(None, None),
     }
 
+    # ------------------------------------------------------------------
+    # Title
+    # ------------------------------------------------------------------
+
     title = clean_value(
         embedded.get("title")
     )
@@ -318,8 +337,6 @@ def build_metadata(
             "pymupdf",
         )
 
-    unstructured_title = None
-
     if not fields["title"].value:
         unstructured_title = detect_unstructured_title(pdf_path)
 
@@ -329,11 +346,48 @@ def build_metadata(
                 "unstructured",
             )
 
+    # ------------------------------------------------------------------
+    # Suggested citation
+    # ------------------------------------------------------------------
+    # The reports contain citations such as:
+    #
+    #     Suggested citation: IPBES (2023).
+    #
+    # Search the beginning of the document for this pattern.
+
+    initial_text = extract_first_page_text(pdf_path)
+
+    citation_match = re.search(
+        r"Suggested\s+citation\s*:"
+        r"\s*IPBES\s*"
+        r"\(\s*((?:19|20)\d{2})\s*\)",
+        initial_text,
+        flags=re.IGNORECASE,
+    )
+
+    if citation_match:
+        citation_year = int(citation_match.group(1))
+
+        fields["year"] = MetadataField(
+            citation_year,
+            "suggested_citation",
+        )
+
+        logger.info(
+            "Extracted year %s from suggested citation for %s",
+            citation_year,
+            pdf_path,
+        )
+
+    # ------------------------------------------------------------------
+    # PDF creation date
+    # ------------------------------------------------------------------
+
     date_value = clean_value(
         embedded.get("creationDate")
     )
 
-    date, year = normalise_date(date_value)
+    date, embedded_year = normalise_date(date_value)
 
     if date:
         fields["date"] = MetadataField(
@@ -341,11 +395,20 @@ def build_metadata(
             "pymupdf",
         )
 
-    if year:
+    # Only use the PDF creation year if the suggested citation
+    # did not already provide one.
+    if (
+        embedded_year is not None
+        and fields["year"].value is None
+    ):
         fields["year"] = MetadataField(
-            year,
+            embedded_year,
             "pymupdf",
         )
+
+    # ------------------------------------------------------------------
+    # LLM fallback
+    # ------------------------------------------------------------------
 
     missing_fields = [
         name
@@ -360,11 +423,9 @@ def build_metadata(
             missing_fields,
         )
 
-        first_page = extract_first_page_text(pdf_path)
-
         try:
             response = llm_client.extract_metadata(
-                first_page
+                initial_text
             )
 
             response = validate_llm_output(
@@ -387,7 +448,10 @@ def build_metadata(
                             "llm",
                         )
 
-                    if year:
+                    if (
+                        year is not None
+                        and fields["year"].value is None
+                    ):
                         fields["year"] = MetadataField(
                             year,
                             "llm",
