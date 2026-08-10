@@ -211,6 +211,36 @@ a:focus {
 }
 
 
+.search-input-container {
+    position: relative;
+}
+
+.glossary-autocomplete {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.glossary-autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.glossary-autocomplete-item:hover {
+    background: #f0f0f0;
+}
+
+
 /* ==========================================================================
    Result cards
    ========================================================================== */

@@ -63,6 +63,13 @@ def build_page(
         css,
 
         #
+        # JavaScript dependencies
+        #
+        ui.tags.script(
+            src="glossary_autocomplete.js"
+        ),
+
+        #
         # Main application container
         #
         ui.div(

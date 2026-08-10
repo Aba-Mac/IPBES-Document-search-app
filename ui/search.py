@@ -51,60 +51,58 @@ def build_search_controls(
     """
     Build the complete search control panel.
 
-    Parameters
-    ----------
-    years
-        Available document years.
-
-    Returns
-    -------
-    shiny.ui.Tag
-        Search control layout.
+    The search field is a normal free-text input.
+    Glossary autocomplete is attached separately by JavaScript.
     """
 
     years = tuple(years) or (2019, date.today().year)
+
     y_min, y_max = min(years), max(years)
 
     return ui.div(
+
         #
         # Main search input
         #
-        ui.input_selectize(
-            id=SEARCH_QUERY_ID,
-            label="Search documents. Supports AND, OR, NOT, NOR and parentheses",
-            choices=[],
-            selected="",
-            multiple=False,
-            options={
-                "create": True,
-                "createOnBlur": False,
-                "persist": False,
-                "openOnFocus": True,
-                "closeAfterSelect": True,
-                "hideSelected": False,
-                "placeholder": (
-                    "Example: biodiversity AND (climate OR environment)"
+        ui.div(
+            ui.input_text(
+                id=SEARCH_QUERY_ID,
+                label=(
+                    "Search documents. "
+                    "Use AND, OR, NOT, NOR and parentheses."
                 ),
-            },
-            width="100%",
+                value="",
+                placeholder=(
+                    "Example: biodiversity AND "
+                    "(climate OR environment)"
+                ),
+                width="100%",
+            ),
+
+            # Container populated by the autocomplete JavaScript.
+            ui.div(
+                id="glossary-autocomplete",
+                class_="glossary-autocomplete",
+            ),
+
+            class_="search-input-container",
         ),
 
         #
         # Filters
         #
         ui.div(
-            ui.div(
-                ui.input_slider(
-                    id=YEAR_FILTER_ID,
-                    label="Year range",
-                    min=y_min,
-                    max=y_max,
-                    value=(y_min, y_max),
-                    step=1,
-                    sep="",
-                ),
-            )
+            ui.input_slider(
+                id=YEAR_FILTER_ID,
+                label="Year range",
+                min=y_min,
+                max=y_max,
+                value=(y_min, y_max),
+                step=1,
+                sep="",
+            ),
         ),
+
         #
         # Pagination
         #
