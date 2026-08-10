@@ -358,7 +358,7 @@ def build_metadata(
     initial_text = extract_first_page_text(pdf_path)
 
     citation_match = re.search(
-        r"Suggested\s+citation\s*:"
+        r"Suggested\s+citation\s*:?\s*\n"
         r"\s*IPBES\s*"
         r"\(\s*((?:19|20)\d{2})\s*\)",
         initial_text,
