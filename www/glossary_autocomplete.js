@@ -3,29 +3,48 @@
 
     let glossaryTerms = [];
 
-    function escapeHtml(value) {
-        return value
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+    let autocompleteInitialised = false;
+
+
+    function getInput() {
+        return document.getElementById("search_query");
     }
+
+
+    function getContainer() {
+        return document.getElementById("glossary-autocomplete");
+    }
+
+
+    function closeSuggestions() {
+        const container = getContainer();
+
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = "";
+        container.style.display = "none";
+    }
+
 
     function getCurrentToken(input) {
         const cursor = input.selectionStart;
-        const textBeforeCursor = input.value.slice(0, cursor);
+
+        const textBeforeCursor =
+            input.value.slice(0, cursor);
 
         /*
-         * Extract the text currently being typed.
+         * Find the current word being typed.
          *
          * Example:
          *
          * biodiversity AND env
          *
-         * current token = "env"
+         * current token = env
          */
-        const match = textBeforeCursor.match(/([^\s()]+)$/);
+        const match =
+            textBeforeCursor.match(/([^\s()]+)$/);
 
         if (!match) {
             return {
@@ -42,27 +61,16 @@
         };
     }
 
-    function closeSuggestions() {
-        const container =
-            document.getElementById("glossary-autocomplete");
-
-        if (!container) {
-            return;
-        }
-
-        container.innerHTML = "";
-        container.style.display = "none";
-    }
 
     function showSuggestions(input) {
-        const container =
-            document.getElementById("glossary-autocomplete");
+        const container = getContainer();
 
         if (!container) {
             return;
         }
 
         const current = getCurrentToken(input);
+
         const token = current.token.trim();
 
         if (!token) {
@@ -73,9 +81,11 @@
         const lowerToken = token.toLowerCase();
 
         const matches = glossaryTerms
-            .filter(term =>
-                term.toLowerCase().startsWith(lowerToken)
-            )
+            .filter(function (term) {
+                return term
+                    .toLowerCase()
+                    .startsWith(lowerToken);
+            })
             .slice(0, 10);
 
         if (matches.length === 0) {
@@ -85,51 +95,61 @@
 
         container.innerHTML = "";
 
-        matches.forEach(term => {
-            const item = document.createElement("div");
+        matches.forEach(function (term) {
 
-            item.className = "glossary-autocomplete-item";
+            const item =
+                document.createElement("div");
+
+            item.className =
+                "glossary-autocomplete-item";
+
             item.textContent = term;
 
-            item.addEventListener("mousedown", function (event) {
-                /*
-                 * Prevent the input from losing focus before
-                 * we insert the selected glossary term.
-                 */
-                event.preventDefault();
+            item.addEventListener(
+                "mousedown",
+                function (event) {
 
-                const cursor = input.selectionStart;
+                    event.preventDefault();
 
-                const before =
-                    input.value.slice(0, current.start);
+                    const cursor =
+                        input.selectionStart;
 
-                const after =
-                    input.value.slice(current.end);
+                    const before =
+                        input.value.slice(
+                            0,
+                            current.start
+                        );
 
-                input.value =
-                    before + term + after;
+                    const after =
+                        input.value.slice(
+                            current.end
+                        );
 
-                const newCursor =
-                    current.start + term.length;
+                    input.value =
+                        before + term + after;
 
-                input.setSelectionRange(
-                    newCursor,
-                    newCursor
-                );
+                    const newCursor =
+                        current.start + term.length;
 
-                /*
-                 * Tell Shiny that the input changed.
-                 */
-                input.dispatchEvent(
-                    new Event("input", {
-                        bubbles: true
-                    })
-                );
+                    input.setSelectionRange(
+                        newCursor,
+                        newCursor
+                    );
 
-                closeSuggestions();
+                    input.dispatchEvent(
+                        new Event(
+                            "input",
+                            {
+                                bubbles: true
+                            }
+                        )
+                    );
 
-                input.focus();
-            });
+                    closeSuggestions();
+
+                    input.focus();
+                }
+            );
 
             container.appendChild(item);
         });
@@ -137,45 +157,81 @@
         container.style.display = "block";
     }
 
+
     function initialise() {
-        const input =
-            document.getElementById("search_query");
+
+        if (autocompleteInitialised) {
+            return;
+        }
+
+        const input = getInput();
 
         if (!input) {
             return;
         }
 
-        input.addEventListener("input", function () {
-            showSuggestions(input);
-        });
+        autocompleteInitialised = true;
 
-        input.addEventListener("keydown", function (event) {
-            if (event.key === "Escape") {
-                closeSuggestions();
+        input.addEventListener(
+            "input",
+            function () {
+                showSuggestions(input);
             }
-        });
+        );
 
-        input.addEventListener("blur", function () {
-            /*
-             * Small delay allows a suggestion's mousedown
-             * handler to run before the menu disappears.
-             */
-            setTimeout(closeSuggestions, 150);
-        });
+        input.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Escape") {
+                    closeSuggestions();
+                }
+            }
+        );
+
+        input.addEventListener(
+            "blur",
+            function () {
+
+                setTimeout(
+                    closeSuggestions,
+                    150
+                );
+            }
+        );
     }
 
+
     /*
-     * Shiny custom message handler.
-     *
-     * Python sends the glossary terms here.
+     * Initialise once the DOM is ready.
+     */
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+            initialise();
+        }
+    );
+
+
+    /*
+     * Shiny sends the glossary terms here.
      */
     if (window.Shiny) {
+
         Shiny.addCustomMessageHandler(
             "glossary_terms",
             function (terms) {
-                glossaryTerms = Array.isArray(terms)
-                    ? terms
-                    : [];
+
+                glossaryTerms =
+                    Array.isArray(terms)
+                        ? terms
+                        : [];
+
+                console.log(
+                    "Glossary autocomplete loaded:",
+                    glossaryTerms.length,
+                    "terms"
+                );
 
                 initialise();
             }
