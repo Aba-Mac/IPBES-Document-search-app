@@ -103,7 +103,7 @@ def server(input, output, session) -> None:
 
     current_page = reactive.value(1)
 
-    search_trigger = reactive.value(0)
+    submitted_query = reactive.value("")
 
     # ---------------------------------------------------------------
     # Reset pagination when a new search is submitted
@@ -112,8 +112,13 @@ def server(input, output, session) -> None:
     @reactive.effect
     @reactive.event(input.search_button)
     def perform_search():
+        query = search_query(input).strip()
+
+        if not query:
+            return
+
+        submitted_query.set(query)
         current_page.set(1)
-        search_trigger.set(search_trigger.get() + 1)
 
     # ---------------------------------------------------------------
     # Previous and next page
@@ -172,13 +177,15 @@ def server(input, output, session) -> None:
     # ---------------------------------------------------------------
 
     @reactive.calc
-    @reactive.event(input.search_button)
     def search_results():
-        search_trigger.get()
-        page = current_page.get()
-        filters: dict[str, object] = {}
+        query = submitted_query.get()
 
-        years = available_years()
+        if not query:
+            return None
+
+        page = current_page.get()
+
+        years = available_years.get()
         full_range = (
             min(years),
             max(years),
@@ -189,17 +196,15 @@ def server(input, output, session) -> None:
             full_range=full_range,
         )
 
+        filters: dict[str, object] = {}
+
         if year_range:
             filters["year"] = year_range
 
-        query = search_query(input).strip()
-
-        page = current_page.get()
         size = page_size(input)
 
         logger.info(
-            "Executing search "
-            "(query=%r, page=%s)",
+            "Executing search (query=%r, page=%s)",
             query,
             page,
         )
@@ -216,6 +221,7 @@ def server(input, output, session) -> None:
             logger.exception("Search failed.")
             raise
 
+
     # ---------------------------------------------------------------
     # Pagination display
     # ---------------------------------------------------------------
@@ -224,6 +230,9 @@ def server(input, output, session) -> None:
     @render.text
     def page_info():
         response = search_results()
+
+        if response is None:
+            return ""
 
         return (
             f"Page {response.page} "
@@ -238,6 +247,13 @@ def server(input, output, session) -> None:
     def update_previous_button():
         response = search_results()
 
+        if response is None:
+            ui.update_action_button(
+                "prev_page",
+                disabled=True,
+            )
+            return
+
         ui.update_action_button(
             "prev_page",
             disabled=not response.has_previous,
@@ -250,6 +266,13 @@ def server(input, output, session) -> None:
     @reactive.effect
     def update_next_button():
         response = search_results()
+
+        if response is None:
+            ui.update_action_button(
+                "next_page",
+                disabled=True,
+            )
+            return
 
         ui.update_action_button(
             "next_page",
