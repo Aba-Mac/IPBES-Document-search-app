@@ -79,14 +79,6 @@ def build_search_controls(
                 width="100%",
             ),
 
-            ui.div(
-                ui.input_action_button(
-                    id="search_button",
-                    label="Search",
-                    class_="search-button",
-                ),
-            ),
-
             # Container populated by the autocomplete JavaScript.
             ui.div(
                 id="glossary-autocomplete",
@@ -115,15 +107,6 @@ def build_search_controls(
         #
         # Pagination
         #
-        ui.div(
-            ui.input_numeric(
-            id=PAGE_ID,
-            label="Page",
-            value=1,
-            min=1,
-            step=1,
-            ),
-        ),
 
         ui.div(
             ui.input_numeric(
@@ -137,7 +120,34 @@ def build_search_controls(
             class_="pagination-controls",
         ),
 
+        ui.div(
+            ui.input_action_button(
+                "prev_page",
+                "‹ Previous",
+            ),
+            ui.span(
+                ui.output_text("page_info"),
+            ),
+            ui.input_action_button(
+                "next_page",
+                "Next ›",
+            ),
+            class_="pagination-controls",
+        ),
+
+        #
+        # Search button
+        #
+        ui.div(
+            ui.input_action_button(
+                id="search_button",
+                label="Search",
+                class_="search-button",
+            ),
+        ),
+
         class_="search-controls",
+
     )
 
 

@@ -93,6 +93,8 @@ OCR_GARBAGE_PATTERN = re.compile(
 class CleanedElement:
     text: str
     category: str
+    page_number: int
+    section_title: str | None = None
 
     def to_unstructured(self):
         if self.category == "title":
@@ -165,6 +167,8 @@ def clean_elements(
             cleaned.append(CleanedElement(
                  text=text,
                  category=element.category,
+                 page_number=element.page_number,
+                    section_title=element.section_title,
                 )
             )
 
@@ -397,42 +401,15 @@ def normalise_whitespace(text: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _extract_element(
-    element: object,
+    element: ExtractedElement,
 ) -> CleanedElement:
     """
-    Extract text/category from an Unstructured element.
-
-    Supports both:
-        - Unstructured Element objects
-        - dictionary-like test fixtures
-
-    Args:
-        element:
-            Input element.
-
-    Returns:
-        CleanedElement representation.
+    Convert an extracted element into a cleaning representation.
     """
 
-    if isinstance(element, dict):
-        return CleanedElement(
-            text=str(element.get("text", "")),
-            category=element.get("category"),
-        )
-
-    text = getattr(
-        element,
-        "text",
-        "",
-    )
-
-    category = getattr(
-        element,
-        "category",
-        None,
-    )
-
     return CleanedElement(
-        text=str(text),
-        category=category,
+        text=element.text,
+        category=element.category,
+        page_number=element.page_number,
+        section_title=element.section_title,
     )

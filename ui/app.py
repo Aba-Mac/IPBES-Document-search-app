@@ -104,6 +104,8 @@ def server(input, output, session) -> None:
     #
 
     available_years = reactive.value(_load_years())
+    
+    current_page = reactive.value(1)
 
     @reactive.effect
     async def _update_glossary_terms():
@@ -129,6 +131,11 @@ def server(input, output, session) -> None:
             value=(min(years), max(years)),
             step=1,
         )
+
+    @reactive.effect
+    @reactive.event(input.search_button)
+    def reset_page():
+        current_page.set(1)
         
     @reactive.calc
     @reactive.event(input.search_button)
@@ -156,13 +163,41 @@ def server(input, output, session) -> None:
             return search(
                 query=query,
                 filters=filters or None,
-                page=current_page(input),
-                page_size=page_size(input),
+                page=current_page(),
+                page_size=page_size(20),
             )
 
         except SearchServiceError:
             logger.exception("Search failed.")
             raise
+
+    @output
+    @render.text
+    def page_info():
+        response = search_results()
+
+        return (
+            f"Page {response.page} "
+            f"of {response.total_pages}"
+        )
+
+    @reactive.effect
+    def update_previous_button():
+        response = search_results()
+
+        ui.update_action_button(
+            "prev_page",
+            disabled=not response.has_previous,
+        )
+
+    @reactive.effect
+    def update_next_button():
+        response = search_results()
+
+        ui.update_action_button(
+            "next_page",
+            disabled=not response.has_next,
+        )
 
     #
     # Register output renderers.

@@ -149,6 +149,23 @@ class SearchResponse:
     results: list[SearchResult] = field(default_factory=list)
 
 
+@dataclass
+class SearchPage:
+    results: list[SearchResult]
+    total_count: int
+    page: int
+    page_size: int
+
+    @property
+    def total_pages(self) -> int:
+        if self.total_count == 0:
+            return 1
+
+        return (
+            self.total_count + self.page_size - 1
+        ) // self.page_size
+
+
 ###############################################################################
 # Public API
 ###############################################################################
@@ -197,7 +214,7 @@ def execute_ranked_search(
             document_id=request.filters.document,
         )
 
-        rows = list(
+        rows = _validate_repository_rows(
             repository.search_paragraphs(
                 fts_query=fts_query,
                 source=request.filters.source,
@@ -222,6 +239,15 @@ def execute_ranked_search(
         repository=repository,
         rows=rows,
     )
+
+    page = SearchPage(
+        results=results,
+        total_count=total,
+        page=request.page,
+        page_size=request.page_size,
+    )
+
+    return page
 
     #
     # ------------------------------------------------------------------

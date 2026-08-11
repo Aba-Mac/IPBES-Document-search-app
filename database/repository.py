@@ -1124,17 +1124,50 @@ def search_paragraphs(
     fts_query: str,
     *,
     source: str | None = None,
-    year: tuple[int,int] | None = None,
+    year: tuple[int, int] | None = None,
     document_id: int | None = None,
-    limit: int = 100,
-    offset: int = 0,
+    limit: int,
+    offset: int,
     connection: sqlite3.Connection | None = None,
 ) -> list[sqlite3.Row]:
     """
     Perform an FTS5 search with optional document filters.
 
-    Returns rows in the format expected by search.ranking.
+    Pagination is expressed using SQL LIMIT/OFFSET.
+
+    Parameters
+    ----------
+    fts_query
+        SQLite FTS5 query.
+
+    source
+        Optional document source filter.
+
+    year
+        Optional inclusive year range.
+
+    document_id
+        Optional document filter.
+
+    limit
+        Number of results to return.
+
+    offset
+        Number of matching results to skip.
+
+    Returns
+    -------
+    list[sqlite3.Row]
+        Results for the requested page.
     """
+
+    if limit < 1:
+        raise ValueError("limit must be >= 1")
+
+    if offset < 0:
+        raise ValueError("offset must be >= 0")
+
+    parameters: list[Any] = [fts_query]
 
     sql = """
         SELECT
@@ -1162,8 +1195,6 @@ def search_paragraphs(
 
         WHERE paragraphs_fts MATCH ?
     """
-
-    parameters: list[Any] = [fts_query]
 
     if source is not None:
         sql += "\nAND d.source = ?"

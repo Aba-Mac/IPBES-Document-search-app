@@ -162,7 +162,7 @@ class SearchService:
         filters: dict[str, Any] | None = None,
         page: int = 1,
         page_size: int = 20,
-    ) -> SearchResponse:
+    ) -> SearchPage:
         """
         Execute a paragraph search.
 
@@ -182,7 +182,7 @@ class SearchService:
 
         Returns
         -------
-        SearchResponse
+        SearchPage
         """
         logger.info(
             "Search request received."
@@ -205,6 +205,11 @@ class SearchService:
             fts_query=fts_query,
         )
 
+        total_count = self._repository.count_paragraphs(
+            fts_query=fts_query,
+            filters=request.filters,
+        )
+
         #
         # ----------------------------------------------------------
         # Future semantic extension point.
@@ -223,7 +228,7 @@ class SearchService:
         )
 
         return response
-
+    
     ###########################################################################
     # Internal pipeline
     ###########################################################################
