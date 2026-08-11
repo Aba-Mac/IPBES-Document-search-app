@@ -405,31 +405,23 @@ def paragraph_count(
 def count_paragraphs(
     *,
     fts_query: str,
+    filters: SearchFilters | None = None,
     source: str | None = None,
     year: tuple[int, int] | None = None,
     document_id: int | None = None,
-    filters: dict[str, object] | None = None,
     connection: sqlite3.Connection | None = None,
 ) -> int:
     """
     Count paragraphs matching an FTS query and optional filters.
 
-    Supports both the explicit filter arguments used by the ranking
-    layer and the consolidated ``filters`` dictionary used by the
-    search service.
+    ``filters`` is the preferred interface. The explicit filter arguments
+    are retained for backwards compatibility with existing callers.
     """
 
-    # Merge the newer ``filters`` interface into the explicit
-    # arguments, without breaking existing callers.
-    if filters:
-        if source is None:
-            source = filters.get("source")  # type: ignore[assignment]
-
-        if year is None:
-            year = filters.get("year")  # type: ignore[assignment]
-
-        if document_id is None:
-            document_id = filters.get("document_id")  # type: ignore[assignment]
+    if filters is not None:
+        source = filters.source
+        year = filters.year
+        document_id = filters.document
 
     sql = """
         SELECT COUNT(*)
@@ -452,7 +444,6 @@ def count_paragraphs(
 
     if year is not None:
         year_min, year_max = year
-
         sql += "\nAND d.year BETWEEN ? AND ?"
         parameters.extend([year_min, year_max])
 
@@ -460,14 +451,13 @@ def count_paragraphs(
         sql += "\nAND d.id = ?"
         parameters.append(document_id)
 
-    return int(
-        fetch_scalar(
-            sql,
-            parameters,
-            connection=connection,
-        )
-        or 0
+    result = fetch_scalar(
+        sql,
+        parameters,
+        connection=connection,
     )
+
+    return int(result or 0)
 
 
 def fts_row_count(

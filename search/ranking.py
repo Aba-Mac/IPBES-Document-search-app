@@ -209,9 +209,8 @@ def execute_ranked_search(
     try:
         total = repository.count_paragraphs(
             fts_query=fts_query,
-            source=request.filters.source,
-            year=request.filters.year,
-            document_id=request.filters.document,
+            filters=filters,
+            connection=connection
         )
 
         rows = _validate_repository_rows(
