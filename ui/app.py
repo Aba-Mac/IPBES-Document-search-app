@@ -46,6 +46,7 @@ from ui.search import (
     selected_year_range,
     SEARCH_QUERY_ID,
     YEAR_FILTER_ID,
+    PAGE_SIZE_ID
 )
 from ui.styles import app_css
 
@@ -99,24 +100,62 @@ def server(input, output, session) -> None:
     delegated to ``search.service``.
     """
 
-    #
-    # Static lookup values exposed reactively for future use.
-    #
-
     available_years = reactive.value(_load_years())
-    
+
     current_page = reactive.value(1)
+
+    # ---------------------------------------------------------------
+    # Reset pagination when a new search is submitted
+    # ---------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input[PAGE_SIZE_ID])
+    def reset_page():
+        current_page.set(1)
+
+    # ---------------------------------------------------------------
+    # Previous page
+    # ---------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.prev_page)
+    def previous_page():
+        current_page.set(
+            max(1, current_page() - 1)
+        )
+
+    # ---------------------------------------------------------------
+    # Next page
+    # ---------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.next_page)
+    def next_page():
+        current_page.set(
+            current_page() + 1
+        )
+
+    # ---------------------------------------------------------------
+    # Glossary
+    # ---------------------------------------------------------------
 
     @reactive.effect
     async def _update_glossary_terms():
         terms = get_glossary_terms()
 
-        logger.info("Loaded glossary terms for autocomplete: %s", len(terms))
+        logger.info(
+            "Loaded glossary terms for autocomplete: %s",
+            len(terms),
+        )
 
         await session.send_custom_message(
             "glossary_terms",
             {"terms": terms},
         )
+
+    # ---------------------------------------------------------------
+    # Years
+    # ---------------------------------------------------------------
 
     @reactive.effect
     def _update_year_choices():
@@ -132,44 +171,57 @@ def server(input, output, session) -> None:
             step=1,
         )
 
-    @reactive.effect
-    @reactive.event(input.search_button)
-    def reset_page():
-        current_page.set(1)
-        
+    # ---------------------------------------------------------------
+    # Search
+    # ---------------------------------------------------------------
+
     @reactive.calc
-    @reactive.event(input.search_button)
+    @reactive.event(input.search_button, input.prev_page, input.next_page, input[PAGE_SIZE_ID],)
     def search_results():
         filters: dict[str, object] = {}
 
         years = available_years()
-        full_range = (min(years), max(years))
+        full_range = (
+            min(years),
+            max(years),
+        )
 
-        year_range = selected_year_range(input, full_range=full_range)
+        year_range = selected_year_range(
+            input,
+            full_range=full_range,
+        )
 
         if year_range:
             filters["year"] = year_range
 
         query = search_query(input).strip()
 
+        page = current_page.get()
+        size = page_size(input)
+
         logger.info(
             "Executing search "
-            "(query=%r, page=%s)",
+            "(query=%r, page=%s, page_size=%s)",
             query,
-            current_page(input),
+            page,
+            size,
         )
 
         try:
             return search(
                 query=query,
                 filters=filters or None,
-                page=current_page(),
-                page_size=page_size(20),
+                page=page,
+                page_size=size,
             )
 
         except SearchServiceError:
             logger.exception("Search failed.")
             raise
+
+    # ---------------------------------------------------------------
+    # Pagination display
+    # ---------------------------------------------------------------
 
     @output
     @render.text
@@ -181,6 +233,10 @@ def server(input, output, session) -> None:
             f"of {response.total_pages}"
         )
 
+    # ---------------------------------------------------------------
+    # Previous button state
+    # ---------------------------------------------------------------
+
     @reactive.effect
     def update_previous_button():
         response = search_results()
@@ -189,6 +245,10 @@ def server(input, output, session) -> None:
             "prev_page",
             disabled=not response.has_previous,
         )
+
+    # ---------------------------------------------------------------
+    # Next button state
+    # ---------------------------------------------------------------
 
     @reactive.effect
     def update_next_button():
@@ -199,27 +259,14 @@ def server(input, output, session) -> None:
             disabled=not response.has_next,
         )
 
-    #
-    # Register output renderers.
-    #
-    # ui.cards owns presentation logic. It will call
-    # renderer.renderer internally.
-    #
+    # ---------------------------------------------------------------
+    # Results renderer
+    # ---------------------------------------------------------------
 
     register_card_renderer(
         output=output,
         results=search_results,
     )
-
-    #
-    # Future extension points
-    #
-    # * search statistics
-    # * search duration
-    # * saved searches
-    # * semantic search toggle
-    # * topic filter panel
-    #
 
     _ = available_years
 

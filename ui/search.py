@@ -36,7 +36,6 @@ SEARCH_QUERY_ID = "search_query"
 
 YEAR_FILTER_ID = "year_filter"
 
-PAGE_ID = "result_page"
 PAGE_SIZE_ID = "page_size"
 
 ###############################################################################
@@ -197,21 +196,5 @@ def page_size(input) -> int:
 
     if not value:
         return 20
-
-    return int(value)
-
-
-def current_page(input) -> int:
-    """
-    Return current results page.
-
-    Pagination buttons can update this value later.
-    The initial implementation starts on page one.
-    """
-
-    value = getattr(input, PAGE_ID)()
-
-    if value is None:
-        return 1
 
     return int(value)
