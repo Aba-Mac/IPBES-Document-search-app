@@ -152,6 +152,7 @@ def _result_card(result):
     paragraph_html = render_paragraph(
                         paragraph=result.text,
                         glossary_terms=result.matched_terms,
+                        #search_query=result.query,
                     )
 
     metadata = ui.div(

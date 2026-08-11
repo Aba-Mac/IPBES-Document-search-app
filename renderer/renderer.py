@@ -58,7 +58,7 @@ __all__ = [
 
 def render_paragraph(
     paragraph: str | None,
-    glossary_matches: Iterable[GlossaryMatch] | None = None,
+    glossary_terms: Iterable[GlossaryMatch] | None = None,
     search_query: str | None = None,
 ) -> str:
     """
@@ -69,7 +69,7 @@ def render_paragraph(
     paragraph
         Raw paragraph text extracted from the document.
 
-    glossary_matches
+    glossary_terms
         Iterable of glossary matches that were precomputed during
         ingestion and retrieved from the database.
 
@@ -98,7 +98,7 @@ def render_paragraph(
     if not paragraph:
         return ""
 
-    matches = list(glossary_matches or ())
+    matches = list(glossary_terms or ())
 
     # Step 1: Escape all document text.
     rendered = escape_html(paragraph)
