@@ -117,6 +117,16 @@ def build_search_controls(
         #
         ui.div(
             ui.input_numeric(
+            id=PAGE_ID,
+            label="Page",
+            value=1,
+            min=1,
+            step=1,
+            ),
+        ),
+
+        ui.div(
+            ui.input_numeric(
                 id=PAGE_SIZE_ID,
                 label="Results per page",
                 value=20,
