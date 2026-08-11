@@ -198,7 +198,7 @@ def server(input, output, session) -> None:
 
         logger.info(
             "Executing search "
-            "(query=%r, page=%s, page_size=%s)",
+            "(query=%r, page=%s)",
             query,
             page,
         )
