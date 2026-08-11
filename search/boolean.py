@@ -290,34 +290,6 @@ class NorNode(BinaryNode):
 # Recursive-descent parser
 # ---------------------------------------------------------------------
 
-def _merge_adjacent_terms(tokens: list[Token]) -> list[Token]:
-    """
-    Merge consecutive bare TERM tokens into a single phrase term.
-
-    Unquoted multi-word input (e.g. glossary terms like
-    "Conservation Biology" inserted by autocomplete) is treated as
-    an exact phrase rather than requiring an explicit AND/OR or
-    manual quoting.
-    """
-
-    merged: list[Token] = []
-
-    for token in tokens:
-        if (
-            token.token_type is TokenType.TERM
-            and merged
-            and merged[-1].token_type is TokenType.TERM
-        ):
-            previous = merged[-1]
-            merged[-1] = Token(
-                token_type=TokenType.TERM,
-                value=f"{previous.value} {token.value}",
-                position=previous.position,
-            )
-        else:
-            merged.append(token)
-
-    return merged
 
 class BooleanParser:
     """
@@ -354,6 +326,31 @@ class BooleanParser:
     def __init__(self) -> None:
         self._tokens: Sequence[Token] = ()
         self._index = 0
+
+    @staticmethod
+    def _merge_adjacent_terms(tokens: list[Token]) -> list[Token]:
+        """
+        Merge consecutive bare TERM tokens into a single phrase term.
+        ...
+        """
+        merged: list[Token] = []
+
+        for token in tokens:
+            if (
+                token.token_type is TokenType.TERM
+                and merged
+                and merged[-1].token_type is TokenType.TERM
+            ):
+                previous = merged[-1]
+                merged[-1] = Token(
+                    token_type=TokenType.TERM,
+                    value=f"{previous.value} {token.value}",
+                    position=previous.position,
+                )
+            else:
+                merged.append(token)
+
+        return merged
 
     # -------------------------------------------------------------
 
