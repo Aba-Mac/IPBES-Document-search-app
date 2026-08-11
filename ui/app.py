@@ -172,6 +172,7 @@ def server(input, output, session) -> None:
     # ---------------------------------------------------------------
 
     @reactive.calc
+    @reactive.event(input.search_button)
     def search_results():
         search_trigger.get()
         page = current_page.get()
