@@ -402,6 +402,57 @@ def paragraph_count(
     )
 
 
+def count_paragraphs(
+    *,
+    fts_query: str,
+    source: str | None = None,
+    year: tuple [int,int] | None = None,
+    document_id: int | None = None,
+    connection: sqlite3.Connection | None = None,
+) -> int:
+    """
+    Count paragraphs matching an FTS query and optional filters.
+    """
+
+    sql = """
+        SELECT COUNT(*)
+        FROM paragraphs_fts
+
+        JOIN paragraphs AS p
+            ON p.id = paragraphs_fts.rowid
+
+        JOIN documents AS d
+            ON d.id = p.document_id
+
+        WHERE paragraphs_fts MATCH ?
+    """
+
+    parameters: list[Any] = [fts_query]
+
+    if source is not None:
+        sql += "\nAND d.source = ?"
+        parameters.append(source)
+
+    if year is not None:
+        year_min, year_max = year
+
+        sql += "\nAND d.year BETWEEN ? AND ?"
+        parameters.extend([year_min, year_max])
+
+    if document_id is not None:
+        sql += "\nAND d.id = ?"
+        parameters.append(document_id)
+
+    return int(
+        fetch_scalar(
+            sql,
+            parameters,
+            connection=connection,
+        )
+        or 0
+    )
+
+
 def fts_row_count(
     connection: sqlite3.Connection | None = None,
 ) -> int:
@@ -1073,7 +1124,7 @@ def search_paragraphs(
     fts_query: str,
     *,
     source: str | None = None,
-    year: int | None = None,
+    year: tuple[int,int] | None = None,
     document_id: int | None = None,
     limit: int = 100,
     offset: int = 0,
@@ -1097,7 +1148,7 @@ def search_paragraphs(
             p.paragraph_number,
             p.text AS paragraph_text,
             p.chunk_method,
-            bm25(paragraphs_fts) AS score
+            bm25(paragraphs_fts) AS bm25_score
 
         FROM paragraphs_fts
 
@@ -1117,8 +1168,10 @@ def search_paragraphs(
         parameters.append(source)
 
     if year is not None:
-        sql += "\nAND d.year = ?"
-        parameters.append(year)
+        year_min, year_max = year
+
+        sql += "\nAND d.year BETWEEN ? AND ?"
+        parameters.extend([year_min, year_max])
 
     if document_id is not None:
         sql += "\nAND d.id = ?"

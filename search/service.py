@@ -202,7 +202,7 @@ class SearchService:
         response = execute_ranked_search(
             repository=self._repository,
             request=request,
-            fts_query=fts_query[1][0],
+            fts_query=fts_query,
         )
 
         #

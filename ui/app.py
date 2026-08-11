@@ -33,6 +33,7 @@ from search.service import (
     SearchServiceError,
     get_available_years,
     search,
+    configure
 )
 
 from ui.cards import register_card_renderer
@@ -47,6 +48,10 @@ from ui.search import (
     YEAR_FILTER_ID,
 )
 from ui.styles import app_css
+
+from database import repository
+
+configure(repository)
 
 logger = logging.getLogger(__name__)
 

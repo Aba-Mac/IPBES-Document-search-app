@@ -269,14 +269,19 @@ def _build_results(
     if not rows:
         return []
 
-    paragraph_ids = [
-        int(row["paragraph_id"])
-        for row in rows
-    ]
+    glossary_map: dict[int, list[str]] = {}
 
-    glossary_map = repository.get_paragraph_terms(
-        paragraph_ids
-    )
+    for row in rows:
+        paragraph_id = int(row["paragraph_id"])
+
+        term_rows = repository.get_paragraph_terms(
+            paragraph_id
+        )
+
+        glossary_map[paragraph_id] = [
+            term_row["term"]
+            for term_row in term_rows
+        ]
 
     results: list[SearchResult] = []
 
