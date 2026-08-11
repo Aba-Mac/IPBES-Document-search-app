@@ -162,7 +162,7 @@ class SearchService:
         filters: dict[str, Any] | None = None,
         page: int = 1,
         page_size: int = 20,
-    ) -> SearchPage:
+    ) -> SearchResponse:
         """
         Execute a paragraph search.
 
@@ -182,7 +182,7 @@ class SearchService:
 
         Returns
         -------
-        SearchPage
+        SearchResponse
         """
         logger.info(
             "Search request received."
@@ -203,11 +203,6 @@ class SearchService:
             repository=self._repository,
             request=request,
             fts_query=fts_query,
-        )
-
-        total_count = self._repository.count_paragraphs(
-            fts_query=fts_query,
-            filters=request.filters,
         )
 
         #

@@ -71,6 +71,14 @@ def register_card_renderer(
         response = results()
 
         #
+        # No query has been submitted yet (search_results() returns
+        # None until the user submits a search). This is the normal
+        # initial state, not a failure, so no warning is shown.
+        #
+        if response is None:
+            return ui.div()
+
+        #
         # No results
         #
         if response.total_results == 0:

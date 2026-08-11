@@ -34,7 +34,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Protocol
 
-from search.parser import SearchRequest
+from search.parser import SearchFilters, SearchRequest
 
 logger = logging.getLogger(__name__)
 
@@ -69,25 +69,54 @@ class SearchRepositoryProtocol(Protocol):
     The concrete implementation is provided by
     ``database.repository``.
     """
+    def connect(self) -> Any:
+        """
+        Open a new database connection.
+        """
+        ...
+
+    def close(self, connection: Any) -> None:
+        """
+        Close a database connection.
+        """
+        ...
+
     def count_paragraphs(
         self,
         *,
         fts_query: str,
-        source: str | None,
-        year: int | None,
-        document_id: int | None,
+        filters: SearchFilters | None = None,
+        connection: Any = None,
     ) -> int:
         """
         Return total matching paragraph count.
         """
         ...
 
+    def search_paragraphs(
+        self,
+        *,
+        fts_query: str,
+        source: str | None,
+        year: tuple[int, int] | None,
+        document_id: int | None,
+        limit: int,
+        offset: int,
+        connection: Any = None,
+    ) -> list[Any]:
+        """
+        Return the paragraph rows for one page of ranked results.
+        """
+        ...
+
     def get_paragraph_terms(
         self,
-        paragraph_ids: list[int],
-    ) -> dict[int, list[str]]:
+        paragraph_id: int,
+        *,
+        connection: Any = None,
+    ) -> list[Any]:
         """
-        Return glossary matches keyed by paragraph id.
+        Return glossary term rows for a single paragraph.
         """
         ...
 
@@ -148,6 +177,14 @@ class SearchResponse:
 
     results: list[SearchResult] = field(default_factory=list)
 
+    @property
+    def has_previous(self) -> bool:
+        return self.page > 1
+
+    @property
+    def has_next(self) -> bool:
+        return self.page < self.total_pages
+
 
 @dataclass
 class SearchPage:
@@ -206,47 +243,45 @@ def execute_ranked_search(
         request.page_size,
     )
 
+    connection = repository.connect()
+
     try:
-        total = repository.count_paragraphs(
-            fts_query=fts_query,
-            filters=filters,
-            connection=connection
-        )
-
-        rows = _validate_repository_rows(
-            repository.search_paragraphs(
+        try:
+            total = repository.count_paragraphs(
                 fts_query=fts_query,
-                source=request.filters.source,
-                year=request.filters.year,
-                document_id=request.filters.document,
-                limit=request.limit,
-                offset=request.offset,
+                filters=request.filters,
+                connection=connection,
             )
+
+            rows = _validate_repository_rows(
+                repository.search_paragraphs(
+                    fts_query=fts_query,
+                    source=request.filters.source,
+                    year=request.filters.year,
+                    document_id=request.filters.document,
+                    limit=request.limit,
+                    offset=request.offset,
+                    connection=connection,
+                )
+            )
+
+        except Exception as exc:
+            logger.exception("Database search failed.")
+            raise RankingError("Search execution failed.") from exc
+
+        logger.debug(
+            "Repository returned %d rows (%d total).",
+            len(rows),
+            total,
         )
 
-    except Exception as exc:
-        logger.exception("Database search failed.")
-        raise RankingError("Search execution failed.") from exc
-
-    logger.debug(
-        "Repository returned %d rows (%d total).",
-        len(rows),
-        total,
-    )
-
-    results = _build_results(
-        repository=repository,
-        rows=rows,
-    )
-
-    page = SearchPage(
-        results=results,
-        total_count=total,
-        page=request.page,
-        page_size=request.page_size,
-    )
-
-    return page
+        results = _build_results(
+            repository=repository,
+            rows=rows,
+            connection=connection,
+        )
+    finally:
+        repository.close(connection)
 
     #
     # ------------------------------------------------------------------
@@ -287,6 +322,7 @@ def _build_results(
     *,
     repository: SearchRepositoryProtocol,
     rows: list[dict[str, Any]],
+    connection: Any = None,
 ) -> list[SearchResult]:
     """
     Construct typed search results.
@@ -300,7 +336,8 @@ def _build_results(
         paragraph_id = int(row["paragraph_id"])
 
         term_rows = repository.get_paragraph_terms(
-            paragraph_id
+            paragraph_id,
+            connection=connection,
         )
 
         glossary_map[paragraph_id] = [
