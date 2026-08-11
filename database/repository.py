@@ -1178,7 +1178,7 @@ def search_paragraphs(
         parameters.append(document_id)
 
     sql += """
-        ORDER BY score
+        ORDER BY bm25score
         LIMIT ?
         OFFSET ?
     """

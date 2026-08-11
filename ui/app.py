@@ -135,7 +135,10 @@ def server(input, output, session) -> None:
     def search_results():
         filters: dict[str, object] = {}
 
-        year_range = selected_year_range(input)
+        years = available_years()
+        full_range = (min(years), max(years))
+
+        year_range = selected_year_range(input, full_range=full_range)
 
         if year_range:
             filters["year"] = year_range

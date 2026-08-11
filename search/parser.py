@@ -98,7 +98,7 @@ class SearchFilters:
     """
 
     source: str | None = None
-    year: int | None = None
+    year: tuple[int, int] | None = None
     document: int | None = None
 
 
