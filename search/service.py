@@ -258,14 +258,16 @@ class SearchService:
     def _build_fts_query(
         self,
         request: SearchRequest,
-    ) -> tuple[str, list[str]]:
+    ) -> str:
         """
         Convert Boolean syntax into an SQLite FTS5 query.
         """
         try:
             ast = BooleanParser().parse(request.query)
 
-            return SQLiteFTS5Compiler().compile(ast)
+            _sql_fragment, params = SQLiteFTS5Compiler().compile(ast)
+
+            return params[0]
 
         except BooleanSyntaxError as exc:
             logger.warning(
