@@ -1144,6 +1144,8 @@ def search_paragraphs(
             d.filename,
             d.source,
             d.year,
+            d.plenary_session,
+            d.location,
             p.page_number,
             p.paragraph_number,
             p.text AS paragraph_text,
