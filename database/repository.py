@@ -405,9 +405,7 @@ def paragraph_count(
 def count_paragraphs(
     *,
     fts_query: str,
-    source: str | None = None,
-    year: tuple [int,int] | None = None,
-    document_id: int | None = None,
+    filters: dict[str, object] | None = None,
     connection: sqlite3.Connection | None = None,
 ) -> int:
     """
@@ -429,13 +427,18 @@ def count_paragraphs(
 
     parameters: list[Any] = [fts_query]
 
+    filters = filters or {}
+
+    source = filters.get("source")
+    year = filters.get("year")
+    document_id = filters.get("document_id")
+
     if source is not None:
         sql += "\nAND d.source = ?"
         parameters.append(source)
 
     if year is not None:
         year_min, year_max = year
-
         sql += "\nAND d.year BETWEEN ? AND ?"
         parameters.extend([year_min, year_max])
 
