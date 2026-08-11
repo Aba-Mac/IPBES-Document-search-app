@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import logging
 
-from shiny import App, reactive, ui
+from shiny import App, reactive, ui, render
 from search.service import get_glossary_terms
 
 from search.service import (
@@ -40,7 +40,6 @@ from ui.cards import register_card_renderer
 from ui.layouts import build_page
 from ui.search import (
     build_search_controls,
-    current_page,
     page_size,
     search_query,
     selected_year_range,
@@ -104,36 +103,33 @@ def server(input, output, session) -> None:
 
     current_page = reactive.value(1)
 
+    search_trigger = reactive.value(0)
+
     # ---------------------------------------------------------------
     # Reset pagination when a new search is submitted
     # ---------------------------------------------------------------
 
     @reactive.effect
-    @reactive.event(input[PAGE_SIZE_ID])
-    def reset_page():
+    @reactive.event(input.search_button)
+    def perform_search():
         current_page.set(1)
+        search_trigger.set(search_trigger.get() + 1)
 
     # ---------------------------------------------------------------
-    # Previous page
+    # Previous and next page
     # ---------------------------------------------------------------
 
     @reactive.effect
     @reactive.event(input.prev_page)
     def previous_page():
-        current_page.set(
-            max(1, current_page() - 1)
-        )
+        if current_page.get() > 1:
+            current_page.set(current_page.get() - 1)
 
-    # ---------------------------------------------------------------
-    # Next page
-    # ---------------------------------------------------------------
 
     @reactive.effect
     @reactive.event(input.next_page)
     def next_page():
-        current_page.set(
-            current_page() + 1
-        )
+        current_page.set(current_page.get() + 1)
 
     # ---------------------------------------------------------------
     # Glossary
@@ -176,8 +172,9 @@ def server(input, output, session) -> None:
     # ---------------------------------------------------------------
 
     @reactive.calc
-    @reactive.event(input.search_button, input.prev_page, input.next_page, input[PAGE_SIZE_ID],)
     def search_results():
+        search_trigger.get()
+        page = current_page.get()
         filters: dict[str, object] = {}
 
         years = available_years()
@@ -204,7 +201,6 @@ def server(input, output, session) -> None:
             "(query=%r, page=%s, page_size=%s)",
             query,
             page,
-            size,
         )
 
         try:
