@@ -371,9 +371,6 @@ def extract_with_unstructured(
             strategy=strategy,
             infer_table_structure=config.infer_table_structure,
             include_page_breaks=config.include_page_breaks,
-            max_characters=config.max_characters,
-            combine_text_under_n_chars=config.combine_text_under_n_chars,
-            new_after_n_chars=config.new_after_n_chars,
             extract_images_in_pdf=config.extract_images,
         )
 

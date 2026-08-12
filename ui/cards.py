@@ -165,19 +165,27 @@ def _result_card(result):
 
     metadata = ui.div(
         ui.span(
-            result.document_title,
+            (
+            f"{result.document_title} · "
+            ),
             class_="metadata-title",
         ),
         ui.span(
-            result.plenary_session,
+            (
+            f"{result.plenary_session} · "
+            ),
             class_="metadata-item",
         ),
         ui.span(
-            str(result.year),
+            (
+            f"{str(result.year)} · "
+            ),
             class_="metadata-item",
         ),
         ui.span(
-            result.location,
+            (
+            f"{result.location} · "
+            ),
             class_="metadata-item",
         ),
         ui.span(

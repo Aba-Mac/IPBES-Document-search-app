@@ -131,7 +131,7 @@ def build_search_controls(
                 "next_page",
                 "Next ›",
             ),
-            class_="pagination-controls",
+            class_="pagination-controls d-flex align-items-center gap-2",
         ),
 
         #
