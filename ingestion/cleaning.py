@@ -84,6 +84,9 @@ OCR_GARBAGE_PATTERN = re.compile(
     r"(?<!\w)[|¦•]{2,}(?!\w)"
 )
 
+PRINTED_PAGE_NUMBER_PATTERN = re.compile(
+    r"^\s*(?:page\s*)?(\d{1,4})\s*$", re.IGNORECASE
+    )
 
 # ---------------------------------------------------------------------------
 # Data model
@@ -137,40 +140,27 @@ def clean_elements(
     """
 
     extracted = []
-
     for page in elements.pages:
-
         for element in page.elements:
             extracted.append(_extract_element(element))
 
-    headers, footers = detect_headers_and_footers(
-            [
-                item.text
-                for item in extracted
-            ]
-        )
+    headers, footers = detect_headers_and_footers([item.text for item in extracted])
+    page_labels = _detect_page_labels(extracted)   # <-- capture before stripping
 
     cleaned = []
-
     for element in extracted:
-
-            text = element.text
-
-            if text in headers or text in footers:
-                continue
-
-            text = clean_text(text)
-
-            if not text:
-                continue
-
-            cleaned.append(CleanedElement(
-                 text=text,
-                 category=element.category,
-                 page_number=element.page_number,
-                    section_title=element.section_title,
-                )
-            )
+        text = element.text
+        if text in headers or text in footers:
+            continue
+        text = clean_text(text)
+        if not text:
+            continue
+        cleaned.append(CleanedElement(
+            text=text,
+            category=element.category,
+            page_number=page_labels.get(element.page_number, element.page_number),
+            section_title=element.section_title,
+        ))
 
     return cleaned
 
@@ -394,6 +384,24 @@ def normalise_whitespace(text: str) -> str:
     )
 
     return text.strip()
+
+
+def _detect_page_labels(extracted: list[CleanedElement]) -> dict[int, int]:
+    by_page: dict[int, list[str]] = {}
+    for el in extracted:
+        by_page.setdefault(el.page_number, []).append(el.text.strip())
+
+    labels: dict[int, int] = {}
+    for physical_page, texts in by_page.items():
+        label = None
+        for text in filter(None, (texts[-1] if texts else None, texts[0] if texts else None)):
+            match = PRINTED_PAGE_NUMBER_PATTERN.match(text)
+            if match:
+                label = int(match.group(1))
+                break
+        labels[physical_page] = label if label is not None else physical_page
+
+    return labels
 
 
 # ---------------------------------------------------------------------------

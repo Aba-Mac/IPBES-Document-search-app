@@ -87,7 +87,7 @@ def register_card_renderer(
         return ui.TagList(
             _results_summary(response),
             *[
-                _result_card(result)
+                _result_card(result, query=response.query)
                 for result in response.results
             ],
         )
@@ -135,7 +135,7 @@ def _empty_results():
     )
 
 
-def _result_card(result):
+def _result_card(result, *, query:str):
     """
     Build a single expandable result card.
 
@@ -160,7 +160,7 @@ def _result_card(result):
     paragraph_html = render_paragraph(
                         paragraph=result.text,
                         glossary_terms=result.matched_terms,
-                        #search_query=result.query,
+                        search_query=query,
                     )
 
     metadata = ui.div(

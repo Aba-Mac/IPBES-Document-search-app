@@ -41,6 +41,14 @@ import fitz
 logger = logging.getLogger(__name__)
 
 
+CITATION_PATTERN = re.compile(
+    r"Suggested\s+citation\s*:?\s*\n?"
+    r"\s*IPBES\s*\(\s*(?P<year>(?:19|20)\d{2})\s*\)\.\s*"
+    r"(?P<body>.+?)(?=\n\s*\n|\Z)",
+    flags=re.IGNORECASE | re.DOTALL,
+)
+
+
 @dataclass(slots=True)
 class MetadataField:
     """
@@ -276,6 +284,28 @@ def validate_llm_output(payload: dict[str, Any]) -> dict[str, Any]:
     return cleaned
 
 
+def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
+    """
+    Split citation body into (title, location).
+
+    Expected format:
+        <authors>. <title>. <date>, <location>
+    """
+    body = re.sub(r"\s+", " ", body).strip()
+
+    parts = re.split(r"\.\s+", body, maxsplit=2)
+
+    if len(parts) < 3:
+        return None, None
+
+    _, title, tail = parts
+
+    tail_parts = [p.strip() for p in tail.rsplit(",", 1)]
+    location = tail_parts[-1] if len(tail_parts) == 2 else None
+
+    return (title.strip() or None), location
+
+
 def build_metadata(
     pdf_path: Path,
     llm_client: MetadataLLMClient | None = None,
@@ -285,19 +315,9 @@ def build_metadata(
 
     Extraction priority
     -------------------
-    title:
-        1. PyMuPDF
-        2. Unstructured
-        3. LLM
-
-    year:
         1. Suggested citation
         2. PyMuPDF creation date
         3. LLM
-
-    date:
-        1. PyMuPDF creation date
-        2. LLM
 
     Parameters
     ----------
@@ -323,162 +343,86 @@ def build_metadata(
         "location": MetadataField(None, None),
     }
 
+    initial_text = extract_first_page_text(pdf_path)
+
     # ------------------------------------------------------------------
-    # Title
+    # Suggested citation (highest-priority source: title, year, location)
     # ------------------------------------------------------------------
 
-    title = clean_value(
-        embedded.get("title")
-    )
+    citation_match = CITATION_PATTERN.search(initial_text)
 
-    if title:
-        fields["title"] = MetadataField(
-            title,
-            "pymupdf",
+    if citation_match:
+        citation_year = int(citation_match.group("year"))
+        fields["year"] = MetadataField(citation_year, "suggested_citation")
+
+        citation_title, citation_location = _parse_citation_body(
+            citation_match.group("body")
         )
+
+        if citation_title:
+            fields["title"] = MetadataField(citation_title, "suggested_citation")
+
+        if citation_location:
+            fields["location"] = MetadataField(citation_location, "suggested_citation")
+
+        logger.info(
+            "Extracted from suggested citation: year=%s title=%r location=%r",
+            citation_year, citation_title, citation_location,
+        )
+
+    # ------------------------------------------------------------------
+    # Title fallback (only if citation didn't provide one)
+    # ------------------------------------------------------------------
+
+    if not fields["title"].value:
+        title = clean_value(embedded.get("title"))
+        if title:
+            fields["title"] = MetadataField(title, "pymupdf")
 
     if not fields["title"].value:
         unstructured_title = detect_unstructured_title(pdf_path)
-
         if unstructured_title:
-            fields["title"] = MetadataField(
-                unstructured_title,
-                "unstructured",
-            )
+            fields["title"] = MetadataField(unstructured_title, "unstructured")
 
     # ------------------------------------------------------------------
-    # Suggested citation
-    # ------------------------------------------------------------------
-    # The reports contain citations such as:
-    #
-    #     Suggested citation: IPBES (2023).
-    #
-    # Search the beginning of the document for this pattern.
-
-    initial_text = extract_first_page_text(pdf_path)
-
-    citation_match = re.search(
-        r"Suggested\s+citation\s*:?\s*\n"
-        r"\s*IPBES\s*"
-        r"\(\s*((?:19|20)\d{2})\s*\)",
-        initial_text,
-        flags=re.IGNORECASE,
-    )
-
-    if citation_match:
-        citation_year = int(citation_match.group(1))
-
-        fields["year"] = MetadataField(
-            citation_year,
-            "suggested_citation",
-        )
-
-        logger.info(
-            "Extracted year %s from suggested citation for %s",
-            citation_year,
-            pdf_path,
-        )
-
-    # ------------------------------------------------------------------
-    # PDF creation date
+    # PDF creation date (year only used if citation didn't provide one)
     # ------------------------------------------------------------------
 
-    date_value = clean_value(
-        embedded.get("creationDate")
-    )
-
+    date_value = clean_value(embedded.get("creationDate"))
     date, embedded_year = normalise_date(date_value)
 
     if date:
-        fields["date"] = MetadataField(
-            date,
-            "pymupdf",
-        )
+        fields["date"] = MetadataField(date, "pymupdf")
 
-    # Only use the PDF creation year if the suggested citation
-    # did not already provide one.
-    if (
-        embedded_year is not None
-        and fields["year"].value is None
-    ):
-        fields["year"] = MetadataField(
-            embedded_year,
-            "pymupdf",
-        )
+    if embedded_year is not None and fields["year"].value is None:
+        fields["year"] = MetadataField(embedded_year, "pymupdf")
 
     # ------------------------------------------------------------------
     # LLM fallback
     # ------------------------------------------------------------------
 
-    missing_fields = [
-        name
-        for name, field in fields.items()
-        if field.value is None
-    ]
+    missing_fields = [name for name, field in fields.items() if field.value is None]
 
     if missing_fields and llm_client:
-
-        logger.info(
-            "Using LLM metadata fallback for %s fields",
-            missing_fields,
-        )
-
         try:
-            response = llm_client.extract_metadata(
-                initial_text
-            )
-
-            response = validate_llm_output(
-                response
-            )
+            response = validate_llm_output(llm_client.extract_metadata(initial_text))
 
             for key in missing_fields:
-
                 value = response.get(key)
-
                 if value is None:
                     continue
 
                 if key == "date":
                     date, year = normalise_date(value)
-
                     if date:
-                        fields["date"] = MetadataField(
-                            date,
-                            "llm",
-                        )
-
-                    if (
-                        year is not None
-                        and fields["year"].value is None
-                    ):
-                        fields["year"] = MetadataField(
-                            year,
-                            "llm",
-                        )
-
+                        fields["date"] = MetadataField(date, "llm")
+                    if year is not None and fields["year"].value is None:
+                        fields["year"] = MetadataField(year, "llm")
                 else:
-                    fields[key] = MetadataField(
-                        value,
-                        "llm",
-                    )
+                    fields[key] = MetadataField(value, "llm")
 
         except Exception:
-            logger.exception(
-                "LLM metadata extraction failed for %s",
-                pdf_path,
-            )
-
-    logger.info(
-        "Metadata extraction complete: %s",
-        {
-            key: {
-                "value": field.value,
-                "source": field.source,
-            }
-            for key, field in fields.items()
-        },
-    )
+            logger.exception("LLM metadata extraction failed for %s", pdf_path)
 
     return DocumentMetadata(
         title=fields["title"],

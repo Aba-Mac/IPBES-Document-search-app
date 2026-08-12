@@ -53,18 +53,20 @@ def chunk_document(
     """
 
     output: list[ParagraphChunk] = []
-
     paragraph_number = 1
+    current_page = None
 
     for element in elements:
-
         if element.category not in STORABLE_CATEGORIES:
             continue
 
         text = element.text.strip()
-
         if not text:
             continue
+
+        if element.page_number != current_page:
+            current_page = element.page_number
+            paragraph_number = 1
 
         output.append(
             ParagraphChunk(
@@ -75,7 +77,6 @@ def chunk_document(
                 chunk_method="extracted_element",
             )
         )
-
         paragraph_number += 1
 
     return output

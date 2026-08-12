@@ -442,18 +442,11 @@ def ingest_document(
         # Metadata provenance
         ################################################################
 
-        if hasattr(
-            document_metadata,
-            "provenance",
-        ):
-
-            repository.insert_metadata_provenance(
-                connection=connection,
-                document_id=document_id,
-                fields=metadata.metadata_provenance_fields(
-                    document_metadata
-                ),
-            )
+        repository.insert_metadata_provenance(
+            connection=connection,
+            document_id=document_id,
+            fields=metadata.metadata_provenance_fields(document_metadata),
+        )
 
         ################################################################
         # Verify FTS index

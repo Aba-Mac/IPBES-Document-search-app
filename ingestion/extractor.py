@@ -361,9 +361,7 @@ def extract_with_unstructured(
     try:
 
         strategy = (
-            "hi_res"
-            if pdf.inspection.needs_ocr
-            else "fast"
+            "hi_res" if (pdf.inspection.needs_ocr or config.strategy == "hi_res") else "fast"
         )
 
         elements = partition_pdf(
