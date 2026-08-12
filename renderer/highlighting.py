@@ -57,6 +57,10 @@ __all__ = [
 
 HIGHLIGHT_CLASS = "search-highlight"
 
+_BOOLEAN_SPLIT_RE = re.compile(
+    r"(?i)\b(?:AND|OR|NOT|NOR)\b|[()]"
+)
+
 ###############################################################################
 # Helpers
 ###############################################################################
@@ -86,28 +90,28 @@ def _normalise_query(search_query: str | None) -> list[str]:
     if not search_query:
         return []
 
-    terms = [
-        token.strip()
-        for token in re.split(r"\s+", search_query)
-        if token.strip()
-    ]
+    fragments = _BOOLEAN_SPLIT_RE.split(search_query)
 
     seen: set[str] = set()
     ordered: list[str] = []
 
-    for term in terms:
-        key = term.casefold()
+    for fragment in fragments:
+        if fragment is None:
+            continue
 
+        term = re.sub(r"\s+", " ", fragment).strip()
+
+        if not term:
+            continue
+
+        key = term.casefold()
         if key in seen:
             continue
 
         seen.add(key)
         ordered.append(term)
 
-    ordered.sort(
-        key=len,
-        reverse=True,
-    )
+    ordered.sort(key=len, reverse=True)
 
     return ordered
 

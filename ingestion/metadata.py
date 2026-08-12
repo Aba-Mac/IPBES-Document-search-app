@@ -48,6 +48,11 @@ CITATION_PATTERN = re.compile(
     flags=re.IGNORECASE | re.DOTALL,
 )
 
+_YEAR_RE = re.compile(r"(19|20)\d{2}")
+_TRAILING_DATE_LOCATION_RE = re.compile(
+    r"^(?P<date>.*?(?:19|20)\d{2})\.?\s*,\s*(?P<location>.+)$"
+)
+
 
 @dataclass(slots=True)
 class MetadataField:
@@ -284,26 +289,65 @@ def validate_llm_output(payload: dict[str, Any]) -> dict[str, Any]:
     return cleaned
 
 
+def _looks_like_location_sentence(sentence: str) -> bool:
+    """
+    True if the sentence reads like a trailing date/location line
+    rather than a title (e.g. "17 - 19 January 2023, Chiang Mai, Thailand").
+    """
+    if _TRAILING_DATE_LOCATION_RE.match(sentence):
+        return True
+
+    # No year and looks like "<place>, <place>" -> still a location line
+    return _YEAR_RE.search(sentence) is None and "," in sentence
+
+
 def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
     """
     Split citation body into (title, location).
 
-    Expected format:
+    Expected structure, in order:
         <authors>. <title>. <date>, <location>
+
+    Position is used instead of sentence length, because author lists
+    are frequently the longest sentence in the citation.
     """
-    body = re.sub(r"\s+", " ", body).strip()
+    body = re.sub(r"\s+", " ", body).strip().rstrip(".")
 
-    parts = re.split(r"\.\s+", body, maxsplit=2)
-
-    if len(parts) < 3:
+    if not body:
         return None, None
 
-    _, title, tail = parts
+    sentences = [s.strip() for s in body.split(". ") if s.strip()]
 
-    tail_parts = [p.strip() for p in tail.rsplit(",", 1)]
-    location = tail_parts[-1] if len(tail_parts) == 2 else None
+    if not sentences:
+        return None, None
 
-    return (title.strip() or None), location
+    if len(sentences) == 1:
+        # No discernible structure; best effort only.
+        return sentences[0], None
+
+    location = None
+    remaining = sentences
+
+    last = remaining[-1]
+    match = _TRAILING_DATE_LOCATION_RE.match(last)
+
+    if match:
+        location = match.group("location").strip() or None
+        remaining = remaining[:-1]
+    elif _looks_like_location_sentence(last):
+        location = last
+        remaining = remaining[:-1]
+
+    if len(remaining) >= 2:
+        # First sentence = authors, title = the sentence right
+        # before the location line.
+        title = remaining[-1].strip() or None
+    elif remaining:
+        title = remaining[0].strip() or None
+    else:
+        title = None
+
+    return title, location
 
 
 def build_metadata(

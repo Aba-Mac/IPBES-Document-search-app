@@ -28,6 +28,7 @@ from typing import Any
 from shiny import render, ui
 
 from renderer.renderer import render_paragraph
+from renderer.hyperlinks import GlossaryMatch
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +160,10 @@ def _result_card(result, *, query:str):
 
     paragraph_html = render_paragraph(
                         paragraph=result.text,
-                        glossary_terms=result.matched_terms,
+                        glossary_terms=[
+                            GlossaryMatch(term=term)
+                            for term in result.matched_terms
+                        ],
                         search_query=query,
                     )
 

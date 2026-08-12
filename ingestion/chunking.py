@@ -11,10 +11,13 @@ document structure. Larger RAG chunks should be generated separately.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Sequence
 
 from ingestion.cleaning import CleanedElement
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -53,30 +56,44 @@ def chunk_document(
     """
 
     output: list[ParagraphChunk] = []
-    paragraph_number = 1
-    current_page = None
+    page_counters: dict[int, int] = {}
 
     for element in elements:
+
         if element.category not in STORABLE_CATEGORIES:
             continue
 
         text = element.text.strip()
+
         if not text:
             continue
 
-        if element.page_number != current_page:
-            current_page = element.page_number
-            paragraph_number = 1
+        page = element.page_number
+        page_counters[page] = page_counters.get(page, 0) + 1
+        paragraph_number = page_counters[page]
 
         output.append(
             ParagraphChunk(
                 document_id=document_id,
-                page_number=element.page_number,
+                page_number=page,
                 paragraph_number=paragraph_number,
                 text=text,
                 chunk_method="extracted_element",
             )
         )
-        paragraph_number += 1
 
-    return output
+        # --- log if elements arrived out of page order -------------------
+    if len(page_counters) > 1:
+        pages_seen = [
+            el.page_number
+            for el in elements
+            if el.category in STORABLE_CATEGORIES and el.text.strip()
+        ]
+        if pages_seen != sorted(pages_seen):
+            logger.warning(
+                "Non-monotonic page order detected during chunking for document_id=%s",
+                document_id,
+            )
+
+    # --- return in reading order --------------------------------------
+    return sorted(output, key=lambda p: (p.page_number, p.paragraph_number))
