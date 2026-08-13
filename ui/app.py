@@ -56,6 +56,25 @@ configure(repository)
 logger = logging.getLogger(__name__)
 
 
+_GLOSSARY_CLICK_JS = """
+document.addEventListener('click', function (e) {
+    var link = e.target.closest('.glossary-term');
+    if (!link) return;
+
+    e.preventDefault();
+
+    var term = link.dataset.term;
+
+    var box = document.getElementById('search_query');
+    if (box) box.value = term;
+
+    Shiny.setInputValue('search_query', term, {priority: 'event'});
+
+    var btn = document.getElementById('search_button');
+    if (btn) btn.click();
+});
+"""
+
 ###############################################################################
 # Static application data
 ###############################################################################
@@ -79,11 +98,16 @@ def build_app_ui():
     """
     years = _load_years()
 
-    return build_page(
+    page = build_page(
         search_controls=build_search_controls(
             years=years,
         ),
         css=app_css(),
+    )
+
+    return ui.TagList(
+        ui.head_content(ui.tags.script(_GLOSSARY_CLICK_JS)),
+        page,
     )
 
 
