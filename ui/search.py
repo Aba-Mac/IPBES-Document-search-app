@@ -67,7 +67,7 @@ def build_search_controls(
             ui.input_text(
                 id=SEARCH_QUERY_ID,
                 label=(
-                    "Search documents. "
+                    "Currently, only terms from the dropdown glossary list are searchable. "
                     "Use AND, OR, NOT, NOR and parentheses."
                 ),
                 value="",

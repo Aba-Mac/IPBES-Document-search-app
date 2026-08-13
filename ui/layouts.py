@@ -240,12 +240,12 @@ def build_header():
 
     return ui.div(
         ui.h1(
-            "Document Search",
+            "IPBES Document Search",
             class_="app-title",
         ),
         ui.p(
             (
-                "Search plenary documents using full-text and Boolean "
+                "Search workshop documents using Boolean "
                 "queries. Results are returned at paragraph level with "
                 "highlighted search terms and linked glossary entries."
             ),
