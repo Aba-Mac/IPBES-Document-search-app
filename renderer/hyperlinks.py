@@ -50,6 +50,7 @@ import html
 import re
 from dataclasses import dataclass
 from typing import Iterable
+from urllib.parse import quote
 
 from renderer.html import HTMLToken, TokenType, split_html
 
@@ -109,7 +110,8 @@ def _build_href(term: str) -> str:
     -------
     str
     """
-    return f"?q={html.escape(term, quote=True)}"
+    url_encoded = quote(term, safe="")
+    return f"?q={html.escape(url_encoded, quote=True)}"
 
 
 def _compile_pattern(term: str) -> re.Pattern[str]:
@@ -151,31 +153,42 @@ def _replace_in_text(
     -------
     str
     """
-    result = text
+    ordered = sorted(matches, key=lambda m: len(m.term), reverse=True)
 
-    ordered = sorted(
-        matches,
-        key=lambda m: len(m.term),
-        reverse=True,
-    )
+    spans: list[tuple[int, int, GlossaryMatch]] = []
+    claimed = [False] * len(text)
 
     for match in ordered:
-
         pattern = _compile_pattern(match.term)
+        for m in pattern.finditer(text):
+            start, end = m.start(), m.end()
+            if any(claimed[start:end]):
+                continue  # overlaps a longer term already placed
+            spans.append((start, end, match))
+            for i in range(start, end):
+                claimed[i] = True
 
+    if not spans:
+        return text
+
+    spans.sort(key=lambda s: s[0])
+
+    pieces: list[str] = []
+    cursor = 0
+    for start, end, match in spans:
+        pieces.append(text[cursor:start])
         href = _build_href(match.term)
-
-        replacement = (
+        pieces.append(
             f'<a class="glossary-term" '
             f'data-term="{html.escape(match.term, quote=True)}" '
             f'href="{href}">'
-            r"\1"
+            f"{text[start:end]}"
             "</a>"
         )
+        cursor = end
+    pieces.append(text[cursor:])
 
-        result = pattern.sub(replacement, result)
-
-    return result
+    return "".join(pieces)
 
 
 ###############################################################################

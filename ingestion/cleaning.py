@@ -65,7 +65,7 @@ DOT_LEADER_PATTERN = re.compile(
 )
 
 TOC_ENTRY_PATTERN = re.compile(
-    r"^.{3,}(\.{2,}|…+)\s*\d+\s*$"
+    r"(?:^|\s)(?P<label>.{3,80}?)(\.{2,}|…+)\s*(?P<num>\d{1,4})(?=\s|$)"
 )
 
 MULTIPLE_WHITESPACE_PATTERN = re.compile(
@@ -144,15 +144,15 @@ def clean_elements(
         for element in page.elements:
             extracted.append(_extract_element(element))
 
-    headers, footers = detect_headers_and_footers([item.text for item in extracted])
-    page_labels = _detect_page_labels(extracted)   # <-- capture before stripping
+    headers, footers = detect_headers_and_footers(extracted)
+    page_labels = _detect_page_labels(extracted)
 
     cleaned = []
     for element in extracted:
-        text = element.text
-        if text in headers or text in footers:
+        normalised = normalise_whitespace(element.text)
+        if normalised in headers or normalised in footers:
             continue
-        text = clean_text(text)
+        text = clean_text(element.text)
         if not text:
             continue
         cleaned.append(CleanedElement(
@@ -216,48 +216,49 @@ def repair_encoding(text: str) -> str:
 
 
 def detect_headers_and_footers(
-    texts: Iterable[str],
+    extracted: Sequence[CleanedElement],
 ) -> tuple[set[str], set[str]]:
     """
-    Detect repeated header and footer candidates.
+    Detect repeated header and footer candidates using repetition
+    frequency plus position on the page.
 
-    A simple frequency-based approach is appropriate because PDF documents
-    commonly repeat the same running header/footer on every page.
-
-    Args:
-        texts:
-            Extracted element texts.
-
-    Returns:
-        Tuple containing:
-            - header candidates
-            - footer candidates
-
+    Word-count heuristics are unreliable for headers (running titles are
+    often long, e.g. full report titles). Position is more robust: a
+    header candidate should consistently be the first element on its
+    page; a footer candidate should consistently be the last, or look
+    like a page number.
     """
+    by_page: dict[int, list[str]] = {}
+    for element in extracted:
+        text = normalise_whitespace(element.text)
+        if not text:
+            continue
+        by_page.setdefault(element.page_number, []).append(text)
 
-    normalised = [
-        normalise_whitespace(text)
-        for text in texts
-        if text.strip()
-    ]
+    counts = Counter(
+        normalise_whitespace(element.text)
+        for element in extracted
+        if element.text.strip()
+    )
 
-    counts = Counter(normalised)
-
-    repeated = {
-        text
-        for text, count in counts.items()
-        if count >= MIN_HEADER_FOOTER_OCCURRENCES
-    }
+    first_on_page = Counter(texts[0] for texts in by_page.values() if texts)
+    last_on_page = Counter(texts[-1] for texts in by_page.values() if texts)
 
     headers: set[str] = set()
     footers: set[str] = set()
 
-    for item in repeated:
-        if len(item.split()) <= 12:
-            headers.add(item)
+    for text, count in counts.items():
+        if count < MIN_HEADER_FOOTER_OCCURRENCES:
+            continue
 
-        if PAGE_NUMBER_PATTERN.match(item):
-            footers.add(item)
+        if PAGE_NUMBER_PATTERN.match(text):
+            footers.add(text)
+            continue
+
+        if first_on_page[text] >= MIN_HEADER_FOOTER_OCCURRENCES:
+            headers.add(text)
+        elif last_on_page[text] >= MIN_HEADER_FOOTER_OCCURRENCES:
+            footers.add(text)
 
     return headers, footers
 
@@ -309,22 +310,33 @@ def strip_dot_leaders(text: str) -> str:
     return DOT_LEADER_PATTERN.sub("", text)
 
 
+
 def remove_toc_artifacts(text: str) -> str:
     """
     Remove table-of-contents style entries.
 
-    TOC entries are problematic because they introduce isolated headings and
-    page references into searchable text.
-
-    Args:
-        text:
-            Input text.
-
-    Returns:
-        Empty string when the text is a TOC artefact.
+    Unstructured sometimes merges an entire TOC section into one element,
+    so this checks for dot-leader entries anywhere in the text rather than
+    requiring the whole block to be a single entry.
     """
+    stripped = text.strip()
+    if not stripped:
+        return text
 
-    if TOC_ENTRY_PATTERN.match(text.strip()):
+    matches = list(TOC_ENTRY_PATTERN.finditer(stripped))
+    if not matches:
+        return text
+
+    if len(matches) >= 2:
+        # Multiple dot-leader entries packed into one element = a merged
+        # TOC block. Drop the whole thing.
+        return ""
+
+    # Single entry: only drop if it accounts for essentially the whole
+    # element (this preserves the old single-line TOC behaviour).
+    match = matches[0]
+    covered = match.end() - match.start()
+    if covered / len(stripped) > 0.8:
         return ""
 
     return text

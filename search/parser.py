@@ -318,26 +318,43 @@ def _parse_source(value: Any) -> str | None:
     return value
 
 
-def _parse_year(value: Any) -> int | None:
+def _parse_year(value: Any) -> tuple[int, int] | None:
     """
-    Parse year filter.
+    Parse year range filter.
+
+    Expects a 2-tuple/list of (min_year, max_year). A bare single
+    year (int or numeric string) is also accepted for convenience
+    and normalised to a one-year range.
     """
     if value in ("", None):
         return None
 
+    if isinstance(value, (tuple, list)):
+        if len(value) != 2:
+            raise SearchParserError(
+                "Year filter must contain exactly two values (min, max)."
+            )
+        raw_min, raw_max = value
+    else:
+        raw_min = raw_max = value
+
     try:
-        year = int(value)
+        year_min = int(raw_min)
+        year_max = int(raw_max)
     except Exception as exc:
         raise SearchParserError(
-            "Year filter must be an integer."
+            "Year filter values must be integers."
         ) from exc
 
-    if year < 1900 or year > 3000:
+    if year_min < 1900 or year_max > 3000:
         raise SearchParserError(
             "Year filter is outside the valid range."
         )
 
-    return year
+    if year_min > year_max:
+        year_min, year_max = year_max, year_min
+
+    return (year_min, year_max)
 
 
 def _parse_document(value: Any) -> int | None:
