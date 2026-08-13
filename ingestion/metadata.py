@@ -41,17 +41,37 @@ import fitz
 logger = logging.getLogger(__name__)
 
 
-CITATION_PATTERN = re.compile(
-    r"Suggested\s+citation\s*:?\s*\n?"
-    r"\s*IPBES\s*\(\s*(?P<year>(?:19|20)\d{2})\s*\)\.\s*"
-    r"(?P<body>.+?)(?=\n\s*\n|\Z)",
-    flags=re.IGNORECASE | re.DOTALL,
-)
-
 _YEAR_RE = re.compile(r"(19|20)\d{2}")
 _TRAILING_DATE_LOCATION_RE = re.compile(
     r"^(?P<date>.*?(?:19|20)\d{2})\.?\s*,\s*(?P<location>.+)$"
 )
+
+CITATION_PATTERN = re.compile(
+    r"Suggested\s+citation\s*:?\s*\n?"
+    r"\s*IPBES\s*\(\s*(?P<year>(?:19|20)\d{2})\s*\)\s*[:.]?\s*"
+    r"(?P<body>.+?)(?=\n\s*\n|\Z)",
+    flags=re.IGNORECASE | re.DOTALL,
+)
+
+_MONTH_RE = (
+    r"January|February|March|April|May|June|July|"
+    r"August|September|October|November|December"
+)
+
+_DATE_SPAN_RE = re.compile(
+    r"\d{1,2}"
+    r"(?:\s*(?:-|\u2013|to)\s*\d{1,2})?"
+    r"\s+(?:" + _MONTH_RE + r")"
+    r"(?:\s*(?:-|\u2013|to)\s*\d{1,2}\s+(?:" + _MONTH_RE + r"))?"
+    r"(?:\s+(?:19|20)\d{2})?",
+    re.IGNORECASE,
+)
+
+_HELD_IN_ON_RE = re.compile(
+    r"held\s+in\s+(?P<location>.+?)\s*,?\s*on\s*$", re.IGNORECASE
+)
+_HELD_IN_TRAILING_RE = re.compile(r",?\s*held\s+in\s*$", re.IGNORECASE)
+
 
 
 @dataclass(slots=True)
@@ -305,29 +325,71 @@ def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
     """
     Split citation body into (title, location).
 
-    Expected structure, in order:
-        <authors>. <title>. <date>, <location>
-
-    Position is used instead of sentence length, because author lists
-    are frequently the longest sentence in the citation.
+    Handles the citation styles seen in IPBES reports:
+      - "<authors>. <title>. <date>, <location>."
+      - "<authors>. <title>. <location>, <date>."      (e.g. "Online, 17-21 May 2021")
+      - "<authors>. <title>, held in <location>, on <date>."
+      - "<authors>. <title>, held in <date>, <location>."
     """
     body = re.sub(r"\s+", " ", body).strip().rstrip(".")
 
     if not body:
         return None, None
 
+    date_matches = list(_DATE_SPAN_RE.finditer(body))
+
+    if not date_matches:
+        return _parse_citation_body_legacy(body)
+
+    # Dates sit at or near the end of the citation; take the last match
+    # even if an earlier word happens to look date-like.
+    date_match = date_matches[-1]
+    before = body[: date_match.start()].rstrip()
+    after = body[date_match.end():].strip(" ,")
+
+    location: str | None = None
+    held_in_on = _HELD_IN_ON_RE.search(before)
+
+    if held_in_on:
+        location = held_in_on.group("location").strip() or None
+        before = before[: held_in_on.start()].rstrip()
+    elif after:
+        location = after
+    else:
+        # Location precedes the date in the same trailing sentence with
+        # nothing after it, e.g. "... assessment. Online, 29 September
+        # to 1 October 2020."
+        lead_sentences = [s.strip() for s in before.split(". ") if s.strip()]
+        if lead_sentences and len(lead_sentences[-1]) <= 40:
+            location = lead_sentences[-1]
+            before = ". ".join(lead_sentences[:-1])
+
+    before = _HELD_IN_TRAILING_RE.sub("", before).rstrip(", .")
+
+    sentences = [s.strip() for s in before.split(". ") if s.strip()]
+
+    if len(sentences) >= 2:
+        title = sentences[-1] or None
+    elif sentences:
+        title = sentences[0] or None
+    else:
+        title = None
+
+    return title, location
+
+
+def _parse_citation_body_legacy(body: str) -> tuple[str | None, str | None]:
+    """Best-effort fallback when no recognisable date span is found."""
     sentences = [s.strip() for s in body.split(". ") if s.strip()]
 
     if not sentences:
         return None, None
 
     if len(sentences) == 1:
-        # No discernible structure; best effort only.
         return sentences[0], None
 
     location = None
     remaining = sentences
-
     last = remaining[-1]
     match = _TRAILING_DATE_LOCATION_RE.match(last)
 
@@ -339,8 +401,6 @@ def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
         remaining = remaining[:-1]
 
     if len(remaining) >= 2:
-        # First sentence = authors, title = the sentence right
-        # before the location line.
         title = remaining[-1].strip() or None
     elif remaining:
         title = remaining[0].strip() or None
