@@ -354,7 +354,12 @@ def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
         location = held_in_on.group("location").strip() or None
         before = before[: held_in_on.start()].rstrip()
     elif after:
-        location = after
+        # `after` may run on into unrelated boilerplate (compiled-by,
+        # disclaimer text, etc.) when the source PDF has no blank line
+        # between the citation and what follows it. Location is only
+        # ever the first clause/sentence here.
+        first_sentence = after.split(". ", 1)[0]
+        location = first_sentence.strip(" .,") or None
     else:
         # Location precedes the date in the same trailing sentence with
         # nothing after it, e.g. "... assessment. Online, 29 September

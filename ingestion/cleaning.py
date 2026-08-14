@@ -88,6 +88,8 @@ PRINTED_PAGE_NUMBER_PATTERN = re.compile(
     r"^\s*(?:page\s*)?(\d{1,4})\s*$", re.IGNORECASE
     )
 
+HEADER_FOOTER_WINDOW = 3
+
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
@@ -222,11 +224,10 @@ def detect_headers_and_footers(
     Detect repeated header and footer candidates using repetition
     frequency plus position on the page.
 
-    Word-count heuristics are unreliable for headers (running titles are
-    often long, e.g. full report titles). Position is more robust: a
-    header candidate should consistently be the first element on its
-    page; a footer candidate should consistently be the last, or look
-    like a page number.
+    Headers/footers spanning multiple Unstructured elements (e.g. a
+    running title split across two lines) are handled by checking a
+    small window of leading/trailing elements per page, not just the
+    single first/last element.
     """
     by_page: dict[int, list[str]] = {}
     for element in extracted:
@@ -241,8 +242,16 @@ def detect_headers_and_footers(
         if element.text.strip()
     )
 
-    first_on_page = Counter(texts[0] for texts in by_page.values() if texts)
-    last_on_page = Counter(texts[-1] for texts in by_page.values() if texts)
+    # For each page, count which text appears at leading position 0, 1,
+    # 2... (and trailing position 0, 1, 2... from the end) across pages.
+    first_position_counts: dict[int, Counter] = {}
+    last_position_counts: dict[int, Counter] = {}
+
+    for texts in by_page.values():
+        window = min(HEADER_FOOTER_WINDOW, len(texts))
+        for offset in range(window):
+            first_position_counts.setdefault(offset, Counter())[texts[offset]] += 1
+            last_position_counts.setdefault(offset, Counter())[texts[-1 - offset]] += 1
 
     headers: set[str] = set()
     footers: set[str] = set()
@@ -255,9 +264,18 @@ def detect_headers_and_footers(
             footers.add(text)
             continue
 
-        if first_on_page[text] >= MIN_HEADER_FOOTER_OCCURRENCES:
+        is_header = any(
+            position_counts.get(text, 0) >= MIN_HEADER_FOOTER_OCCURRENCES
+            for position_counts in first_position_counts.values()
+        )
+        is_footer = any(
+            position_counts.get(text, 0) >= MIN_HEADER_FOOTER_OCCURRENCES
+            for position_counts in last_position_counts.values()
+        )
+
+        if is_header:
             headers.add(text)
-        elif last_on_page[text] >= MIN_HEADER_FOOTER_OCCURRENCES:
+        elif is_footer:
             footers.add(text)
 
     return headers, footers

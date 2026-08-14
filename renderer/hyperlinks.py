@@ -179,7 +179,7 @@ def _replace_in_text(
         pieces.append(text[cursor:start])
         href = _build_href(match.term)
         pieces.append(
-            f'<a class="glossary-term" '
+            f'<a class="glossary-link" '
             f'data-term="{html.escape(match.term, quote=True)}" '
             f'href="{href}">'
             f"{text[start:end]}"
