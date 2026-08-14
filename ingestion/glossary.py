@@ -73,7 +73,7 @@ class GlossaryMatcher:
             raise ValueError("Glossary matcher requires at least one term.")
 
         self._term_lookup = {
-            self._normalise_pattern_value(term.term): term
+            self._normalise_pattern_value(term.term).lower(): term
             for term in self._terms
         }
 

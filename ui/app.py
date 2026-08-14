@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 
 _GLOSSARY_CLICK_JS = """
 document.addEventListener('click', function (e) {
-    var link = e.target.closest('.glossary-term');
+    var link = e.target.closest('.glossary-link');
     if (!link) return;
 
     e.preventDefault();

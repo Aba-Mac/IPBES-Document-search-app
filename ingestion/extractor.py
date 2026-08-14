@@ -52,6 +52,8 @@ from unstructured.documents.elements import Table
 from unstructured.documents.elements import Text
 from unstructured.documents.elements import Title
 from unstructured.partition.pdf import partition_pdf
+from unstructured.chunking.title import chunk_by_title
+from unstructured.documents.elements import CompositeElement, Table, TableChunk, ListItem, Title
 
 from .ocr import OCRResult
 
@@ -372,6 +374,14 @@ def extract_with_unstructured(
             extract_images_in_pdf=config.extract_images,
         )
 
+        chunks = chunk_by_title(
+            elements,
+            max_characters=config.max_characters,
+            combine_text_under_n_chars=config.combine_text_under_n_chars,
+            new_after_n_chars=config.new_after_n_chars,
+            multipage_sections=False,
+        )
+
     except Exception as exc:
 
         raise UnstructuredExtractionError(
@@ -388,44 +398,25 @@ def extract_with_unstructured(
 
     element_id = 1
 
-    for element in elements:
-
-        text = (element.text or "").strip()
-
+    for chunk in chunks:
+        text = (chunk.text or "").strip()
         if not text:
-            logger.debug(
-                "Skipping empty %s element on page %s",
-                _element_category(element),
-                _page_number(element),
-            )
             continue
 
-        current_section = _section_title(
-            element,
-            current_section,
-        )
-
-        page_number = _page_number(element)
+        current_section = _chunk_section_title(chunk, current_section)
+        page_number = _page_number(chunk)
 
         if page_number not in pages:
-            pages[page_number] = ExtractedPage(
-                page_number=page_number,
-            )
+            pages[page_number] = ExtractedPage(page_number=page_number)
 
         pages[page_number].elements.append(
             ExtractedElement(
                 id=element_id,
                 page_number=page_number,
-                category=_element_category(element),
+                category=_chunk_category(chunk),
                 text=text,
                 section_title=current_section,
-                metadata={
-                    "coordinates": getattr(
-                        element.metadata,
-                        "coordinates",
-                        None,
-                    ),
-                },
+                metadata={"coordinates": getattr(chunk.metadata, "coordinates", None)},
             )
         )
 
@@ -795,6 +786,24 @@ def extract_with_pymupdf(
 
     return extracted
 
+
+def _chunk_category(chunk) -> str:
+    if isinstance(chunk, (Table, TableChunk)):
+        return "table"
+
+    orig = getattr(chunk.metadata, "orig_elements", None) or []
+    if orig and all(isinstance(e, ListItem) for e in orig):
+        return "list"
+
+    return "paragraph"
+
+
+def _chunk_section_title(chunk, current_section):
+    orig = getattr(chunk.metadata, "orig_elements", None) or []
+    for element in orig:
+        if isinstance(element, Title) and element.text.strip():
+            current_section = element.text.strip()
+    return current_section
 
 ###############################################################################
 # Fallback orchestration helpers
