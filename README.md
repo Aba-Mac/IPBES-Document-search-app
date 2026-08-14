@@ -298,13 +298,15 @@ document-search/
 ├── app.py
 ├── README.md
 ├── requirements.txt
+├── requirements-dev.txt
 ├── .gitignore
 │
 ├── core/
 │   ├── __init__.py
 │   ├── config.py
+│   ├── env.example
 │   ├── env.py
-│   ├── logging.py
+│   ├── logging_config.py
 │   └── paths.py
 |
 ├── .github/
@@ -314,10 +316,11 @@ document-search/
 ├── data/
 │   ├── pdfs/
 │   ├── glossary/
-│   │   └── terms.csv
+│   │   └── terms.txt
 │   ├── processed/
 │   ├── cache/
-│   └── exports/
+│   ├── exports/
+│   └── documents.sqlite
 │
 ├── database/
 │   ├── __init__.py
@@ -349,6 +352,11 @@ document-search/
 │   ├── verifier.py
 │   └── pipeline.py
 │
+├── scripts/
+│   ├── ingest.py
+│   ├── migrate.py
+│   └── rebuild.py
+│  
 ├── search/
 │   ├── __init__.py
 │   ├── parser.py
@@ -364,12 +372,6 @@ document-search/
 │   ├── search.py
 │   ├── glossary.py
 │   └── styles.py
-│
-├── utils/
-│   ├── __init__.py
-│   ├── filesystem.py
-│   ├── text.py
-│   └── validation.py
 │
 └── tests/
     │
@@ -453,7 +455,11 @@ Database creation and migration are documented within the **Database Layer** mod
 
 ## 6. Ingest documents
 
-The ingestion workflow—including OCR, extraction, cleaning, chunking and metadata enrichment—is documented in the **Ingestion Pipeline** module.
+The ingestion workflow—including OCR, extraction, cleaning, chunking and metadata enrichment—is documented in the **Ingestion Pipeline** module. Please be aware that ingestion needs to happen locally by running:
+
+```bash
+python3 -m scripts.ingest
+```
 
 ## 7. Launch the application
 
@@ -558,12 +564,6 @@ Potential enhancements include:
 - Search analytics
 - Saved searches
 - User authentication
-
----
-
-# License
-
-Specify the appropriate project licence prior to public distribution.
 
 ---
 
