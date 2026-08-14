@@ -47,7 +47,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from renderer.highlighting import highlight_search_terms
+from renderer.highlighting import highlight_search_terms, normalise_query
 from renderer.html import escape_html
 from renderer.hyperlinks import GlossaryMatch, hyperlink_glossary_terms
 
@@ -99,6 +99,7 @@ def render_paragraph(
         return ""
 
     matches = list(glossary_terms or ())
+    search_terms = normalise_query(search_query) if search_query else []
 
     # Step 1: Escape all document text.
     rendered = escape_html(paragraph)
@@ -108,6 +109,7 @@ def render_paragraph(
         rendered = hyperlink_glossary_terms(
             escaped_html=rendered,
             glossary_matches=matches,
+            exclude_terms=search_terms,
         )
 
     # Step 3: Highlight active search terms without disturbing existing

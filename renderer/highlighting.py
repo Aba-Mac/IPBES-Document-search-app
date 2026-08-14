@@ -49,6 +49,7 @@ from renderer.html import HTMLToken, TokenType, split_html
 
 __all__ = [
     "highlight_search_terms",
+    "normalise_query"
 ]
 
 ###############################################################################
@@ -66,7 +67,7 @@ _BOOLEAN_SPLIT_RE = re.compile(
 ###############################################################################
 
 
-def _normalise_query(search_query: str | None) -> list[str]:
+def normalise_query(search_query: str | None) -> list[str]:
     """
     Convert a user search query into searchable terms.
 
@@ -114,6 +115,8 @@ def _normalise_query(search_query: str | None) -> list[str]:
     ordered.sort(key=len, reverse=True)
 
     return ordered
+
+_normalise_query = normalise_query
 
 
 def _compile_pattern(term: str) -> re.Pattern[str]:
