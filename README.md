@@ -567,6 +567,17 @@ Potential enhancements include:
 
 ---
 
+# AI development log
+
+This package was developed with AI assistance. See AI_PROMPTS.md for the full prompt history and design decisions, enabling any AI agent to continue development.
+
+---
+
+# Licence
+
+Source code: MIT © 2026 Annabell Macphee (annabell.macphee@senckenberg.de)
+Documentation and background content: CC BY 4.0 (see LICENSE-CC-BY-4.0.md)
+
 # Acknowledgements
 
 This project builds upon several mature open-source technologies, including:
