@@ -199,6 +199,7 @@ def _replace_in_text(
 def hyperlink_glossary_terms(
     escaped_html: str,
     glossary_matches: Iterable[GlossaryMatch],
+    exclude_terms: Iterable[str] | None = None,
 ) -> str:
     """
     Convert glossary terms into hyperlinks.
@@ -210,6 +211,10 @@ def hyperlink_glossary_terms(
 
     glossary_matches
         Iterable of glossary matches already computed during ingestion.
+
+    exclude_terms
+        Terms that should never be hyperlinked (e.g. the active search
+        query), so they remain plain text for the highlighter to wrap.
 
     Returns
     -------
@@ -226,6 +231,13 @@ def hyperlink_glossary_terms(
         return escaped_html
 
     glossary_matches = list(glossary_matches)
+
+    if exclude_terms:
+        excluded = {t.casefold() for t in exclude_terms}
+        glossary_matches = [
+            m for m in glossary_matches
+            if m.term.casefold() not in excluded
+        ]
 
     if not glossary_matches:
         return escaped_html
