@@ -646,21 +646,21 @@ def get_document_by_filename(
     )
 
 
-# def get_available_years(
-#     *,
-#     connection: sqlite3.Connection | None = None,
-# ) -> list[int]:
-#     rows = fetch_all(
-#         """
-#         SELECT DISTINCT year
-#         FROM documents
-#         WHERE year IS NOT NULL
-#         ORDER BY year
-#         """,
-#         connection=connection,
-#     )
+def get_available_years(
+    *,
+    connection: sqlite3.Connection | None = None,
+) -> list[int]:
+    rows = fetch_all(
+        """
+        SELECT DISTINCT year
+        FROM documents
+        WHERE year IS NOT NULL
+        ORDER BY year
+        """,
+        connection=connection,
+    )
 
-#     return [row["year"] for row in rows]
+    return [row["year"] for row in rows]
 
 
 # def get_available_documents(
