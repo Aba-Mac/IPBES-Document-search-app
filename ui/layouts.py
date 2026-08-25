@@ -318,7 +318,7 @@ def build_footer():
     Build the application footer.
     """
 
-    return ui.footer(
+    return ui.tags.footer(
         ui.div(
             ui.div(
                 ui.span("Data: ", class_="footer-label"),
