@@ -52,7 +52,7 @@ from dataclasses import dataclass
 from typing import Iterable
 from urllib.parse import quote
 
-from renderer.html import HTMLToken, TokenType, split_html
+from renderer.html import TokenType, split_html
 
 __all__ = [
     "GlossaryMatch",

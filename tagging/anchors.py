@@ -28,7 +28,6 @@ from typing import Mapping
 from typing import Sequence
 
 from rapidfuzz import fuzz
-from rapidfuzz import process
 
 from core.config import settings
 
@@ -138,14 +137,14 @@ def normalize_text(text: str) -> str:
     return text.strip()
 
 
-def tokenize(text: str) -> list[str]:
-    """
-    Tokenise text.
+# def tokenize(text: str) -> list[str]:
+#     """
+#     Tokenise text.
 
-    Hyphenated words are preserved.
-    """
+#     Hyphenated words are preserved.
+#     """
 
-    return _WORD_RE.findall(text.lower())
+#     return _WORD_RE.findall(text.lower())
 
 
 # ---------------------------------------------------------------------
@@ -265,35 +264,35 @@ class AnchorMatcher:
 # ---------------------------------------------------------------------
 
 
-def match_paragraphs(
-    paragraphs: Iterable[str],
-    matcher: AnchorMatcher | None = None,
-) -> Mapping[int, list[AnchorMatch]]:
-    """
-    Match multiple paragraphs.
+# def match_paragraphs(
+#     paragraphs: Iterable[str],
+#     matcher: AnchorMatcher | None = None,
+# ) -> Mapping[int, list[AnchorMatch]]:
+#     """
+#     Match multiple paragraphs.
 
-    Returns
-    -------
-    dict
+#     Returns
+#     -------
+#     dict
 
-        Key
+#         Key
 
-            paragraph index
+#             paragraph index
 
-        Value
+#         Value
 
-            list of candidate topic tags
-    """
+#             list of candidate topic tags
+#     """
 
-    matcher = matcher or AnchorMatcher()
+#     matcher = matcher or AnchorMatcher()
 
-    output: dict[int, list[AnchorMatch]] = {}
+#     output: dict[int, list[AnchorMatch]] = {}
 
-    for index, paragraph in enumerate(paragraphs):
+#     for index, paragraph in enumerate(paragraphs):
 
-        output[index] = matcher.match(paragraph)
+#         output[index] = matcher.match(paragraph)
 
-    return output
+#     return output
 
 
 # ---------------------------------------------------------------------

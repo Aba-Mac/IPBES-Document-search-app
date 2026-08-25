@@ -4,13 +4,11 @@ ASGI entry point for the IPBES Document Search application.
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse
-from starlette.routing import Mount, Route
+from starlette.routing import Mount
 
 from database import repository
 from database.migrations import migrate

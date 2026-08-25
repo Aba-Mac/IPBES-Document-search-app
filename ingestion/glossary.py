@@ -45,6 +45,7 @@ class GlossaryTerm:
 
     term_id: int
     term: str
+    list_name: str = "general"
 
 
 @dataclass(frozen=True)
@@ -72,10 +73,10 @@ class GlossaryMatcher:
         if not self._terms:
             raise ValueError("Glossary matcher requires at least one term.")
 
-        self._term_lookup = {
-            self._normalise_pattern_value(term.term).lower(): term
-            for term in self._terms
-        }
+        self._term_lookup: dict[str, list[GlossaryTerm]] = {}
+        for term in self._terms:
+            key = self._normalise_pattern_value(term.term).lower()
+            self._term_lookup.setdefault(key, []).append(term)
 
         escaped_terms = sorted(
             (
@@ -117,16 +118,12 @@ class GlossaryMatcher:
         for match in self._regex.finditer(text):
             matched_text = self._normalise_pattern_value(match.group(1))
 
-            glossary_term = self._term_lookup.get(
-                matched_text.lower()
+            glossary_terms = self._term_lookup.get(
+                matched_text.lower(), []
             )
 
-            if glossary_term is None:
-                continue
-
-            counts[glossary_term.term_id] = (
-                counts.get(glossary_term.term_id, 0) + 1
-            )
+            for glossary_term in glossary_terms:
+                counts[glossary_term.term_id] = counts.get(glossary_term.term_id, 0) + 1
 
         return [
             GlossaryMatch(
@@ -138,7 +135,7 @@ class GlossaryMatcher:
         ]
 
 
-def load_terms_txt(path: Path) -> list[GlossaryTerm]:
+def load_terms_txt(path: Path, list_name: str = "general") -> list[GlossaryTerm]:
     """
     Load glossary terms from a plain text file.
 
@@ -151,33 +148,19 @@ def load_terms_txt(path: Path) -> list[GlossaryTerm]:
     """
 
     terms: list[GlossaryTerm] = []
-
-    with path.open(
-        "r",
-        encoding="utf-8-sig",
-    ) as file:
-
+    with path.open("r", encoding="utf-8-sig") as file:
         for index, line in enumerate(file, start=1):
-
             term = line.strip()
-
             if not term:
                 continue
-
-            terms.append(
-                GlossaryTerm(
-                    term_id=index,
-                    term=term,
-                )
-            )
-
+            terms.append(GlossaryTerm(term_id=index, term=term, list_name=list_name))
     return terms
 
 
 def upsert_glossary_terms(
     connection: sqlite3.Connection,
     terms: Iterable[GlossaryTerm],
-) -> dict[str, int]:
+) -> dict[tuple[str, str], int]:
     """
     Insert glossary terms into the database.
 
@@ -187,37 +170,23 @@ def upsert_glossary_terms(
     """
 
     cursor = connection.cursor()
-
     for term in terms:
         cursor.execute(
             """
-            INSERT INTO terms(term)
-            VALUES (?)
-            ON CONFLICT(term)
-            DO NOTHING
+            INSERT INTO terms(term, list_name)
+            VALUES (?, ?)
+            ON CONFLICT(term, list_name) DO NOTHING
             """,
-            (
-                term.term,
-            ),
+            (term.term, term.list_name),
         )
-
-    rows = cursor.execute(
-        """
-        SELECT id, term
-        FROM terms
-        """
-    ).fetchall()
-
-    return {
-        row[1].lower(): row[0]
-        for row in rows
-    }
+    rows = cursor.execute("SELECT id, term, list_name FROM terms").fetchall()
+    return {(row[1].lower(), row[2]): row[0] for row in rows}
 
 
 def index_paragraph_glossary_terms(
     connection: sqlite3.Connection,
     paragraphs: Iterable[tuple[int, str]],
-    terms_txt: Path,
+    glossary_sources: dict[str, Path],
 ) -> int:
     """
     Compute glossary matches for paragraphs and store them.
@@ -233,27 +202,27 @@ def index_paragraph_glossary_terms(
             Iterable of:
                 (paragraph_id, paragraph_text)
 
-        terms_txt:
-            Path to terms.txt.
+        glossary_sources:
+            Glossary term lists
 
     Returns:
         Number of stored matches.
     """
     paragraphs = list(paragraphs)
 
-    loaded_terms = load_terms_txt(terms_txt)
+    all_loaded_terms: list[GlossaryTerm] = []
+    for list_name, path in glossary_sources.items():
+        all_loaded_terms.extend(load_terms_txt(path, list_name=list_name))
 
-    database_ids = upsert_glossary_terms(
-        connection,
-        loaded_terms,
-    )
+    database_ids = upsert_glossary_terms(connection, all_loaded_terms)
 
     database_terms = [
         GlossaryTerm(
-            term_id=database_ids[term.term.lower()],
-            term=term.term,
+            term_id=database_ids[(t.term.lower(), t.list_name)],
+            term=t.term,
+            list_name=t.list_name,
         )
-        for term in loaded_terms
+        for t in all_loaded_terms
     ]
 
     matcher = GlossaryMatcher(database_terms)
@@ -300,3 +269,24 @@ def index_paragraph_glossary_terms(
             inserted += 1
 
     return inserted
+
+def reindex_all_glossary_matches(
+    connection: sqlite3.Connection,
+    glossary_sources: dict[str, Path],
+) -> int:
+    """
+    Recompute glossary matches for every paragraph currently in the
+    database, without touching OCR/extraction/chunking.
+
+    Use this after editing a glossary .txt file, instead of
+    re-running the full ingestion pipeline.
+    """
+    from database import repository  # local import avoids a cycle at module load
+
+    paragraphs = repository.get_all_paragraphs_for_glossary(connection=connection)
+
+    return index_paragraph_glossary_terms(
+        connection,
+        paragraphs,
+        glossary_sources,
+    )

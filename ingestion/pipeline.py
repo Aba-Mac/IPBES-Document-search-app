@@ -45,7 +45,6 @@ import logging
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from database import repository
 
@@ -55,6 +54,7 @@ from ingestion import extractor
 from ingestion import glossary
 from ingestion import metadata
 from ingestion import ocr
+from ingestion import doi_lookup
 
 LOGGER = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ def calculate_file_hash(path: Path) -> str:
 
 def needs_reindex(
     pdf_path: Path,
-) -> tuple[bool, int | None]:
+) -> tuple[bool, int | None, str]:
     """
     Determine whether a document requires re-indexing.
 
@@ -160,76 +160,62 @@ def needs_reindex(
 
     filename = pdf_path.name
 
+    current_hash = calculate_file_hash(pdf_path)
+
     existing = repository.get_document_by_filename(filename)
 
     if existing is None:
 
-        return True, None
+        return True, None, current_hash
 
-    #
-    # Future-proof:
-    #
-    # If source_hash exists in the schema use it.
-    #
+    existing_hash = existing["source_hash"] if "source_hash" in existing.keys() else None
 
-    if "source_hash" not in existing.keys():
+    if existing_hash is None:
 
         LOGGER.info(
-            "Document '%s' already indexed.",
+            "No stored hash for '%s' — re-indexing to establish one.",
             filename,
         )
+        return True, int(existing["id"]), current_hash
 
-        return False, int(existing["id"])
+    if existing_hash == current_hash:
+        LOGGER.info("Skipping unchanged document: %s", filename)
+        return False, int(existing["id"]), current_hash
 
-    current_hash = calculate_file_hash(pdf_path)
-
-    if existing["source_hash"] == current_hash:
-
-        LOGGER.info(
-            "Skipping unchanged document: %s",
-            filename,
-        )
-
-        return False, int(existing["id"])
-
-    LOGGER.info(
-        "Detected updated document: %s",
-        filename,
-    )
-
-    return True, int(existing["id"])
+    LOGGER.info("Detected updated document: %s", filename)
+    return True, int(existing["id"]), current_hash
 
 
 ###############################################################################
 # Glossary initialisation
 ###############################################################################
 
-def initialise_glossary(
-    terms_txt: str | Path,
-) -> None:
-    """
-    Load glossary terms into the database.
+# def initialise_glossary(
+#     terms_txt: str | Path,
+# ) -> None:
+#     """
+#     Load glossary terms into the database.
 
-    Safe to call multiple times because bulk_insert_terms()
-    uses ON CONFLICT to ignore duplicates.
-    """
+#     Safe to call multiple times because bulk_insert_terms()
+#     uses ON CONFLICT to ignore duplicates.
+#     """
 
-    terms_txt = Path(terms_txt)
+#     terms_txt = Path(terms_txt)
 
-    LOGGER.info("Loading glossary terms...")
+#     LOGGER.info("Loading glossary terms...")
 
-    glossary_terms = glossary.load_terms_txt(terms_txt)
+#     glossary_terms = glossary.load_terms_txt(terms_txt)
 
-    with repository.transaction() as connection:
-        repository.bulk_insert_terms(
-            ((term.term,) for term in glossary_terms),
-            connection=connection,
-        )
+#     with repository.transaction() as connection:
+#         repository.bulk_insert_terms(
+#             ((term.term,) for term in glossary_terms),
+#             connection=connection,
+#         )
 
-    LOGGER.info(
-        "Inserted %d glossary terms.",
-        len(glossary_terms),
-    )
+#     LOGGER.info(
+#         "Inserted %d glossary terms.",
+#         len(glossary_terms),
+#     )
 
 ###############################################################################
 # Pipeline
@@ -239,7 +225,8 @@ def initialise_glossary(
 def ingest_document(
     pdf_path: str | Path,
     *,
-    terms_txt: str | Path,
+    glossary_sources: dict[str, Path],
+    doi_map: dict[str,str] | None = None,
 ) -> IngestionResult:
     """
     Run the complete ingestion pipeline.
@@ -250,9 +237,9 @@ def ingest_document(
 
         PDF document.
 
-    terms_txt
+    glossary_sources
 
-        Path to glossary txt file.
+        2 glossary term lists.
 
     Returns
     -------
@@ -269,14 +256,12 @@ def ingest_document(
 
     pdf_path = Path(pdf_path)
 
-    terms_txt = Path(terms_txt)
-
     LOGGER.info(
         "Beginning ingestion: %s",
         pdf_path.name,
     )
 
-    should_index, existing_document_id = needs_reindex(
+    should_index, existing_document_id, current_hash = needs_reindex(
         pdf_path
     )
 
@@ -288,16 +273,6 @@ def ingest_document(
             glossary_matches=0,
             skipped=True,
         )
-
-    #
-    # Existing document
-    #
-    # Remove it completely before rebuilding.
-    #
-    # This keeps paragraph numbering,
-    # glossary matches and the FTS index
-    # perfectly synchronised.
-    #
 
     if existing_document_id is not None:
 
@@ -368,11 +343,13 @@ def ingest_document(
         document_id = repository.create_document(
             filename=pdf_path.name,
             title=document_metadata.title.value,
+            doi=(doi_map or {}).get(pdf_path.name),
             plenary_session=document_metadata.plenary_session.value,
             year=document_metadata.year.value,
             date=document_metadata.date.value,
             location=document_metadata.location.value,
             source=str(pdf_path),
+            source_hash=current_hash,
             page_count=extraction.page_count,
             connection=connection,
         )
@@ -435,7 +412,7 @@ def ingest_document(
         glossary_match_count = glossary.index_paragraph_glossary_terms(
             connection,
             paragraphs_for_glossary,
-            terms_txt,
+            glossary_sources,
         )
 
         ################################################################
@@ -502,7 +479,8 @@ def ingest_document(
 def ingest_directory(
     directory: str | Path,
     *,
-    terms_txt: str | Path,
+    glossary_sources: dict[str, Path], 
+    doi_txt: str | Path | None = None,
     recursive: bool = True,
 ) -> list[IngestionResult]:
     """
@@ -513,8 +491,8 @@ def ingest_directory(
     directory
         Root directory.
 
-    terms_txt
-        Path to glossary txt file.
+    glossary_sources
+        Path to 2 glossary txt files.
 
     recursive
         Search subdirectories recursively.
@@ -531,6 +509,8 @@ def ingest_directory(
 
         raise FileNotFoundError(directory)
 
+    doi_map = doi_lookup.load_doi_map(Path(doi_txt)) if doi_txt else {}
+
     pattern = "**/*.pdf" if recursive else "*.pdf"
 
     results: list[IngestionResult] = []
@@ -542,7 +522,8 @@ def ingest_directory(
             results.append(
                 ingest_document(
                     pdf,
-                    terms_txt=terms_txt,
+                    glossary_sources,
+                    doi_map,
                 )
             )
 
@@ -563,71 +544,66 @@ def ingest_directory(
 ###############################################################################
 
 
-def ingest_paths(
-    paths: Iterable[str | Path],
-    *,
-    terms_txt: str | Path,
-) -> list[IngestionResult]:
-    """
-    Ingest an iterable of PDF paths.
+# def ingest_paths(
+#     paths: Iterable[str | Path],
+#     *,
+#     terms_txt: str | Path,
+# ) -> list[IngestionResult]:
+#     """
+#     Ingest an iterable of PDF paths.
 
-    Parameters
-    ----------
-    paths
-        Collection of PDF files.
+#     Parameters
+#     ----------
+#     paths
+#         Collection of PDF files.
 
-    terms_txt
-        Glossary txt file.
+#     terms_txt
+#         Glossary txt file.
 
-    Returns
-    -------
-    list[IngestionResult]
-    """
+#     Returns
+#     -------
+#     list[IngestionResult]
+#     """
 
-    results: list[IngestionResult] = []
+#     results: list[IngestionResult] = []
 
-    for path in paths:
+#     for path in paths:
 
-        results.append(
-            ingest_document(
-                path,
-                terms_txt=terms_txt,
-            )
-        )
+#         results.append(
+#             ingest_document(
+#                 path,
+#                 terms_txt=terms_txt,
+#             )
+#         )
 
-    return results
-
-
-def reindex_document(
-    pdf_path: str | Path,
-    *,
-    terms_txt: str | Path,
-) -> IngestionResult:
-    """
-    Force re-indexing of a document.
-
-    Existing indexed content is removed regardless
-    of whether the source document has changed.
-    """
-
-    pdf_path = Path(pdf_path)
-
-    existing = repository.get_document_by_filename(
-        pdf_path.name
-    )
-
-    if existing is not None:
-
-        repository.delete_document(
-            int(existing["id"])
-        )
-
-    return ingest_document(
-        pdf_path,
-        terms_txt=terms_txt,
-    )
+#     return results
 
 
-###############################################################################
-# End of module
-###############################################################################
+# def reindex_document(
+#     pdf_path: str | Path,
+#     *,
+#     terms_txt: str | Path,
+# ) -> IngestionResult:
+#     """
+#     Force re-indexing of a document.
+
+#     Existing indexed content is removed regardless
+#     of whether the source document has changed.
+#     """
+
+#     pdf_path = Path(pdf_path)
+
+#     existing = repository.get_document_by_filename(
+#         pdf_path.name
+#     )
+
+#     if existing is not None:
+
+#         repository.delete_document(
+#             int(existing["id"])
+#         )
+
+#     return ingest_document(
+#         pdf_path,
+#         terms_txt=terms_txt,
+#     )

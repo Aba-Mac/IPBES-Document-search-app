@@ -480,20 +480,16 @@ def is_high_confidence(
     """
     Determine whether a similarity score should be accepted without
     LLM verification.
-
-    Parameters
+     Parameters
     ----------
     similarity
         Cosine similarity score.
-
-    threshold
+     threshold
         Optional override of the configured threshold.
-
-    Returns
+     Returns
     -------
     bool
     """
-
     limit = (
         threshold
         if threshold is not None

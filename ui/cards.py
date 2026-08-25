@@ -38,12 +38,6 @@ __all__ = [
 ]
 
 ###############################################################################
-# Constants
-###############################################################################
-
-RESULTS_OUTPUT_ID = "results_container"
-
-###############################################################################
 # Public API
 ###############################################################################
 
@@ -136,70 +130,18 @@ def _empty_results():
     )
 
 
-def _result_card(result, *, query:str):
+def _result_card(result, *, query: str):
     """
-    Build a single expandable result card.
-
-    Parameters
-    ----------
-    result
-        Ranked search result object.
-
-    Returns
-    -------
-    shiny.ui.Tag
+    Build a single result card: paragraph text with a metadata
+    footer, no expand/collapse.
     """
-
-    #
-    # renderer.renderer owns all HTML generation including:
-    #
-    # * highlighting
-    # * glossary hyperlinks
-    # * paragraph markup
-    #
 
     paragraph_html = render_paragraph(
-                        paragraph=result.text,
-                        glossary_terms=[
-                            GlossaryMatch(term=term)
-                            for term in result.matched_terms
-                        ],
-                        search_query=query,
-                    )
-
-    metadata = ui.div(
-        ui.span(
-            (
-            f"{result.document_title} · "
-            ),
-            class_="metadata-title",
-        ),
-        ui.span(
-            (
-            f"{result.plenary_session} · "
-            ),
-            class_="metadata-item",
-        ),
-        ui.span(
-            (
-            f"{str(result.year)} · "
-            ),
-            class_="metadata-item",
-        ),
-        ui.span(
-            (
-            f"{result.location} · "
-            ),
-            class_="metadata-item",
-        ),
-        ui.span(
-            (
-                f"Page {result.page_number} · "
-                f"Paragraph {result.paragraph_number}"
-            ),
-            class_="metadata-item",
-        ),
-        class_="result-metadata",
+        paragraph=result.text,
+        glossary_terms=[
+            GlossaryMatch(term=term) for term in result.matched_terms
+        ],
+        search_query=query,
     )
 
     body = ui.div(
@@ -207,16 +149,32 @@ def _result_card(result, *, query:str):
         class_="paragraph-body",
     )
 
-    #
-    # Use an HTML <details> element for accessibility and
-    # progressive enhancement.
-    #
+    doi = getattr(result, "doi", None)
 
-    return ui.tags.details(
-        ui.tags.summary(
-            metadata,
-            class_="result-summary",
+    title_element = (
+        ui.a(
+            result.document_title,
+            href=f"https://doi.org/{doi}",
+            target="_blank",
+            rel="noopener noreferrer",
+            class_="result-doi-link",
+        )
+        if doi
+        else ui.span(result.document_title, class_="result-doi-link")
+    )
+
+    footer = ui.div(
+        ui.span("Referenced from:", class_="result-footer-label"),
+        title_element,
+        ui.span(f" · {result.year}" if result.year else ""),
+        ui.span(
+            f" · Page {result.page_number} · Paragraph {result.paragraph_number}"
         ),
+        class_="result-footer",
+    )
+
+    return ui.div(
         body,
+        footer,
         class_="result-card",
     )

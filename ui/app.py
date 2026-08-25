@@ -37,15 +37,14 @@ from search.service import (
 )
 
 from ui.cards import register_card_renderer
-from ui.layouts import build_page
+from ui.layouts import build_page, build_about_modal
 from ui.search import (
     build_search_controls,
     page_size,
     search_query,
     selected_year_range,
-    SEARCH_QUERY_ID,
+    selected_glossary_lists,
     YEAR_FILTER_ID,
-    PAGE_SIZE_ID
 )
 from ui.styles import app_css
 
@@ -130,6 +129,15 @@ def server(input, output, session) -> None:
     submitted_query = reactive.value("")
 
     # ---------------------------------------------------------------
+    # About section
+    # ---------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.about_button)
+    def _show_about_modal():
+        ui.modal_show(build_about_modal())
+
+    # ---------------------------------------------------------------
     # Reset pagination when a new search is submitted
     # ---------------------------------------------------------------
 
@@ -166,7 +174,8 @@ def server(input, output, session) -> None:
 
     @reactive.effect
     async def _update_glossary_terms():
-        terms = get_glossary_terms()
+        lists = selected_glossary_lists(input)
+        terms = get_glossary_terms(list_names=lists or None)
 
         logger.info(
             "Loaded glossary terms for autocomplete: %s",
@@ -206,6 +215,10 @@ def server(input, output, session) -> None:
 
         if not query:
             return None
+
+        lists = selected_glossary_lists(input)
+        if lists:
+            filters["glossary_lists"] = lists
 
         page = current_page.get()
 

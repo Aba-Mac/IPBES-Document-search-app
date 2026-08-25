@@ -30,6 +30,7 @@ STYLESHEET = """
 
 :root {
     --colour-background: #ffffff;
+    --colour-card-background: #eaf4fb; 
     --colour-surface: #ffffff;
     --colour-text: #1f2933;
     --colour-text-muted: #52606d;
@@ -143,6 +144,68 @@ a:focus {
     max-width: 720px;
 }
 
+.app-version {
+    color: var(--colour-text-muted);
+    font-size: 0.85rem;
+}
+
+
+.about-details {
+    color: var(--colour-text-muted);
+    font-size: 0.85rem;
+}
+
+
+.about-summary {
+    color: var(--colour-accent-dark);
+    cursor: pointer;
+    font-weight: 500;
+    list-style: none;
+}
+
+
+.about-summary::-webkit-details-marker {
+    display: none;
+}
+
+
+.about-summary::after {
+    content: " ▾";
+font-size: 0.75rem;
+}
+
+
+.about-details[open] .about-summary::after {
+    content: " ▴";
+}
+
+
+.about-content {
+    background: #fafafa;
+    border: 1px solid var(--colour-border-light);
+    border-radius: var(--radius-small);
+    margin-top: 0.75rem;
+    max-width: 720px;
+    padding: 0.9rem 1rem;
+}
+
+
+.about-content p {
+    margin: 0 0 0.65rem;
+}
+
+
+.about-content p:last-child {
+    margin-bottom: 0;
+}
+
+
+.app-subtitle {
+    color: var(--colour-text-muted);
+    font-size: 1.1rem;
+    max-width: 720px;
+    margin: 0;
+}
 
 /* ==========================================================================
    Search interface
@@ -253,7 +316,7 @@ a:focus {
 
 
 .result-card {
-    background: var(--colour-surface);
+    background: var(--colour-card-background);
     border:
         1px solid var(--colour-border-light);
     border-left:
@@ -286,11 +349,22 @@ a:focus {
     margin: 0;
 }
 
-
-.result-card-metadata {
-    color: var(--colour-text-muted);
-    font-size: 0.9rem;
+.result-footer {
     margin-top: var(--spacing-md);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid rgba(31, 41, 51, 0.1);
+    font-size: 0.8rem;
+    color: var(--colour-text-muted);
+}
+
+.result-footer-label {
+    font-weight: 600;
+    margin-right: var(--spacing-xs);
+}
+
+.result-doi-link {
+    color: var(--colour-accent-dark);
+    font-weight: 600;
 }
 
 
@@ -301,7 +375,7 @@ a:focus {
 .glossary-link {
     color: var(--colour-accent-dark);
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 700;
     text-decoration:
         underline;
     text-decoration-thickness: 1px;
@@ -319,6 +393,7 @@ a:focus {
     background:
         var(--colour-highlight);
     border-radius: 2px;
+    font-weight: 700;
     padding:
         0.05em
         0.15em;
@@ -344,6 +419,13 @@ a:focus {
     color: var(--colour-text-muted);
     font-size: 0.9rem;
     font-weight: 500;
+}
+
+.app-meta {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: var(--spacing-md);
 }
 
 
@@ -378,13 +460,46 @@ a:focus {
    ========================================================================== */
 
 .app-footer {
-    border-top:
-        1px solid var(--colour-border-light);
+    border-top: 1px solid var(--colour-border-light);
     color: var(--colour-text-muted);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     margin-top: var(--spacing-xxl);
-    padding-top:
-        var(--spacing-lg);
+    padding: var(--spacing-lg) 0 0.5rem;
+}
+
+
+.footer-inner {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+}
+
+
+.footer-label {
+    font-weight: 500;
+}
+
+
+.footer-separator {
+    color: #9aa5b1;
+}
+
+
+.footer-link {
+    color: #3f6f99;
+}
+
+
+.footer-link:hover,
+.footer-link:focus {
+    color: var(--colour-accent-dark);
+}
+
+
+.footer-credit {
+    color: #52606d;
+    text-align: right;
 }
 
 
@@ -414,6 +529,16 @@ a:focus {
 
     .search-button {
         width: 100%;
+    }
+
+        .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+
+    .footer-credit {
+        text-align: left;
     }
 }
 

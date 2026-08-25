@@ -54,7 +54,6 @@ from search.parser import (
 )
 
 from search.ranking import (
-    RankingError,
     SearchResponse,
     execute_ranked_search,
 )
@@ -377,63 +376,63 @@ def search(
 ###############################################################################
 
 
-def get_document(
-    document_id: int,
-) -> dict[str, Any] | None:
-    """
-    Return metadata for a single document.
+# def get_document(
+#     document_id: int,
+# ) -> dict[str, Any] | None:
+#     """
+#     Return metadata for a single document.
 
-    Parameters
-    ----------
-    document_id
-        Internal document identifier.
+#     Parameters
+#     ----------
+#     document_id
+#         Internal document identifier.
 
-    Returns
-    -------
-    dict[str, Any] | None
-        Document metadata if found, otherwise ``None``.
+#     Returns
+#     -------
+#     dict[str, Any] | None
+#         Document metadata if found, otherwise ``None``.
 
-    Raises
-    ------
-    SearchServiceError
-        If the repository operation fails.
-    """
-    try:
-        return _service()._repository.get_document(document_id)
-    except Exception as exc:
-        logger.exception(
-            "Failed to retrieve document metadata "
-            "(document_id=%s).",
-            document_id,
-        )
-        raise SearchServiceError(
-            "Unable to retrieve document."
-        ) from exc
+#     Raises
+#     ------
+#     SearchServiceError
+#         If the repository operation fails.
+#     """
+#     try:
+#         return _service()._repository.get_document(document_id)
+#     except Exception as exc:
+#         logger.exception(
+#             "Failed to retrieve document metadata "
+#             "(document_id=%s).",
+#             document_id,
+#         )
+#         raise SearchServiceError(
+#             "Unable to retrieve document."
+#         ) from exc
 
 
-def get_available_sources() -> list[str]:
-    """
-    Return all available document sources.
+# def get_available_sources() -> list[str]:
+#     """
+#     Return all available document sources.
 
-    Returns
-    -------
-    list[str]
-        Distinct sources ordered by the repository.
+#     Returns
+#     -------
+#     list[str]
+#         Distinct sources ordered by the repository.
 
-    Raises
-    ------
-    SearchServiceError
-        If retrieval fails.
-    """
-    try:
-        return _service()._repository.get_available_sources()
-    except Exception as exc:
-        logger.exception(
-            "Failed to retrieve available sources."
-        )
-        raise SearchServiceError(
-            "Unable to retrieve sources."
-        ) from exc
+#     Raises
+#     ------
+#     SearchServiceError
+#         If retrieval fails.
+#     """
+#     try:
+#         return _service()._repository.get_available_sources()
+#     except Exception as exc:
+#         logger.exception(
+#             "Failed to retrieve available sources."
+#         )
+#         raise SearchServiceError(
+#             "Unable to retrieve sources."
+#         ) from exc
 
 
 def get_available_years() -> list[int]:
@@ -461,45 +460,45 @@ def get_available_years() -> list[int]:
         ) from exc
 
 
-def get_available_documents() -> list[dict[str, Any]]:
-    """
-    Return document metadata for populating UI selectors.
+# def get_available_documents() -> list[dict[str, Any]]:
+#     """
+#     Return document metadata for populating UI selectors.
 
-    Each returned dictionary should contain sufficient information
-    for display, typically including:
+#     Each returned dictionary should contain sufficient information
+#     for display, typically including:
 
-    - document_id
-    - title
-    - filename
-    - source
-    - year
-    - plenary_session
-    - location
+#     - document_id
+#     - title
+#     - filename
+#     - source
+#     - year
+#     - plenary_session
+#     - location
 
-    Returns
-    -------
-    list[dict[str, Any]]
+#     Returns
+#     -------
+#     list[dict[str, Any]]
 
-    Raises
-    ------
-    SearchServiceError
-        If retrieval fails.
-    """
-    try:
-        return _service()._repository.get_available_documents()
-    except Exception as exc:
-        logger.exception(
-            "Failed to retrieve available documents."
-        )
-        raise SearchServiceError(
-            "Unable to retrieve document list."
-        ) from exc
+#     Raises
+#     ------
+#     SearchServiceError
+#         If retrieval fails.
+#     """
+#     try:
+#         return _service()._repository.get_available_documents()
+#     except Exception as exc:
+#         logger.exception(
+#             "Failed to retrieve available documents."
+#         )
+#         raise SearchServiceError(
+#             "Unable to retrieve document list."
+#         ) from exc
 
 
-def get_glossary_terms() -> list[str]:
+def get_glossary_terms(list_names: tuple[str,...] | None = None) -> list[str]:
     return [
         row["term"]
-        for row in repository.list_terms()
+        for row in repository.list_terms(list_names=list_names)
     ]
 
 

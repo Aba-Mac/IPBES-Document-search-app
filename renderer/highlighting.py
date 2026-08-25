@@ -45,7 +45,7 @@ import html
 import re
 from typing import Iterable
 
-from renderer.html import HTMLToken, TokenType, split_html
+from renderer.html import TokenType, split_html
 
 __all__ = [
     "highlight_search_terms",

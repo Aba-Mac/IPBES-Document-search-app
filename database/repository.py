@@ -319,20 +319,20 @@ def fetch_scalar(
 ###############################################################################
 
 
-def database_exists() -> bool:
-    """
-    Return True if the configured database file exists.
-    """
+# def database_exists() -> bool:
+#     """
+#     Return True if the configured database file exists.
+#     """
 
-    return Path(settings.database.path).exists()
+#     return Path(settings.database.path).exists()
 
 
-def close(connection: sqlite3.Connection) -> None:
-    """
-    Close a database connection.
-    """
+# def close(connection: sqlite3.Connection) -> None:
+#     """
+#     Close a database connection.
+#     """
 
-    connection.close()
+#     connection.close()
 
 
 ###############################################################################
@@ -340,42 +340,42 @@ def close(connection: sqlite3.Connection) -> None:
 ###############################################################################
 
 
-def foreign_key_check(
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Run PRAGMA foreign_key_check.
+# def foreign_key_check(
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Run PRAGMA foreign_key_check.
 
-    Returns
-    -------
-    list[sqlite3.Row]
+#     Returns
+#     -------
+#     list[sqlite3.Row]
 
-    Empty list means success.
-    """
+#     Empty list means success.
+#     """
 
-    return fetch_all(
-        "PRAGMA foreign_key_check;",
-        connection=connection,
-    )
+#     return fetch_all(
+#         "PRAGMA foreign_key_check;",
+#         connection=connection,
+#     )
 
 
-def integrity_check(
-    connection: sqlite3.Connection | None = None,
-) -> bool:
-    """
-    Run SQLite integrity check.
+# def integrity_check(
+#     connection: sqlite3.Connection | None = None,
+# ) -> bool:
+#     """
+#     Run SQLite integrity check.
 
-    Returns
-    -------
-    bool
-    """
+#     Returns
+#     -------
+#     bool
+#     """
 
-    result = fetch_scalar(
-        "PRAGMA integrity_check;",
-        connection=connection,
-    )
+#     result = fetch_scalar(
+#         "PRAGMA integrity_check;",
+#         connection=connection,
+#     )
 
-    return result == "ok"
+#     return result == "ok"
 
 
 ###############################################################################
@@ -405,59 +405,56 @@ def paragraph_count(
 def count_paragraphs(
     *,
     fts_query: str,
-    filters: SearchFilters | None = None,
-    source: str | None = None,
-    year: tuple[int, int] | None = None,
-    document_id: int | None = None,
+    filters: Any = None,
     connection: sqlite3.Connection | None = None,
 ) -> int:
     """
     Count paragraphs matching an FTS query and optional filters.
-
-    ``filters`` is the preferred interface. The explicit filter arguments
-    are retained for backwards compatibility with existing callers.
     """
+    source = getattr(filters, "source", None)
+    year = getattr(filters, "year", None)
+    document_id = getattr(filters, "document", None)
+    glossary_lists = getattr(filters, "glossary_lists", None)
 
-    if filters is not None:
-        source = filters.source
-        year = filters.year
-        document_id = filters.document
-
-    sql = """
-        SELECT COUNT(*)
-        FROM paragraphs_fts
-
-        JOIN paragraphs AS p
-            ON p.id = paragraphs_fts.rowid
-
-        JOIN documents AS d
-            ON d.id = p.document_id
-
-        WHERE paragraphs_fts MATCH ?
-    """
-
+    joins = ""
+    where = ["paragraphs_fts MATCH ?"]
     parameters: list[Any] = [fts_query]
 
+    if glossary_lists:
+        joins = """
+            JOIN paragraph_terms AS pt ON pt.paragraph_id = p.id
+            JOIN terms AS t ON t.id = pt.term_id
+        """
+        placeholders = ",".join("?" for _ in glossary_lists)
+        where.append(f"t.list_name IN ({placeholders})")
+        parameters.extend(glossary_lists)
+
     if source is not None:
-        sql += "\nAND d.source = ?"
+        where.append("d.source = ?")
         parameters.append(source)
 
     if year is not None:
         year_min, year_max = year
-        sql += "\nAND d.year BETWEEN ? AND ?"
+        where.append("d.year BETWEEN ? AND ?")
         parameters.extend([year_min, year_max])
 
     if document_id is not None:
-        sql += "\nAND d.id = ?"
+        where.append("d.id = ?")
         parameters.append(document_id)
 
-    result = fetch_scalar(
-        sql,
-        parameters,
-        connection=connection,
-    )
+    # DISTINCT p.id because joining paragraph_terms/terms can produce
+    # multiple rows per paragraph when it matches more than one term
+    # within the selected list(s).
+    sql = f"""
+        SELECT COUNT(DISTINCT p.id)
+        FROM paragraphs_fts
+        JOIN paragraphs AS p ON p.id = paragraphs_fts.rowid
+        JOIN documents AS d ON d.id = p.document_id
+        {joins}
+        WHERE {' AND '.join(where)}
+    """
 
-    return int(result or 0)
+    return int(fetch_scalar(sql, parameters, connection=connection) or 0)
 
 
 def fts_row_count(
@@ -565,11 +562,13 @@ def table_row_count(
 def create_document(
     filename: str,
     title: str | None,
+    doi: str | None,
     plenary_session: str | None,
     year: int | None,
     date: str | None,
     location: str | None,
     source: str | None,
+    source_hash: str | None,
     page_count: int,
     *,
     connection: sqlite3.Connection | None = None,
@@ -580,47 +579,51 @@ def create_document(
         INSERT INTO documents (
             filename,
             title,
+            doi,
             plenary_session,
             year,
             date,
             location,
             source,
+            source_hash,
             page_count
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             filename,
             title,
+            doi,
             plenary_session,
             year,
             date,
             location,
             source,
+            source_hash,
             page_count,
         ),
         connection=connection,
     )
 
 
-def get_document(
-    document_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> sqlite3.Row | None:
-    """
-    Retrieve a document by ID.
-    """
+# def get_document(
+#     document_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> sqlite3.Row | None:
+#     """
+#     Retrieve a document by ID.
+#     """
 
-    return fetch_one(
-        """
-        SELECT *
-        FROM documents
-        WHERE id = ?
-        """,
-        (document_id,),
-        connection=connection,
-    )
+#     return fetch_one(
+#         """
+#         SELECT *
+#         FROM documents
+#         WHERE id = ?
+#         """,
+#         (document_id,),
+#         connection=connection,
+#     )
 
 
 def get_document_by_filename(
@@ -643,93 +646,93 @@ def get_document_by_filename(
     )
 
 
-def get_available_years(
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[int]:
-    rows = fetch_all(
-        """
-        SELECT DISTINCT year
-        FROM documents
-        WHERE year IS NOT NULL
-        ORDER BY year
-        """,
-        connection=connection,
-    )
+# def get_available_years(
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[int]:
+#     rows = fetch_all(
+#         """
+#         SELECT DISTINCT year
+#         FROM documents
+#         WHERE year IS NOT NULL
+#         ORDER BY year
+#         """,
+#         connection=connection,
+#     )
 
-    return [row["year"] for row in rows]
-
-
-def get_available_documents(
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    return list_documents(
-        connection=connection,
-    )
+#     return [row["year"] for row in rows]
 
 
-def list_documents(
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return all documents ordered by year then title.
-    """
-
-    return fetch_all(
-        """
-        SELECT *
-        FROM documents
-        ORDER BY
-            year,
-            title
-        """,
-        connection=connection,
-    )
+# def get_available_documents(
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     return list_documents(
+#         connection=connection,
+#     )
 
 
-def update_document_metadata(
-    document_id: int,
-    *,
-    title: str | None,
-    plenary_session: str | None,
-    year: int | None,
-    date: str | None,
-    location: str | None,
-    source: str | None,
-    page_count: int,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Update document metadata.
-    """
+# def list_documents(
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Return all documents ordered by year then title.
+#     """
 
-    execute(
-        """
-        UPDATE documents
-        SET
-            title = ?,
-            plenary_session = ?,
-            year = ?,
-            date = ?,
-            location = ?,
-            source = ?,
-            page_count = ?
-        WHERE id = ?
-        """,
-        (
-            title,
-            plenary_session,
-            year,
-            date,
-            location,
-            source,
-            page_count,
-            document_id,
-        ),
-        connection=connection,
-    )
+#     return fetch_all(
+#         """
+#         SELECT *
+#         FROM documents
+#         ORDER BY
+#             year,
+#             title
+#         """,
+#         connection=connection,
+#     )
+
+
+# def update_document_metadata(
+#     document_id: int,
+#     *,
+#     title: str | None,
+#     plenary_session: str | None,
+#     year: int | None,
+#     date: str | None,
+#     location: str | None,
+#     source: str | None,
+#     page_count: int,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Update document metadata.
+#     """
+
+#     execute(
+#         """
+#         UPDATE documents
+#         SET
+#             title = ?,
+#             plenary_session = ?,
+#             year = ?,
+#             date = ?,
+#             location = ?,
+#             source = ?,
+#             page_count = ?
+#         WHERE id = ?
+#         """,
+#         (
+#             title,
+#             plenary_session,
+#             year,
+#             date,
+#             location,
+#             source,
+#             page_count,
+#             document_id,
+#         ),
+#         connection=connection,
+#     )
 
 
 def insert_metadata_provenance(
@@ -796,41 +799,41 @@ def insert_metadata_provenance(
         )
 
 
-def get_metadata_provenance(
-    connection: sqlite3.Connection,
-    document_id: int,
-) -> dict[str, dict[str, str | None]]:
-    """
-    Retrieve metadata provenance for a document.
+# def get_metadata_provenance(
+#     connection: sqlite3.Connection,
+#     document_id: int,
+# ) -> dict[str, dict[str, str | None]]:
+#     """
+#     Retrieve metadata provenance for a document.
 
-    Returns:
-        {
-            "title": {
-                "value": "Annual Report",
-                "source": "pymupdf",
-            }
-        }
-    """
+#     Returns:
+#         {
+#             "title": {
+#                 "value": "Annual Report",
+#                 "source": "pymupdf",
+#             }
+#         }
+#     """
 
-    rows = connection.execute(
-        """
-        SELECT
-            field_name,
-            field_value,
-            extraction_source
-        FROM metadata_provenance
-        WHERE document_id = ?
-        """,
-        (document_id,),
-    ).fetchall()
+#     rows = connection.execute(
+#         """
+#         SELECT
+#             field_name,
+#             field_value,
+#             extraction_source
+#         FROM metadata_provenance
+#         WHERE document_id = ?
+#         """,
+#         (document_id,),
+#     ).fetchall()
 
-    return {
-        row["field_name"]: {
-            "value": row["field_value"],
-            "source": row["extraction_source"],
-        }
-        for row in rows
-    }
+#     return {
+#         row["field_name"]: {
+#             "value": row["field_value"],
+#             "source": row["extraction_source"],
+#         }
+#         for row in rows
+#     }
 
 
 def delete_document(
@@ -860,44 +863,44 @@ def delete_document(
 # Paragraph Repository
 ###############################################################################
 
-def create_paragraph(
-    document_id: int,
-    page_number: int,
-    paragraph_number: int,
-    text: str,
-    chunk_method: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> int:
-    """
-    Insert a paragraph.
+# def create_paragraph(
+#     document_id: int,
+#     page_number: int,
+#     paragraph_number: int,
+#     text: str,
+#     chunk_method: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> int:
+#     """
+#     Insert a paragraph.
 
-    Returns
-    -------
-    int
-        Paragraph ID.
-    """
+#     Returns
+#     -------
+#     int
+#         Paragraph ID.
+#     """
 
-    return _execute_insert(
-        """
-        INSERT INTO paragraphs (
-            document_id,
-            page_number,
-            paragraph_number,
-            text,
-            chunk_method
-        )
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (
-            document_id,
-            page_number,
-            paragraph_number,
-            text,
-            chunk_method,
-        ),
-        connection=connection,
-    )
+#     return _execute_insert(
+#         """
+#         INSERT INTO paragraphs (
+#             document_id,
+#             page_number,
+#             paragraph_number,
+#             text,
+#             chunk_method
+#         )
+#         VALUES (?, ?, ?, ?, ?)
+#         """,
+#         (
+#             document_id,
+#             page_number,
+#             paragraph_number,
+#             text,
+#             chunk_method,
+#         ),
+#         connection=connection,
+#     )
 
 
 def bulk_insert_paragraphs(
@@ -995,132 +998,147 @@ def bulk_insert_paragraphs(
     return inserted
 
 
-def get_paragraph(
-    paragraph_id: int,
+def get_all_paragraphs_for_glossary(
     *,
     connection: sqlite3.Connection | None = None,
-) -> sqlite3.Row | None:
+) -> list[tuple[int, str]]:
     """
-    Return one paragraph.
+    Return every paragraph as (paragraph_id, text) pairs, for glossary
+    re-matching independent of the ingestion pipeline.
     """
-
-    return fetch_one(
-        """
-        SELECT
-            p.id AS paragraph_id,
-            p.document_id,
-            p.page_number,
-            p.paragraph_number,
-            p.text AS paragraph_text,
-            p.chunk_method,
-
-            d.title AS document_title,
-            d.filename,
-            d.source,
-            d.year,
-            d.date,
-            d.location,
-            d.plenary_session
-        FROM paragraphs p
-        JOIN documents d
-            ON d.id = p.document_id
-        WHERE p.id = ?
-        """,
-        (paragraph_id,),
+    rows = fetch_all(
+        "SELECT id, text FROM paragraphs",
         connection=connection,
     )
+    return [(row["id"], row["text"]) for row in rows]
 
 
-def get_document_paragraphs(
-    document_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return every paragraph for one document.
-    """
+# def get_paragraph(
+#     paragraph_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> sqlite3.Row | None:
+#     """
+#     Return one paragraph.
+#     """
 
-    return fetch_all(
-        """
-        SELECT
-            p.id AS paragraph_id,
-            p.document_id,
-            p.page_number,
-            p.paragraph_number,
-            p.text AS paragraph_text,
-            p.chunk_method,
+#     return fetch_one(
+#         """
+#         SELECT
+#             p.id AS paragraph_id,
+#             p.document_id,
+#             p.page_number,
+#             p.paragraph_number,
+#             p.text AS paragraph_text,
+#             p.chunk_method,
 
-            d.title AS document_title,
-            d.filename,
-            d.source,
-            d.year,
-            d.date,
-            d.location,
-            d.plenary_session
-        FROM paragraphs p
-        JOIN documents d
-            ON d.id = p.document_id
-
-        WHERE p.document_id = ?
-
-        ORDER BY
-            page_number,
-            paragraph_number
-        """,
-        (document_id,),
-        connection=connection,
-    )
+#             d.title AS document_title,
+#             d.filename,
+#             d.source,
+#             d.year,
+#             d.date,
+#             d.location,
+#             d.plenary_session
+#         FROM paragraphs p
+#         JOIN documents d
+#             ON d.id = p.document_id
+#         WHERE p.id = ?
+#         """,
+#         (paragraph_id,),
+#         connection=connection,
+#     )
 
 
-def update_paragraph(
-    paragraph_id: int,
-    text: str,
-    chunk_method: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Update paragraph text.
+# def get_document_paragraphs(
+#     document_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Return every paragraph for one document.
+#     """
 
-    The FTS trigger automatically updates the
-    search index.
-    """
+#     return fetch_all(
+#         """
+#         SELECT
+#             p.id AS paragraph_id,
+#             p.document_id,
+#             p.page_number,
+#             p.paragraph_number,
+#             p.text AS paragraph_text,
+#             p.chunk_method,
 
-    execute(
-        """
-        UPDATE paragraphs
-        SET
-            text = ?,
-            chunk_method = ?
-        WHERE id = ?
-        """,
-        (
-            text,
-            chunk_method,
-            paragraph_id,
-        ),
-        connection=connection,
-    )
+#             d.title AS document_title,
+#             d.filename,
+#             d.source,
+#             d.year,
+#             d.date,
+#             d.location,
+#             d.plenary_session
+#         FROM paragraphs p
+#         JOIN documents d
+#             ON d.id = p.document_id
+
+#         WHERE p.document_id = ?
+
+#         ORDER BY
+#             page_number,
+#             paragraph_number
+#         """,
+#         (document_id,),
+#         connection=connection,
+#     )
 
 
-def delete_paragraph(
-    paragraph_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Delete one paragraph.
-    """
+# def update_paragraph(
+#     paragraph_id: int,
+#     text: str,
+#     chunk_method: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Update paragraph text.
 
-    execute(
-        """
-        DELETE
-        FROM paragraphs
-        WHERE id = ?
-        """,
-        (paragraph_id,),
-        connection=connection,
-    )
+#     The FTS trigger automatically updates the
+#     search index.
+#     """
+
+#     execute(
+#         """
+#         UPDATE paragraphs
+#         SET
+#             text = ?,
+#             chunk_method = ?
+#         WHERE id = ?
+#         """,
+#         (
+#             text,
+#             chunk_method,
+#             paragraph_id,
+#         ),
+#         connection=connection,
+#     )
+
+
+# def delete_paragraph(
+#     paragraph_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Delete one paragraph.
+#     """
+
+#     execute(
+#         """
+#         DELETE
+#         FROM paragraphs
+#         WHERE id = ?
+#         """,
+#         (paragraph_id,),
+#         connection=connection,
+#     )
 
 
 ###############################################################################
@@ -1133,6 +1151,7 @@ def search_paragraphs(
     source: str | None = None,
     year: tuple[int, int] | None = None,
     document_id: int | None = None,
+    glossary_lists: tuple[str, ...] | None = None,
     limit: int,
     offset: int,
     connection: sqlite3.Connection | None = None,
@@ -1156,6 +1175,9 @@ def search_paragraphs(
     document_id
         Optional document filter.
 
+    glossary_lists
+        2 glossary lists.
+
     limit
         Number of results to return.
 
@@ -1176,11 +1198,19 @@ def search_paragraphs(
 
     parameters: list[Any] = [fts_query]
 
-    sql = """
+    joins = ""
+    if glossary_lists:
+        joins = """
+            JOIN paragraph_terms AS pt ON pt.paragraph_id = p.id
+            JOIN terms AS t ON t.id = pt.term_id
+        """
+
+    sql = f"""
         SELECT
             p.id AS paragraph_id,
             p.document_id,
             d.title AS document_title,
+            d.doi,
             d.filename,
             d.source,
             d.year,
@@ -1200,8 +1230,15 @@ def search_paragraphs(
         JOIN documents AS d
             ON d.id = p.document_id
 
+        {joins}
+
         WHERE paragraphs_fts MATCH ?
     """
+
+    if glossary_lists:
+        placeholders = ",".join("?" for _ in glossary_lists)
+        sql += f"\nAND t.list_name IN ({placeholders})"
+        parameters.extend(glossary_lists)
 
     if source is not None:
         sql += "\nAND d.source = ?"
@@ -1216,6 +1253,20 @@ def search_paragraphs(
     if document_id is not None:
         sql += "\nAND d.id = ?"
         parameters.append(document_id)
+
+    if glossary_lists:
+        sql += """
+            GROUP BY p.id
+            ORDER BY bm25_score
+            LIMIT ?
+            OFFSET ?
+        """
+    else:
+        sql += """
+            ORDER BY bm25_score
+            LIMIT ?
+            OFFSET ?
+        """
 
     sql += """
         ORDER BY bm25_score
@@ -1232,124 +1283,124 @@ def search_paragraphs(
     )
 
 
-def search_document(
-    document_id: int,
-    query: str,
-    *,
-    limit: int = 100,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Perform an FTS search restricted to one
-    document.
-    """
+# def search_document(
+#     document_id: int,
+#     query: str,
+#     *,
+#     limit: int = 100,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Perform an FTS search restricted to one
+#     document.
+#     """
 
-    return fetch_all(
-        """
-        SELECT
-            p.id AS paragraph_id,
-            p.document_id,
-            p.page_number,
-            p.paragraph_number,
-            p.text AS paragraph_text,
-            p.chunk_method,
+#     return fetch_all(
+#         """
+#         SELECT
+#             p.id AS paragraph_id,
+#             p.document_id,
+#             p.page_number,
+#             p.paragraph_number,
+#             p.text AS paragraph_text,
+#             p.chunk_method,
 
-            d.title AS document_title,
-            d.filename,
-            d.source,
-            d.year,
-            d.date,
-            d.location,
-            d.plenary_session,
+#             d.title AS document_title,
+#             d.filename,
+#             d.source,
+#             d.year,
+#             d.date,
+#             d.location,
+#             d.plenary_session,
 
-            bm25(paragraphs_fts) AS score
+#             bm25(paragraphs_fts) AS score
 
-        FROM paragraphs_fts
+#         FROM paragraphs_fts
 
-        JOIN paragraphs p
+#         JOIN paragraphs p
         
-                    ON p.id = paragraphs_fts.rowid
+#                     ON p.id = paragraphs_fts.rowid
 
-        JOIN documents d
-                    ON d.id = p.document_id
+#         JOIN documents d
+#                     ON d.id = p.document_id
 
-        WHERE
+#         WHERE
 
-            paragraphs_fts MATCH ?
+#             paragraphs_fts MATCH ?
 
-            AND
+#             AND
 
-            p.document_id = ?
+#             p.document_id = ?
 
-        ORDER BY score
+#         ORDER BY score
 
-        LIMIT ?
-        """,
-        (
-            query,
-            document_id,
-            limit,
-        ),
-        connection=connection,
-    )
+#         LIMIT ?
+#         """,
+#         (
+#             query,
+#             document_id,
+#             limit,
+#         ),
+#         connection=connection,
+#     )
 
 
-def search_phrase(
-    phrase: str,
-    *,
-    limit: int = 100,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Convenience wrapper for exact phrase search.
-    """
+# def search_phrase(
+#     phrase: str,
+#     *,
+#     limit: int = 100,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Convenience wrapper for exact phrase search.
+#     """
 
-    return search_paragraphs(
-        f'"{phrase}"',
-        limit=limit,
-        connection=connection,
-    )
+#     return search_paragraphs(
+#         f'"{phrase}"',
+#         limit=limit,
+#         connection=connection,
+#     )
 
 
 ###############################################################################
 # Terms Repository
 ###############################################################################
 
-def create_term(
-    term: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> int:
-    """
-    Insert a glossary term.
+# def create_term(
+#     term: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> int:
+#     """
+#     Insert a glossary term.
 
-    Parameters
-    ----------
-    term
-        Glossary term.
+#     Parameters
+#     ----------
+#     term
+#         Glossary term.
 
-    Returns
-    -------
-    int
-        Newly created term ID.
+#     Returns
+#     -------
+#     int
+#         Newly created term ID.
 
-    Notes
-    -----
-    Terms are expected to be loaded from terms.txt during ingestion.
-    """
+#     Notes
+#     -----
+#     Terms are expected to be loaded from terms.txt during ingestion.
+#     """
 
-    return _execute_insert(
-        """
-        INSERT INTO terms (
-            term
-        )
-        VALUES (?)
-        """,
-        (
-            term,
-        ),
-        connection=connection,
-    )
+#     return _execute_insert(
+#         """
+#         INSERT INTO terms (
+#             term
+#         )
+#         VALUES (?)
+#         """,
+#         (
+#             term,
+#         ),
+#         connection=connection,
+#     )
 
 
 def bulk_insert_terms(
@@ -1387,771 +1438,775 @@ def bulk_insert_terms(
     )
 
 
-def get_term(
-    term_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> sqlite3.Row | None:
-    """
-    Retrieve a glossary term by ID.
-    """
+# def get_term(
+#     term_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> sqlite3.Row | None:
+#     """
+#     Retrieve a glossary term by ID.
+#     """
 
-    return fetch_one(
-        """
-        SELECT *
-        FROM terms
-        WHERE id = ?
-        """,
-        (term_id,),
-        connection=connection,
-    )
+#     return fetch_one(
+#         """
+#         SELECT *
+#         FROM terms
+#         WHERE id = ?
+#         """,
+#         (term_id,),
+#         connection=connection,
+#     )
 
 
-def get_term_by_name(
-    term: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> sqlite3.Row | None:
-    """
-    Retrieve a glossary term by its text.
-    """
+# def get_term_by_name(
+#     term: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> sqlite3.Row | None:
+#     """
+#     Retrieve a glossary term by its text.
+#     """
 
-    return fetch_one(
-        """
-        SELECT *
-        FROM terms
-        WHERE term = ?
-        """,
-        (term,),
-        connection=connection,
-    )
+#     return fetch_one(
+#         """
+#         SELECT *
+#         FROM terms
+#         WHERE term = ?
+#         """,
+#         (term,),
+#         connection=connection,
+#     )
 
 
 def list_terms(
     *,
+    list_names: tuple[str,...] | None = None,
     connection: sqlite3.Connection | None = None,
 ) -> list[sqlite3.Row]:
     """
     Return every glossary term.
     """
+    if not list_names:
+        return fetch_all(
+            "SELECT * FROM terms ORDER BY term COLLATE NOCASE",
+            connection=connection,
+        )
 
+    placeholders = ",".join("?" for _ in list_names)
+    
     return fetch_all(
-        """
-        SELECT *
-        FROM terms
+        f"""
+        SELECT * FROM terms
+        WHERE list_name in ({placeholders})
         ORDER BY term COLLATE NOCASE
         """,
+        list_names,
         connection=connection,
     )
 
 
-def update_term(
-    term_id: int,
-    term: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Update a glossary term.
-    """
+# def update_term(
+#     term_id: int,
+#     term: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Update a glossary term.
+#     """
 
-    execute(
-        """
-        UPDATE terms
-        SET
-            term = ?
-        WHERE id = ?
-        """,
-        (
-            term,
-            term_id,
-        ),
-        connection=connection,
-    )
+#     execute(
+#         """
+#         UPDATE terms
+#         SET
+#             term = ?
+#         WHERE id = ?
+#         """,
+#         (
+#             term,
+#             term_id,
+#         ),
+#         connection=connection,
+#     )
 
 
-def delete_term(
-    term_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Delete a glossary term.
+# def delete_term(
+#     term_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Delete a glossary term.
 
-    Associated paragraph_term rows are automatically removed.
-    """
+#     Associated paragraph_term rows are automatically removed.
+#     """
 
-    execute(
-        """
-        DELETE
-        FROM terms
-        WHERE id = ?
-        """,
-        (term_id,),
-        connection=connection,
-    )
+#     execute(
+#         """
+#         DELETE
+#         FROM terms
+#         WHERE id = ?
+#         """,
+#         (term_id,),
+#         connection=connection,
+#     )
 
 
 ###############################################################################
 # Paragraph Terms Repository
 ###############################################################################
 
-def create_paragraph_term(
-    paragraph_id: int,
-    term_id: int,
-    occurrence_count: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Store one exact glossary match.
-    """
+# def create_paragraph_term(
+#     paragraph_id: int,
+#     term_id: int,
+#     occurrence_count: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Store one exact glossary match.
+#     """
 
-    execute(
-        """
-        INSERT INTO paragraph_terms (
+#     execute(
+#         """
+#         INSERT INTO paragraph_terms (
 
-            paragraph_id,
+#             paragraph_id,
 
-            term_id,
+#             term_id,
 
-            occurrence_count
+#             occurrence_count
 
-        )
-        VALUES (?, ?, ?)
-        """,
-        (
-            paragraph_id,
-            term_id,
-            occurrence_count,
-        ),
-        connection=connection,
-    )
-
-
-def get_paragraph_terms(
-    paragraph_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return every glossary term associated with a paragraph.
-
-    Used by the UI to build hyperlinks.
-    """
-
-    return fetch_all(
-        """
-        SELECT
-
-            t.id,
-
-            t.term,
-
-            pt.occurrence_count
-
-        FROM paragraph_terms pt
-
-        JOIN terms t
-
-            ON t.id = pt.term_id
-
-        WHERE pt.paragraph_id = ?
-
-        ORDER BY t.term COLLATE NOCASE
-        """,
-        (paragraph_id,),
-        connection=connection,
-    )
+#         )
+#         VALUES (?, ?, ?)
+#         """,
+#         (
+#             paragraph_id,
+#             term_id,
+#             occurrence_count,
+#         ),
+#         connection=connection,
+#     )
 
 
-def get_term_paragraphs(
-    term_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return all paragraphs containing one glossary term.
+# def get_paragraph_terms(
+#     paragraph_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Return every glossary term associated with a paragraph.
 
-    This supports hyperlink navigation from glossary terms.
-    """
+#     Used by the UI to build hyperlinks.
+#     """
 
-    return fetch_all(
-        """
-        SELECT
-            p.id AS paragraph_id,
-            p.document_id,
-            p.page_number,
-            p.paragraph_number,
-            p.text AS paragraph_text,
-            p.chunk_method,
+#     return fetch_all(
+#         """
+#         SELECT
 
-            d.title AS document_title,
-            d.filename,
-            d.source,
-            d.year,
-            d.date,
-            d.location,
-            d.plenary_session,
+#             t.id,
 
-            pt.occurrence_count
+#             t.term,
 
-        FROM paragraph_terms pt
+#             pt.occurrence_count
 
-        JOIN paragraphs p
-            ON p.id = pt.paragraph_id
+#         FROM paragraph_terms pt
 
-        JOIN documents d
-            ON d.id = p.document_id
+#         JOIN terms t
 
-        WHERE pt.term_id = ?
+#             ON t.id = pt.term_id
 
-        ORDER BY
-            p.document_id,
-            p.page_number,
-            p.paragraph_number
-        """,
-        (term_id,),
-        connection=connection,
-    )
+#         WHERE pt.paragraph_id = ?
+
+#         ORDER BY t.term COLLATE NOCASE
+#         """,
+#         (paragraph_id,),
+#         connection=connection,
+#     )
 
 
-def delete_paragraph_terms(
-    paragraph_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Delete all glossary matches belonging to a paragraph.
+# def get_term_paragraphs(
+#     term_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Return all paragraphs containing one glossary term.
 
-    Intended for paragraph reprocessing during ingestion.
-    """
+#     This supports hyperlink navigation from glossary terms.
+#     """
 
-    execute(
-        """
-        DELETE
-        FROM paragraph_terms
-        WHERE paragraph_id = ?
-        """,
-        (paragraph_id,),
-        connection=connection,
-    )
+#     return fetch_all(
+#         """
+#         SELECT
+#             p.id AS paragraph_id,
+#             p.document_id,
+#             p.page_number,
+#             p.paragraph_number,
+#             p.text AS paragraph_text,
+#             p.chunk_method,
+
+#             d.title AS document_title,
+#             d.filename,
+#             d.source,
+#             d.year,
+#             d.date,
+#             d.location,
+#             d.plenary_session,
+
+#             pt.occurrence_count
+
+#         FROM paragraph_terms pt
+
+#         JOIN paragraphs p
+#             ON p.id = pt.paragraph_id
+
+#         JOIN documents d
+#             ON d.id = p.document_id
+
+#         WHERE pt.term_id = ?
+
+#         ORDER BY
+#             p.document_id,
+#             p.page_number,
+#             p.paragraph_number
+#         """,
+#         (term_id,),
+#         connection=connection,
+#     )
 
 
-def glossary_statistics(
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return glossary usage statistics.
+# def delete_paragraph_terms(
+#     paragraph_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Delete all glossary matches belonging to a paragraph.
 
-    Results include:
+#     Intended for paragraph reprocessing during ingestion.
+#     """
 
-    - term
-    - number of paragraphs containing the term
-    - total occurrences
+#     execute(
+#         """
+#         DELETE
+#         FROM paragraph_terms
+#         WHERE paragraph_id = ?
+#         """,
+#         (paragraph_id,),
+#         connection=connection,
+#     )
 
-    Useful for diagnostics and future reporting.
-    """
 
-    return fetch_all(
-        """
-        SELECT
+# def glossary_statistics(
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Return glossary usage statistics.
 
-            t.term,
+#     Results include:
 
-            COUNT(DISTINCT pt.paragraph_id)
-                AS paragraph_count,
+#     - term
+#     - number of paragraphs containing the term
+#     - total occurrences
 
-            SUM(pt.occurrence_count)
-                AS total_occurrences
+#     Useful for diagnostics and future reporting.
+#     """
 
-        FROM terms t
+#     return fetch_all(
+#         """
+#         SELECT
 
-        LEFT JOIN paragraph_terms pt
+#             t.term,
 
-            ON pt.term_id = t.id
+#             COUNT(DISTINCT pt.paragraph_id)
+#                 AS paragraph_count,
 
-        GROUP BY
+#             SUM(pt.occurrence_count)
+#                 AS total_occurrences
 
-            t.id,
-            t.term
+#         FROM terms t
 
-        ORDER BY
+#         LEFT JOIN paragraph_terms pt
 
-            total_occurrences DESC,
+#             ON pt.term_id = t.id
 
-            t.term COLLATE NOCASE
-        """,
-        connection=connection,
-    )
+#         GROUP BY
+
+#             t.id,
+#             t.term
+
+#         ORDER BY
+
+#             total_occurrences DESC,
+
+#             t.term COLLATE NOCASE
+#         """,
+#         connection=connection,
+#     )
 
 
 ###############################################################################
 # Anchors Repository
 ###############################################################################
 
-def create_anchor(
-    anchor_label: str,
-    description: str | None = None,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> int:
-    """
-    Insert a topic anchor.
+# def create_anchor(
+#     anchor_label: str,
+#     description: str | None = None,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> int:
+#     """
+#     Insert a topic anchor.
 
-    Parameters
-    ----------
-    anchor_label
-        Name of the topic anchor.
+#     Parameters
+#     ----------
+#     anchor_label
+#         Name of the topic anchor.
 
-    description
-        Optional description.
+#     description
+#         Optional description.
 
-    Returns
-    -------
-    int
-        Newly created anchor ID.
-    """
+#     Returns
+#     -------
+#     int
+#         Newly created anchor ID.
+#     """
 
-    return _execute_insert(
-        """
-        INSERT INTO anchors (
-            anchor_label,
-            description
-        )
-        VALUES (?, ?)
-        """,
-        (
-            anchor_label,
-            description,
-        ),
-        connection=connection,
-    )
-
-
-def bulk_insert_anchors(
-    rows: Iterable[Sequence[Any]],
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Bulk insert topic anchors.
-
-    Parameters
-    ----------
-    rows
-        Iterable of:
-
-        (
-            anchor_label,
-            description
-        )
-    """
-
-    executemany(
-        """
-        INSERT INTO anchors (
-            anchor_label,
-            description
-        )
-        VALUES (?, ?)
-
-        ON CONFLICT(anchor_label)
-        DO UPDATE SET
-            description = excluded.description
-        """,
-        rows,
-        connection=connection,
-    )
+#     return _execute_insert(
+#         """
+#         INSERT INTO anchors (
+#             anchor_label,
+#             description
+#         )
+#         VALUES (?, ?)
+#         """,
+#         (
+#             anchor_label,
+#             description,
+#         ),
+#         connection=connection,
+#     )
 
 
-def get_anchor(
-    anchor_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> sqlite3.Row | None:
-    """
-    Retrieve an anchor by ID.
-    """
+# def bulk_insert_anchors(
+#     rows: Iterable[Sequence[Any]],
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Bulk insert topic anchors.
 
-    return fetch_one(
-        """
-        SELECT *
-        FROM anchors
-        WHERE id = ?
-        """,
-        (anchor_id,),
-        connection=connection,
-    )
+#     Parameters
+#     ----------
+#     rows
+#         Iterable of:
 
+#         (
+#             anchor_label,
+#             description
+#         )
+#     """
 
-def get_anchor_by_label(
-    anchor_label: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> sqlite3.Row | None:
-    """
-    Retrieve an anchor by label.
-    """
+#     executemany(
+#         """
+#         INSERT INTO anchors (
+#             anchor_label,
+#             description
+#         )
+#         VALUES (?, ?)
 
-    return fetch_one(
-        """
-        SELECT *
-        FROM anchors
-        WHERE anchor_label = ?
-        """,
-        (anchor_label,),
-        connection=connection,
-    )
+#         ON CONFLICT(anchor_label)
+#         DO UPDATE SET
+#             description = excluded.description
+#         """,
+#         rows,
+#         connection=connection,
+#     )
 
 
-def list_anchors(
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return every topic anchor.
-    """
+# def get_anchor(
+#     anchor_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> sqlite3.Row | None:
+#     """
+#     Retrieve an anchor by ID.
+#     """
 
-    return fetch_all(
-        """
-        SELECT *
-        FROM anchors
-        ORDER BY anchor_label COLLATE NOCASE
-        """,
-        connection=connection,
-    )
+#     return fetch_one(
+#         """
+#         SELECT *
+#         FROM anchors
+#         WHERE id = ?
+#         """,
+#         (anchor_id,),
+#         connection=connection,
+#     )
+
+
+# def get_anchor_by_label(
+#     anchor_label: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> sqlite3.Row | None:
+#     """
+#     Retrieve an anchor by label.
+#     """
+
+#     return fetch_one(
+#         """
+#         SELECT *
+#         FROM anchors
+#         WHERE anchor_label = ?
+#         """,
+#         (anchor_label,),
+#         connection=connection,
+#     )
+
+
+# def list_anchors(
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Return every topic anchor.
+#     """
+
+#     return fetch_all(
+#         """
+#         SELECT *
+#         FROM anchors
+#         ORDER BY anchor_label COLLATE NOCASE
+#         """,
+#         connection=connection,
+#     )
 
 
 ###############################################################################
 # Paragraph Anchor Repository
 ###############################################################################
 
-def create_paragraph_anchor(
-    paragraph_id: int,
-    anchor_id: int,
-    method: str,
-    confidence: float,
-    embedding_model: str | None = None,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Associate a paragraph with a topic anchor.
-    """
+# def create_paragraph_anchor(
+#     paragraph_id: int,
+#     anchor_id: int,
+#     method: str,
+#     confidence: float,
+#     embedding_model: str | None = None,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Associate a paragraph with a topic anchor.
+#     """
 
-    execute(
-        """
-        INSERT INTO paragraph_anchors (
+#     execute(
+#         """
+#         INSERT INTO paragraph_anchors (
 
-            paragraph_id,
+#             paragraph_id,
 
-            anchor_id,
+#             anchor_id,
 
-            method,
+#             method,
 
-            confidence,
+#             confidence,
 
-            embedding_model
+#             embedding_model
 
-        )
-        VALUES (?, ?, ?, ?, ?)
+#         )
+#         VALUES (?, ?, ?, ?, ?)
 
-        ON CONFLICT(paragraph_id, anchor_id)
+#         ON CONFLICT(paragraph_id, anchor_id)
 
-        DO UPDATE SET
+#         DO UPDATE SET
 
-            method = excluded.method,
+#             method = excluded.method,
 
-            confidence = excluded.confidence,
+#             confidence = excluded.confidence,
 
-            embedding_model = excluded.embedding_model
-        """,
-        (
-            paragraph_id,
-            anchor_id,
-            method,
-            confidence,
-            embedding_model,
-        ),
-        connection=connection,
-    )
-
-
-def bulk_insert_paragraph_anchors(
-    rows: Iterable[Sequence[Any]],
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Bulk insert paragraph-anchor associations.
-
-    Parameters
-    ----------
-    rows
-        Iterable of:
-
-        (
-            paragraph_id,
-            anchor_id,
-            method,
-            confidence,
-            embedding_model
-        )
-    """
-
-    executemany(
-        """
-        INSERT INTO paragraph_anchors (
-
-            paragraph_id,
-
-            anchor_id,
-
-            method,
-
-            confidence,
-
-            embedding_model
-
-        )
-        VALUES (?, ?, ?, ?, ?)
-
-        ON CONFLICT(paragraph_id, anchor_id)
-
-        DO UPDATE SET
-
-            method = excluded.method,
-
-            confidence = excluded.confidence,
-
-            embedding_model = excluded.embedding_model
-        """,
-        rows,
-        connection=connection,
-    )
+#             embedding_model = excluded.embedding_model
+#         """,
+#         (
+#             paragraph_id,
+#             anchor_id,
+#             method,
+#             confidence,
+#             embedding_model,
+#         ),
+#         connection=connection,
+#     )
 
 
-def get_paragraph_anchors(
-    paragraph_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> list[sqlite3.Row]:
-    """
-    Return all topic tags assigned to a paragraph.
-    """
+# def bulk_insert_paragraph_anchors(
+#     rows: Iterable[Sequence[Any]],
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Bulk insert paragraph-anchor associations.
 
-    return fetch_all(
-        """
-        SELECT
+#     Parameters
+#     ----------
+#     rows
+#         Iterable of:
 
-            a.id,
-            a.anchor_label,
-            a.description,
+#         (
+#             paragraph_id,
+#             anchor_id,
+#             method,
+#             confidence,
+#             embedding_model
+#         )
+#     """
 
-            pa.method,
-            pa.confidence,
-            pa.embedding_model
+#     executemany(
+#         """
+#         INSERT INTO paragraph_anchors (
 
-        FROM paragraph_anchors pa
+#             paragraph_id,
 
-        JOIN anchors a
-            ON a.id = pa.anchor_id
+#             anchor_id,
 
-        WHERE pa.paragraph_id = ?
+#             method,
 
-        ORDER BY
-            pa.confidence DESC,
-            a.anchor_label
-        """,
-        (paragraph_id,),
-        connection=connection,
-    )
+#             confidence,
+
+#             embedding_model
+
+#         )
+#         VALUES (?, ?, ?, ?, ?)
+
+#         ON CONFLICT(paragraph_id, anchor_id)
+
+#         DO UPDATE SET
+
+#             method = excluded.method,
+
+#             confidence = excluded.confidence,
+
+#             embedding_model = excluded.embedding_model
+#         """,
+#         rows,
+#         connection=connection,
+#     )
 
 
-def delete_paragraph_anchors(
-    paragraph_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Remove all topic tags from a paragraph.
-    """
+# def get_paragraph_anchors(
+#     paragraph_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> list[sqlite3.Row]:
+#     """
+#     Return all topic tags assigned to a paragraph.
+#     """
 
-    execute(
-        """
-        DELETE
-        FROM paragraph_anchors
-        WHERE paragraph_id = ?
-        """,
-        (paragraph_id,),
-        connection=connection,
-    )
+#     return fetch_all(
+#         """
+#         SELECT
+
+#             a.id,
+#             a.anchor_label,
+#             a.description,
+
+#             pa.method,
+#             pa.confidence,
+#             pa.embedding_model
+
+#         FROM paragraph_anchors pa
+
+#         JOIN anchors a
+#             ON a.id = pa.anchor_id
+
+#         WHERE pa.paragraph_id = ?
+
+#         ORDER BY
+#             pa.confidence DESC,
+#             a.anchor_label
+#         """,
+#         (paragraph_id,),
+#         connection=connection,
+#     )
+
+
+# def delete_paragraph_anchors(
+#     paragraph_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Remove all topic tags from a paragraph.
+#     """
+
+#     execute(
+#         """
+#         DELETE
+#         FROM paragraph_anchors
+#         WHERE paragraph_id = ?
+#         """,
+#         (paragraph_id,),
+#         connection=connection,
+#     )
 
 
 ###############################################################################
 # Embeddings Repository
 ###############################################################################
 
-def create_embedding(
-    paragraph_id: int,
-    model_name: str,
-    vector: bytes,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Store an embedding vector.
+# def create_embedding(
+#     paragraph_id: int,
+#     model_name: str,
+#     vector: bytes,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Store an embedding vector.
 
-    Parameters
-    ----------
-    paragraph_id
-        Paragraph identifier.
+#     Parameters
+#     ----------
+#     paragraph_id
+#         Paragraph identifier.
 
-    model_name
-        Embedding model name.
+#     model_name
+#         Embedding model name.
 
-    vector
-        Serialized embedding bytes.
-    """
+#     vector
+#         Serialized embedding bytes.
+#     """
 
-    execute(
-        """
-        INSERT INTO embeddings (
+#     execute(
+#         """
+#         INSERT INTO embeddings (
 
-            paragraph_id,
+#             paragraph_id,
 
-            model_name,
+#             model_name,
 
-            vector
+#             vector
 
-        )
-        VALUES (?, ?, ?)
-        """,
-        (
-            paragraph_id,
-            model_name,
-            vector,
-        ),
-        connection=connection,
-    )
-
-
-def bulk_insert_embeddings(
-    rows: Iterable[Sequence[Any]],
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Bulk insert embedding vectors.
-
-    Parameters
-    ----------
-    rows
-        Iterable of:
-
-        (
-            paragraph_id,
-            model_name,
-            vector
-        )
-    """
-
-    executemany(
-        """
-        INSERT INTO embeddings (
-
-            paragraph_id,
-
-            model_name,
-
-            vector
-
-        )
-        VALUES (?, ?, ?)
-
-        ON CONFLICT(paragraph_id, model_name)
-        DO UPDATE SET
-            vector = excluded.vector
-        """,
-        rows,
-        connection=connection,
-    )
+#         )
+#         VALUES (?, ?, ?)
+#         """,
+#         (
+#             paragraph_id,
+#             model_name,
+#             vector,
+#         ),
+#         connection=connection,
+#     )
 
 
-def get_embedding(
-    paragraph_id: int,
-    model_name: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> sqlite3.Row | None:
-    """
-    Retrieve one embedding.
-    """
+# def bulk_insert_embeddings(
+#     rows: Iterable[Sequence[Any]],
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Bulk insert embedding vectors.
 
-    return fetch_one(
-        """
-        SELECT *
-        FROM embeddings
-        WHERE
-            paragraph_id = ?
-            AND model_name = ?
-        """,
-        (
-            paragraph_id,
-            model_name,
-        ),
-        connection=connection,
-    )
+#     Parameters
+#     ----------
+#     rows
+#         Iterable of:
 
+#         (
+#             paragraph_id,
+#             model_name,
+#             vector
+#         )
+#     """
 
-def delete_embedding(
-    paragraph_id: int,
-    model_name: str,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Delete a stored embedding.
-    """
+#     executemany(
+#         """
+#         INSERT INTO embeddings (
 
-    execute(
-        """
-        DELETE
-        FROM embeddings
-        WHERE
-            paragraph_id = ?
-            AND model_name = ?
-        """,
-        (
-            paragraph_id,
-            model_name,
-        ),
-        connection=connection,
-    )
+#             paragraph_id,
+
+#             model_name,
+
+#             vector
+
+#         )
+#         VALUES (?, ?, ?)
+
+#         ON CONFLICT(paragraph_id, model_name)
+#         DO UPDATE SET
+#             vector = excluded.vector
+#         """,
+#         rows,
+#         connection=connection,
+#     )
 
 
-def delete_embeddings_for_paragraph(
-    paragraph_id: int,
-    *,
-    connection: sqlite3.Connection | None = None,
-) -> None:
-    """
-    Delete all embeddings belonging to a paragraph.
-    """
+# def get_embedding(
+#     paragraph_id: int,
+#     model_name: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> sqlite3.Row | None:
+#     """
+#     Retrieve one embedding.
+#     """
 
-    execute(
-        """
-        DELETE
-        FROM embeddings
-        WHERE paragraph_id = ?
-        """,
-        (paragraph_id,),
-        connection=connection,
-    )
+#     return fetch_one(
+#         """
+#         SELECT *
+#         FROM embeddings
+#         WHERE
+#             paragraph_id = ?
+#             AND model_name = ?
+#         """,
+#         (
+#             paragraph_id,
+#             model_name,
+#         ),
+#         connection=connection,
+#     )
 
 
-###############################################################################
-# End of Repository
-###############################################################################
+# def delete_embedding(
+#     paragraph_id: int,
+#     model_name: str,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Delete a stored embedding.
+#     """
+
+#     execute(
+#         """
+#         DELETE
+#         FROM embeddings
+#         WHERE
+#             paragraph_id = ?
+#             AND model_name = ?
+#         """,
+#         (
+#             paragraph_id,
+#             model_name,
+#         ),
+#         connection=connection,
+#     )
+
+
+# def delete_embeddings_for_paragraph(
+#     paragraph_id: int,
+#     *,
+#     connection: sqlite3.Connection | None = None,
+# ) -> None:
+#     """
+#     Delete all embeddings belonging to a paragraph.
+#     """
+
+#     execute(
+#         """
+#         DELETE
+#         FROM embeddings
+#         WHERE paragraph_id = ?
+#         """,
+#         (paragraph_id,),
+#         connection=connection,
+#     )

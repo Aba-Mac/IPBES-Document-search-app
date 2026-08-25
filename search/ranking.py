@@ -100,6 +100,7 @@ class SearchRepositoryProtocol(Protocol):
         source: str | None,
         year: tuple[int, int] | None,
         document_id: int | None,
+        glossary_lists: tuple[str, ...] | None,
         limit: int,
         offset: int,
         connection: Any = None,
@@ -259,6 +260,7 @@ def execute_ranked_search(
                     source=request.filters.source,
                     year=request.filters.year,
                     document_id=request.filters.document,
+                    glossary_lists=request.filters.glossary_lists, 
                     limit=request.limit,
                     offset=request.offset,
                     connection=connection,
@@ -496,41 +498,41 @@ def _validate_repository_rows(
 ###############################################################################
 
 
-def _coerce_optional_string(value: Any) -> str | None:
-    """
-    Convert a nullable database value into a cleaned string.
+# def _coerce_optional_string(value: Any) -> str | None:
+#     """
+#     Convert a nullable database value into a cleaned string.
 
-    Empty strings are normalised to ``None``.
-    """
-    if value is None:
-        return None
+#     Empty strings are normalised to ``None``.
+#     """
+#     if value is None:
+#         return None
 
-    value = str(value).strip()
+#     value = str(value).strip()
 
-    if not value:
-        return None
+#     if not value:
+#         return None
 
-    return value
-
-
-def _coerce_optional_int(value: Any) -> int | None:
-    """
-    Convert a nullable database value into an integer.
-    """
-    if value is None:
-        return None
-
-    return int(value)
+#     return value
 
 
-def _coerce_float(value: Any) -> float:
-    """
-    Convert a BM25 score to float.
+# def _coerce_optional_int(value: Any) -> int | None:
+#     """
+#     Convert a nullable database value into an integer.
+#     """
+#     if value is None:
+#         return None
 
-    SQLite returns REAL values, but adapters may return Decimal,
-    numpy types, or strings depending on configuration.
-    """
-    return float(value)
+#     return int(value)
+
+
+# def _coerce_float(value: Any) -> float:
+#     """
+#     Convert a BM25 score to float.
+
+#     SQLite returns REAL values, but adapters may return Decimal,
+#     numpy types, or strings depending on configuration.
+#     """
+#     return float(value)
 
 
 ###############################################################################
@@ -538,30 +540,30 @@ def _coerce_float(value: Any) -> float:
 ###############################################################################
 
 
-def sort_results(
-    results: list[SearchResult],
-) -> list[SearchResult]:
-    """
-    Sort results by BM25 relevance.
+# def sort_results(
+#     results: list[SearchResult],
+# ) -> list[SearchResult]:
+#     """
+#     Sort results by BM25 relevance.
 
-    SQLite FTS5 normally returns rows already ordered by BM25.
-    This helper provides a deterministic secondary ordering should
-    callers ever need to rebuild or merge result sets.
+#     SQLite FTS5 normally returns rows already ordered by BM25.
+#     This helper provides a deterministic secondary ordering should
+#     callers ever need to rebuild or merge result sets.
 
-    Ordering
-    --------
-    1. Lowest BM25 score (best relevance)
-    2. Document title
-    3. Paragraph number
-    """
-    return sorted(
-        results,
-        key=lambda r: (
-            r.bm25_score,
-            r.document_title.casefold(),
-            r.paragraph_number,
-        ),
-    )
+#     Ordering
+#     --------
+#     1. Lowest BM25 score (best relevance)
+#     2. Document title
+#     3. Paragraph number
+#     """
+#     return sorted(
+#         results,
+#         key=lambda r: (
+#             r.bm25_score,
+#             r.document_title.casefold(),
+#             r.paragraph_number,
+#         ),
+#     )
 
 
 ###############################################################################
@@ -569,29 +571,29 @@ def sort_results(
 ###############################################################################
 
 
-def log_search_summary(
-    response: SearchResponse,
-) -> None:
-    """
-    Write a concise summary of a completed search to the log.
+# def log_search_summary(
+#     response: SearchResponse,
+# ) -> None:
+#     """
+#     Write a concise summary of a completed search to the log.
 
-    Intended for operational diagnostics rather than application
-    logic.
-    """
-    logger.info(
-        (
-            "Search completed: "
-            "query=%r "
-            "results=%d "
-            "page=%d/%d "
-            "page_size=%d"
-        ),
-        response.query,
-        response.total_results,
-        response.page,
-        response.total_pages,
-        response.page_size,
-    )
+#     Intended for operational diagnostics rather than application
+#     logic.
+#     """
+#     logger.info(
+#         (
+#             "Search completed: "
+#             "query=%r "
+#             "results=%d "
+#             "page=%d/%d "
+#             "page_size=%d"
+#         ),
+#         response.query,
+#         response.total_results,
+#         response.page,
+#         response.total_pages,
+#         response.page_size,
+#     )
 
 
 ###############################################################################

@@ -28,10 +28,10 @@ from __future__ import annotations
 
 import logging
 import sqlite3
-from pathlib import Path
 
 from core.config import settings
 from database.schema import iter_schema
+from database.repository import connect
 
 LOGGER = logging.getLogger(__name__)
 
@@ -51,10 +51,6 @@ _REQUIRED_TABLES = {
     "metadata_provenance",
 }
 
-_REQUIRED_VIRTUAL_TABLES = {
-    "paragraphs_fts",
-}
-
 _REQUIRED_TRIGGERS = {
     "paragraphs_ai",
     "paragraphs_au",
@@ -67,32 +63,32 @@ _REQUIRED_TRIGGERS = {
 # ---------------------------------------------------------------------
 
 
-def _connect() -> sqlite3.Connection:
-    """
-    Create a migration connection.
+# def _connect() -> sqlite3.Connection:
+#     """
+#     Create a migration connection.
 
-    Returns
-    -------
-    sqlite3.Connection
-    """
+#     Returns
+#     -------
+#     sqlite3.Connection
+#     """
 
-    database_path = Path(settings.database.path)
-    database_path.parent.mkdir(parents=True, exist_ok=True)
-    LOGGER.info("Migration database: %s", settings.database.path)
+#     database_path = Path(settings.database.path)
+#     database_path.parent.mkdir(parents=True, exist_ok=True)
+#     LOGGER.info("Migration database: %s", settings.database.path)
 
-    connection = sqlite3.connect(
-        database_path,
-        detect_types=sqlite3.PARSE_DECLTYPES,
-    )
+#     connection = sqlite3.connect(
+#         database_path,
+#         detect_types=sqlite3.PARSE_DECLTYPES,
+#     )
 
-    connection.row_factory = sqlite3.Row
+#     connection.row_factory = sqlite3.Row
 
-    connection.execute("PRAGMA foreign_keys = ON;")
-    connection.execute("PRAGMA journal_mode = WAL;")
-    connection.execute("PRAGMA synchronous = NORMAL;")
-    connection.execute("PRAGMA temp_store = MEMORY;")
+#     connection.execute("PRAGMA foreign_keys = ON;")
+#     connection.execute("PRAGMA journal_mode = WAL;")
+#     connection.execute("PRAGMA synchronous = NORMAL;")
+#     connection.execute("PRAGMA temp_store = MEMORY;")
 
-    return connection
+#     return connection
 
 
 # ---------------------------------------------------------------------
@@ -121,6 +117,15 @@ def apply_schema(connection: sqlite3.Connection) -> None:
     """).fetchall()
 
     LOGGER.info("Tables after migration: %s", [t[0] for t in tables])
+
+def _ensure_source_hash_column(connection: sqlite3.Connection) -> None:
+    columns = {
+        row["name"]
+        for row in connection.execute("PRAGMA table_info(documents)").fetchall()
+    }
+    if "source_hash" not in columns:
+        LOGGER.info("Adding source_hash column to documents table.")
+        connection.execute("ALTER TABLE documents ADD COLUMN source_hash TEXT;")
 
 
 # ---------------------------------------------------------------------
@@ -221,20 +226,20 @@ def rebuild_fts(connection: sqlite3.Connection) -> None:
         )
 
 
-def optimize_fts(connection: sqlite3.Connection) -> None:
-    """
-    Optimize the FTS index.
+# def optimize_fts(connection: sqlite3.Connection) -> None:
+#     """
+#     Optimize the FTS index.
 
-    Optional maintenance operation.
-    """
+#     Optional maintenance operation.
+#     """
 
-    with connection:
-        connection.execute(
-            """
-            INSERT INTO paragraphs_fts(paragraphs_fts)
-            VALUES('optimize');
-            """
-        )
+#     with connection:
+#         connection.execute(
+#             """
+#             INSERT INTO paragraphs_fts(paragraphs_fts)
+#             VALUES('optimize');
+#             """
+#         )
 
 
 def _fts_is_populated(connection: sqlite3.Connection) -> bool:
@@ -269,9 +274,11 @@ def migrate() -> None:
 
     LOGGER.info("Applying database schema...")
 
-    with _connect() as connection:
+    with connect() as connection:
 
         apply_schema(connection)
+
+        _ensure_source_hash_column(connection)
 
         validate_schema(connection)
 

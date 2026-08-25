@@ -65,7 +65,7 @@ import html
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable, Iterator, List
+from typing import List
 
 __all__ = [
     "HTMLToken",
@@ -147,28 +147,28 @@ def escape_html(text: str | None) -> str:
     return html.escape(text, quote=True)
 
 
-def is_html_escaped(text: str) -> bool:
-    """
-    Best-effort detection whether text already appears escaped.
+# def is_html_escaped(text: str) -> bool:
+#     """
+#     Best-effort detection whether text already appears escaped.
 
-    This function is intentionally conservative.
+#     This function is intentionally conservative.
 
-    It is used defensively to avoid accidental double escaping.
+#     It is used defensively to avoid accidental double escaping.
 
-    Parameters
-    ----------
-    text:
-        Candidate text.
+#     Parameters
+#     ----------
+#     text:
+#         Candidate text.
 
-    Returns
-    -------
-    bool
-    """
-    if not text:
-        return True
+#     Returns
+#     -------
+#     bool
+#     """
+#     if not text:
+#         return True
 
-    unescaped = html.unescape(text)
-    return html.escape(unescaped, quote=True) == text
+#     unescaped = html.unescape(text)
+#     return html.escape(unescaped, quote=True) == text
 
 
 ###############################################################################
@@ -222,63 +222,63 @@ def split_html(html_fragment: str) -> List[HTMLToken]:
 ###############################################################################
 
 
-def safe_inject(
-    escaped_text: str,
-    replacements: Iterable[tuple[int, int, str]],
-) -> str:
-    """
-    Inject trusted HTML into already-escaped text.
+# def safe_inject(
+#     escaped_text: str,
+#     replacements: Iterable[tuple[int, int, str]],
+# ) -> str:
+#     """
+#     Inject trusted HTML into already-escaped text.
 
-    Parameters
-    ----------
-    escaped_text:
-        HTML-escaped text.
+#     Parameters
+#     ----------
+#     escaped_text:
+#         HTML-escaped text.
 
-    replacements:
-        Iterable of (start, end, replacement_html).
+#     replacements:
+#         Iterable of (start, end, replacement_html).
 
-        Indices refer to positions within the escaped string.
+#         Indices refer to positions within the escaped string.
 
-        Replacement HTML is assumed to originate solely from trusted
-        renderer code.
+#         Replacement HTML is assumed to originate solely from trusted
+#         renderer code.
 
-    Returns
-    -------
-    str
+#     Returns
+#     -------
+#     str
 
-    Raises
-    ------
-    ValueError
-        If replacement spans overlap or are invalid.
-    """
-    ordered = sorted(replacements, key=lambda item: item[0])
+#     Raises
+#     ------
+#     ValueError
+#         If replacement spans overlap or are invalid.
+#     """
+#     ordered = sorted(replacements, key=lambda item: item[0])
 
-    if not ordered:
-        return escaped_text
+#     if not ordered:
+#         return escaped_text
 
-    output: list[str] = []
-    cursor = 0
+#     output: list[str] = []
+#     cursor = 0
 
-    for start, end, replacement in ordered:
+#     for start, end, replacement in ordered:
 
-        if start < cursor:
-            raise ValueError(
-                "Replacement spans overlap."
-            )
+#         if start < cursor:
+#             raise ValueError(
+#                 "Replacement spans overlap."
+#             )
 
-        if start > end:
-            raise ValueError(
-                "Replacement start exceeds end."
-            )
+#         if start > end:
+#             raise ValueError(
+#                 "Replacement start exceeds end."
+#             )
 
-        output.append(escaped_text[cursor:start])
-        output.append(replacement)
+#         output.append(escaped_text[cursor:start])
+#         output.append(replacement)
 
-        cursor = end
+#         cursor = end
 
-    output.append(escaped_text[cursor:])
+#     output.append(escaped_text[cursor:])
 
-    return "".join(output)
+#     return "".join(output)
 
 
 ###############################################################################
@@ -286,17 +286,17 @@ def safe_inject(
 ###############################################################################
 
 
-def strip_tags(html_fragment: str) -> str:
-    """
-    Remove HTML tags.
+# def strip_tags(html_fragment: str) -> str:
+#     """
+#     Remove HTML tags.
 
-    Parameters
-    ----------
-    html_fragment:
-        HTML fragment.
+#     Parameters
+#     ----------
+#     html_fragment:
+#         HTML fragment.
 
-    Returns
-    -------
-    str
-    """
-    return _ANY_TAG_RE.sub("", html_fragment)
+#     Returns
+#     -------
+#     str
+#     """
+#     return _ANY_TAG_RE.sub("", html_fragment)

@@ -51,7 +51,7 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 import re
-from typing import Iterable, Iterator, List, Sequence
+from typing import Sequence
 
 __all__ = [
     "BooleanSyntaxError",
@@ -459,11 +459,19 @@ class BooleanParser:
 
         node = self._unary_expression()
 
-        while self._accept(TokenType.AND):
-            rhs = self._unary_expression()
-            node = AndNode(node, rhs)
+        while True:
 
-        return node
+            if self._accept(TokenType.AND):
+                rhs = self._unary_expression()
+                node = AndNode(node, rhs)
+                continue
+
+            if self._accept(TokenType.NOT):
+                rhs = self._unary_expression()
+                node = AndNode(node, NotNode(rhs))
+                continue
+
+            return node
 
     # -------------------------------------------------------------
 
@@ -529,112 +537,125 @@ class SQLiteFTS5Compiler:
     Compile a validated Boolean AST into a single SQLite FTS5 MATCH
     expression.
 
-    The generated expression is intended to be supplied as a bound
-    parameter to SQLite::
-
-        SELECT ...
-        FROM paragraph_fts
-        WHERE paragraph_fts MATCH ?
-
-    No user input is ever concatenated into SQL.
+    FTS5's NOT is binary only (``A NOT B``) — there is no unary/bare
+    NOT, and there is no way to express a query that excludes terms
+    without also requiring at least one positive term (FTS5 has no
+    index structure for "rows NOT containing X" alone). NotNode and
+    NorNode are therefore only compilable when they appear as a
+    conjunct of an AND chain, where a positive term is guaranteed to
+    exist. Any other placement raises BooleanSyntaxError with an
+    explanatory message instead of producing invalid SQL that would
+    crash at the database layer.
     """
 
-    def compile(
-        self,
-        ast: ASTNode,
-    ) -> tuple[str, list[str]]:
-        """
-        Compile an AST into a MATCH parameter.
-
-        Parameters
-        ----------
-        ast
-            Root AST node.
-
-        Returns
-        -------
-        tuple[str, list[str]]
-
-            sql_fragment
-
-                Always::
-
-                    paragraph_fts MATCH ?
-
-            parameters
-
-                Single-element list containing the validated MATCH
-                expression.
-        """
-
+    def compile(self, ast: ASTNode) -> tuple[str, list[str]]:
         expression = self._compile_node(ast)
+        return ("paragraphs_fts MATCH ?", [expression])
 
-        return (
-            "paragraph_fts MATCH ?",
-            [expression],
-        )
+    # -------------------------------------------------------------
 
-    def _compile_node(
-        self,
-        node: ASTNode,
-    ) -> str:
-        """
-        Recursively serialize an AST into FTS5 Boolean syntax.
-        """
-
+    def _compile_node(self, node: ASTNode) -> str:
         if isinstance(node, TermNode):
             return self._compile_term(node)
 
-        if isinstance(node, NotNode):
-            return f"NOT ({self._compile_node(node.operand)})"
-
         if isinstance(node, AndNode):
-            return (
-                f"({self._compile_node(node.left)} "
-                f"AND "
-                f"{self._compile_node(node.right)})"
-            )
+            return self._compile_and_chain(node)
 
         if isinstance(node, OrNode):
+            if isinstance(node.left, (NotNode, NorNode)) or isinstance(
+                node.right, (NotNode, NorNode)
+            ):
+                raise BooleanSyntaxError(
+                    "NOT/NOR can't be combined directly with OR. "
+                    "Use AND instead of OR, e.g. 'Climate AND NOT Biodiversity'."
+                )
             return (
                 f"({self._compile_node(node.left)} "
-                f"OR "
-                f"{self._compile_node(node.right)})"
+                f"OR {self._compile_node(node.right)})"
+            )
+
+        if isinstance(node, NotNode):
+            raise BooleanSyntaxError(
+                "NOT needs a positive search term to exclude from — "
+                "try 'Climate NOT Biodiversity' or "
+                "'Climate AND NOT Biodiversity'."
             )
 
         if isinstance(node, NorNode):
-            return (
-                f"NOT ("
-                f"{self._compile_node(node.left)} "
-                f"OR "
-                f"{self._compile_node(node.right)}"
-                f")"
+            raise BooleanSyntaxError(
+                "NOR can't stand alone because it excludes both terms "
+                "with nothing left to search for. Combine it with a "
+                "positive term, e.g. "
+                "'Governance AND (Climate NOR Biodiversity)'."
             )
 
-        raise TypeError(
-            f"Unsupported AST node: {type(node)!r}"
+        raise TypeError(f"Unsupported AST node: {type(node)!r}")
+
+    # -------------------------------------------------------------
+
+    def _compile_and_chain(self, node: AndNode) -> str:
+        """
+        Flatten a chain of AND-connected operands and compile to
+        FTS5's binary NOT form:
+
+            (positive terms ANDed) NOT (excluded terms ORed)
+        """
+        conjuncts = self._flatten_and(node)
+
+        positives: list[str] = []
+        negatives: list[str] = []
+
+        for conjunct in conjuncts:
+            if isinstance(conjunct, NotNode):
+                negatives.append(self._compile_node(conjunct.operand))
+            elif isinstance(conjunct, NorNode):
+                negatives.append(
+                    f"({self._compile_node(conjunct.left)} "
+                    f"OR {self._compile_node(conjunct.right)})"
+                )
+            else:
+                positives.append(self._compile_node(conjunct))
+
+        if not positives:
+            raise BooleanSyntaxError(
+                "A search needs at least one positive term — "
+                "NOT/NOR alone can't be searched."
+            )
+
+        positive_expr = (
+            positives[0]
+            if len(positives) == 1
+            else "(" + " AND ".join(positives) + ")"
         )
 
+        if not negatives:
+            return positive_expr
+
+        negative_expr = (
+            negatives[0]
+            if len(negatives) == 1
+            else "(" + " OR ".join(negatives) + ")"
+        )
+
+        return f"({positive_expr} NOT {negative_expr})"
+
     @staticmethod
-    def _compile_term(
-        node: TermNode,
-    ) -> str:
-        """
-        Convert a validated search term into FTS5 syntax.
+    def _flatten_and(node: ASTNode) -> list[ASTNode]:
+        """Collect all AND-connected operands of a (possibly nested) AndNode."""
+        if isinstance(node, AndNode):
+            return SQLiteFTS5Compiler._flatten_and(
+                node.left
+            ) + SQLiteFTS5Compiler._flatten_and(node.right)
+        return [node]
 
-        Terms containing whitespace are emitted as quoted FTS5 phrases.
+    # -------------------------------------------------------------
 
-        Any embedded quotes are escaped according to SQLite FTS5 rules.
-        """
-
+    @staticmethod
+    def _compile_term(node: TermNode) -> str:
         value = node.value.strip()
-
         if not value:
             raise ValueError("Empty search term.")
-
         escaped = value.replace('"', '""')
-
         if any(ch.isspace() for ch in escaped):
             return f'"{escaped}"'
-
         return escaped

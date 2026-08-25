@@ -41,19 +41,23 @@ from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 from typing import Iterable
-from typing import Optional
 
 import fitz
 
 from unstructured.documents.elements import Element
 from unstructured.documents.elements import ListItem
-from unstructured.documents.elements import NarrativeText
 from unstructured.documents.elements import Table
-from unstructured.documents.elements import Text
 from unstructured.documents.elements import Title
 from unstructured.partition.pdf import partition_pdf
 from unstructured.chunking.title import chunk_by_title
-from unstructured.documents.elements import CompositeElement, Table, TableChunk, ListItem, Title
+from unstructured.documents.elements import Table, TableChunk, ListItem, Title
+from ingestion.text_artifacts import (
+    normalise_whitespace,
+    remove_toc_artifacts,
+    PAGE_NUMBER_PATTERN,
+    STRAY_CHARACTER_PATTERN,
+    detect_headers_and_footers,
+)
 
 from .ocr import OCRResult
 
@@ -118,11 +122,11 @@ class ExtractionConfig:
 
     include_page_breaks: bool = False
 
-    max_characters: int = 5000
+    max_characters: int = 2000
 
-    combine_text_under_n_chars: int = 400
+    combine_text_under_n_chars: int = 200
 
-    new_after_n_chars: int = 3500
+    new_after_n_chars: int = 1200
 
     extract_images: bool = False
 
@@ -270,29 +274,29 @@ def extract_document_metadata(
 ###############################################################################
 
 
-def _element_category(
-    element: Element,
-) -> str:
-    """
-    Convert an Unstructured element into a canonical category.
-    """
+# def _element_category(
+#     element: Element,
+# ) -> str:
+#     """
+#     Convert an Unstructured element into a canonical category.
+#     """
 
-    if isinstance(element, Title):
-        return "title"
+#     if isinstance(element, Title):
+#         return "title"
 
-    if isinstance(element, NarrativeText):
-        return "paragraph"
+#     if isinstance(element, NarrativeText):
+#         return "paragraph"
 
-    if isinstance(element, ListItem):
-        return "list"
+#     if isinstance(element, ListItem):
+#         return "list"
 
-    if isinstance(element, Table):
-        return "table"
+#     if isinstance(element, Table):
+#         return "table"
 
-    if isinstance(element, Text):
-        return "text"
+#     if isinstance(element, Text):
+#         return "text"
 
-    return element.category.lower()
+#     return element.category.lower()
 
 
 def _page_number(
@@ -319,26 +323,59 @@ def _page_number(
     return int(page)
 
 
-def _section_title(
-    element: Element,
-    current_section: str | None,
-) -> str | None:
+def _strip_document_noise(elements: list[Element]) -> list[Element]:
     """
-    Determine section ownership.
-
-    Titles become the active section until another
-    title is encountered.
+    Remove repeated headers/footers, standalone page numbers, and
+    TOC-only elements from atomic Unstructured elements, BEFORE they
+    get merged by chunk_by_title. Once merged into composite chunks,
+    these patterns can no longer match reliably.
     """
+    pairs = [
+        (_page_number(el), normalise_whitespace(str(el.text or "")))
+        for el in elements
+    ]
+    headers, footers = detect_headers_and_footers(pairs)
 
-    if isinstance(element, Title):
+    kept: list[Element] = []
+    for element, (_, norm_text) in zip(elements, pairs):
+        raw_text = (element.text or "").strip()
 
-        text = element.text.strip()
+        if not raw_text:
+            continue
+        if norm_text in headers or norm_text in footers:
+            continue
+        if PAGE_NUMBER_PATTERN.match(raw_text):
+            continue
+        if STRAY_CHARACTER_PATTERN.match(raw_text):
+            continue
+        if not remove_toc_artifacts(raw_text).strip():
+            continue
 
-        if text:
+        kept.append(element)
 
-            return text
+    return kept
 
-    return current_section
+
+# def _section_title(
+#     element: Element,
+#     current_section: str | None,
+# ) -> str | None:
+#     """
+#     Determine section ownership.
+
+#     Titles become the active section until another
+#     title is encountered.
+#     """
+
+#     if isinstance(element, Title):
+
+#         text = element.text.strip()
+
+#         if text:
+
+#             return text
+
+#     return current_section
 
 
 ###############################################################################
@@ -363,7 +400,8 @@ def extract_with_unstructured(
     try:
 
         strategy = (
-            "hi_res" if (pdf.inspection.needs_ocr or config.strategy == "hi_res") else "fast"
+            "hi_res" if (pdf.inspection.needs_ocr or config.strategy == "hi_res" or config.infer_table_structure)
+            else "fast"
         )
 
         elements = partition_pdf(
@@ -374,12 +412,14 @@ def extract_with_unstructured(
             extract_images_in_pdf=config.extract_images,
         )
 
+        elements = _strip_document_noise(elements)    
+
         chunks = chunk_by_title(
             elements,
             max_characters=config.max_characters,
             combine_text_under_n_chars=config.combine_text_under_n_chars,
             new_after_n_chars=config.new_after_n_chars,
-            multipage_sections=False,
+            multipage_sections=True,
         )
 
     except Exception as exc:
@@ -399,7 +439,7 @@ def extract_with_unstructured(
     element_id = 1
 
     for chunk in chunks:
-        text = (chunk.text or "").strip()
+        text = _chunk_body_text(chunk)
         if not text:
             continue
 
@@ -507,14 +547,14 @@ def iter_elements(
         yield from page.elements
 
 
-def iter_pages(
-    document: ExtractedDocument,
-) -> Iterable[ExtractedPage]:
-    """
-    Iterate over pages.
-    """
+# def iter_pages(
+#     document: ExtractedDocument,
+# ) -> Iterable[ExtractedPage]:
+#     """
+#     Iterate over pages.
+#     """
 
-    yield from document.pages
+#     yield from document.pages
 
 
 ###############################################################################
@@ -522,65 +562,65 @@ def iter_pages(
 ###############################################################################
 
 
-def get_page(
-    document: ExtractedDocument,
-    page_number: int,
-) -> ExtractedPage:
-    """
-    Retrieve a page by page number.
+# def get_page(
+#     document: ExtractedDocument,
+#     page_number: int,
+# ) -> ExtractedPage:
+#     """
+#     Retrieve a page by page number.
 
-    Raises
-    ------
-    KeyError
-        If the requested page does not exist.
-    """
+#     Raises
+#     ------
+#     KeyError
+#         If the requested page does not exist.
+#     """
 
-    for page in document.pages:
+#     for page in document.pages:
 
-        if page.page_number == page_number:
-            return page
+#         if page.page_number == page_number:
+#             return page
 
-    raise KeyError(
-        f"Page {page_number} not present."
-    )
-
-
-def document_text(
-    document: ExtractedDocument,
-) -> str:
-    """
-    Return the document text in reading order.
-
-    Page boundaries are preserved by blank lines.
-    """
-
-    return "\n\n".join(
-        page.raw_text
-        for page in document.pages
-        if page.raw_text
-    )
+#     raise KeyError(
+#         f"Page {page_number} not present."
+#     )
 
 
-def section_titles(
-    document: ExtractedDocument,
-) -> list[str]:
-    """
-    Return unique section titles preserving order.
-    """
+# def document_text(
+#     document: ExtractedDocument,
+# ) -> str:
+#     """
+#     Return the document text in reading order.
 
-    titles: list[str] = []
-    seen: set[str] = set()
+#     Page boundaries are preserved by blank lines.
+#     """
 
-    for element in iter_elements(document):
+#     return "\n\n".join(
+#         page.raw_text
+#         for page in document.pages
+#         if page.raw_text
+#     )
 
-        if (
-            element.section_title
-            and element.section_title not in seen
-        ):
-            titles.append(element.section_title)
-            seen.add(element.section_title)
 
-    return titles
+# def section_titles(
+#     document: ExtractedDocument,
+# ) -> list[str]:
+#     """
+#     Return unique section titles preserving order.
+#     """
+
+#     titles: list[str] = []
+#     seen: set[str] = set()
+
+#     for element in iter_elements(document):
+
+#         if (
+#             element.section_title
+#             and element.section_title not in seen
+#         ):
+#             titles.append(element.section_title)
+#             seen.add(element.section_title)
+
+#     return titles
 
 
 ###############################################################################
@@ -805,6 +845,31 @@ def _chunk_section_title(chunk, current_section):
             current_section = element.text.strip()
     return current_section
 
+
+def _chunk_body_text(chunk) -> str:
+    """
+    Reconstruct chunk text excluding the Title element.
+
+    chunk_by_title concatenates every constituent element's text,
+    including the Title that opens the section — which we already
+    store separately as section_title. Left in, it duplicates the
+    title inside every paragraph body.
+    """
+    orig = getattr(chunk.metadata, "orig_elements", None)
+    if not orig:
+        return (chunk.text or "").strip()
+
+    body_parts = [
+        str(element.text).strip()
+        for element in orig
+        if not isinstance(element, Title) and str(element.text or "").strip()
+    ]
+
+    if not body_parts:
+        return (chunk.text or "").strip()
+
+    return "\n\n".join(body_parts)
+
 ###############################################################################
 # Fallback orchestration helpers
 ###############################################################################
@@ -842,25 +907,25 @@ def _merge_metadata(
     )
 
 
-def enrich_document(
-    document: ExtractedDocument,
-    metadata: PDFMetadata,
-) -> ExtractedDocument:
-    """
-    Replace incomplete metadata using an enriched metadata
-    object.
+# def enrich_document(
+#     document: ExtractedDocument,
+#     metadata: PDFMetadata,
+# ) -> ExtractedDocument:
+#     """
+#     Replace incomplete metadata using an enriched metadata
+#     object.
 
-    Returns
-    -------
-    ExtractedDocument
-    """
+#     Returns
+#     -------
+#     ExtractedDocument
+#     """
 
-    document.metadata = _merge_metadata(
-        document.metadata,
-        metadata,
-    )
+#     document.metadata = _merge_metadata(
+#         document.metadata,
+#         metadata,
+#     )
 
-    return document
+#     return document
 
 
 ###############################################################################
@@ -1078,17 +1143,17 @@ __all__ = [
     "PyMuPDFExtractionError",
     "UnstructuredExtractionError",
     "document_has_content",
-    "document_text",
-    "enrich_document",
+    #"document_text",
+    #"enrich_document",
     "extract",
     "extract_document",
     "extract_document_metadata",
     "extract_with_pymupdf",
     "extract_with_unstructured",
     "extraction_statistics",
-    "get_page",
+    #"get_page",
     "iter_elements",
-    "iter_pages",
-    "section_titles",
+    #"iter_pages",
+    #"section_titles",
     "validate_document",
 ]

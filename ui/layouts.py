@@ -32,6 +32,8 @@ from shiny import ui
 
 RESULTS_CONTAINER_ID = "results_container"
 
+APP_VERSION = "1.0.0 (21 August 2026)"
+
 ###############################################################################
 # Layout builders
 ###############################################################################
@@ -219,13 +221,18 @@ def build_page(
                 class_="results-section",
             ),
 
+            #
+            # Footer
+            #
+            build_footer(),
+
             class_="app-container",
         ),
     )
 
 
 ###############################################################################
-# Header
+# Header and Footer
 ###############################################################################
 
 
@@ -243,6 +250,22 @@ def build_header():
             "IPBES Document Search",
             class_="app-title",
         ),
+
+        ui.div(
+            ui.span(
+                f"Version {APP_VERSION}",
+                class_="app-version",
+            ),
+
+            ui.input_action_link(
+                    "about_button",
+                    "About",
+                    class_="about-link",
+                ),
+
+            class_="app-meta",
+        ),
+
         ui.p(
             (
                 "Search workshop documents using Boolean "
@@ -251,7 +274,98 @@ def build_header():
             ),
             class_="app-subtitle",
         ),
-        class_="header-section",
+
+        class_="app-header",
+    )
+
+def build_about_modal():
+    """
+    Build the About dialog shown when the user clicks the About link.
+    """
+    return ui.modal(
+        ui.p(
+            "IPBES Document Search provides a search platform to find "
+            "IPBES glossary and ILK terms in workshop documents using Boolean queries, with results returned at the "
+            "paragraph level and linked IPBES glossary entries. This tool is supposed "
+            "to simplify and speed up the process of finding information " 
+            "and increase accessibility to IPBES knowledge resources."
+        ),
+        ui.p(
+            "The idea for the search platform was conceptualised "
+            "by Aidin Niamir, Head of the IPBES Technical Support Unit " \
+            "on Data and Knowledge Management, and implemented and maintained " \
+            "by Annabell Macphee at the Senckenberg Biodiversity and Climate Research Centre."
+        ),
+        ui.p(
+            "The IPBES glossary (and ILK terms) are derived from the respective location on" \
+            "the IPBES website while IPBES workshop documents were retrieved " \
+            "from the IPBES Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services (IPBES) " \
+            "Zenodo community."
+        ),
+        ui.p(
+            "While this tool may be helpful for exploratory searches and utmost " \
+            "care was invested to ensure accuracy, returned results may be incomplete or " \
+            "otherwise faulty. For formal use, users should always refer to relevant IPBES workshop documents directly." \
+        ),
+        title="About: IPBES Document Search",
+        easy_close=True,
+        footer=ui.modal_button("Close"),
+    )
+
+
+def build_footer():
+    """
+    Build the application footer.
+    """
+
+    return ui.footer(
+        ui.div(
+            ui.div(
+                ui.span("Data: ", class_="footer-label"),
+                ui.a(
+                    "IPBES ILK Reports",
+                    href="https://www.ipbes.net/ilk-dialogue-reports",
+                    class_="footer-link",
+                ),
+                ui.span(" | ", class_="footer-separator"),
+                ui.a(
+                    "IPBES Glossary",
+                    href="https://www.ipbes.net/glossary",
+                    class_="footer-link",
+                ),
+                ui.span(" | ", class_="footer-separator"),
+                ui.a(
+                    "IPBES ILK terms",
+                    href="#",
+                    class_="footer-link",
+                ),
+            ),
+            ui.div(
+                ui.span("Issues: ", class_="footer-label"),
+                ui.a(
+                    "Github issues",
+                    href="https://github.com/Aba-Mac/IPBES-Document-search-app/issues",
+                    class_="footer-link",
+                ),
+            ),
+            ui.div(
+                ui.span("Developed by ", class_="footer-label"),
+                ui.a(
+                    "Annabell Macphee",
+                    href="mailto:annabell.macphee@senckenberg.de?subject=IPBES%20document%20search%20app",
+                    class_="footer-link",
+                ),
+                ui.span(" | ", class_="footer-separator"),
+                ui.a(
+                    "Senckenberg Biodiversity and Climate Research Institute",
+                    href="https://www.senckenberg.de/en/research/institutes-overview/sbikf-institut/",
+                    class_="footer-link",
+                    ),
+                class_="footer-inner",
+            ),
+
+            class_="app-footer",
+        )
     )
 
 

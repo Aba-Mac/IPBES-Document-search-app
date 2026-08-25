@@ -28,7 +28,6 @@ belongs in database/repository.py.
 
 from __future__ import annotations
 
-import json
 import logging
 import re
 from dataclasses import asdict, dataclass
@@ -341,8 +340,6 @@ def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
     if not date_matches:
         return _parse_citation_body_legacy(body)
 
-    # Dates sit at or near the end of the citation; take the last match
-    # even if an earlier word happens to look date-like.
     date_match = date_matches[-1]
     before = body[: date_match.start()].rstrip()
     after = body[date_match.end():].strip(" ,")

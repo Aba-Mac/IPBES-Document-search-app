@@ -46,6 +46,7 @@ DOCUMENTS_TABLE = dedent(
         filename            TEXT NOT NULL UNIQUE,
 
         title               TEXT,
+        doi                 TEXT,
         plenary_session     TEXT,
 
         year                INTEGER,
@@ -53,6 +54,7 @@ DOCUMENTS_TABLE = dedent(
         location            TEXT,
 
         source              TEXT,
+        source_hash         TEXT,
 
         page_count          INTEGER NOT NULL,
 
@@ -122,7 +124,11 @@ TERMS_TABLE = dedent(
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        term TEXT NOT NULL UNIQUE COLLATE NOCASE
+        term TEXT NOT NULL COLLATE NOCASE,
+
+        list_name   TEXT NOT NULL DEFAULT 'general',
+
+        UNIQUE(term, list_name)
     );
 """
 )

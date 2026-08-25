@@ -37,7 +37,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from dataclasses import dataclass
-from typing import Iterable, List, Sequence
+from typing import Sequence
 from ingestion.extractor import ExtractedDocument, ExtractedElement
 from unstructured.documents.elements import (
     NarrativeText,
@@ -45,50 +45,18 @@ from unstructured.documents.elements import (
     ListItem,
     Text,
     )
+from ingestion.text_artifacts import (
+    normalise_whitespace,
+    strip_dot_leaders,
+    remove_toc_artifacts,
+    remove_stray_characters,
+    detect_headers_and_footers as _detect_headers_and_footers_generic,
+    PAGE_NUMBER_PATTERN,
+    PRINTED_PAGE_NUMBER_PATTERN,
+)
 
 import ftfy
 
-
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-MIN_HEADER_FOOTER_OCCURRENCES = 3
-
-PAGE_NUMBER_PATTERN = re.compile(
-    r"^\s*(?:page\s*)?\d+\s*$",
-    flags=re.IGNORECASE,
-)
-
-DOT_LEADER_PATTERN = re.compile(
-    r"\.{2,}\s*\d+\s*$"
-)
-
-TOC_ENTRY_PATTERN = re.compile(
-    r"(?:^|\s)(?P<label>.{3,80}?)(\.{2,}|…+)\s*(?P<num>\d{1,4})(?=\s|$)"
-)
-
-MULTIPLE_WHITESPACE_PATTERN = re.compile(
-    r"[ \t]+"
-)
-
-MULTIPLE_NEWLINES_PATTERN = re.compile(
-    r"\n{3,}"
-)
-
-STRAY_CHARACTER_PATTERN = re.compile(
-    r"^[^A-Za-z0-9À-ž]+$"
-)
-
-OCR_GARBAGE_PATTERN = re.compile(
-    r"(?<!\w)[|¦•]{2,}(?!\w)"
-)
-
-PRINTED_PAGE_NUMBER_PATTERN = re.compile(
-    r"^\s*(?:page\s*)?(\d{1,4})\s*$", re.IGNORECASE
-    )
-
-HEADER_FOOTER_WINDOW = 3
 
 # ---------------------------------------------------------------------------
 # Data model
@@ -217,68 +185,12 @@ def repair_encoding(text: str) -> str:
     return ftfy.fix_text(text)
 
 
-def detect_headers_and_footers(
-    extracted: Sequence[CleanedElement],
-) -> tuple[set[str], set[str]]:
-    """
-    Detect repeated header and footer candidates using repetition
-    frequency plus position on the page.
-
-    Headers/footers spanning multiple Unstructured elements (e.g. a
-    running title split across two lines) are handled by checking a
-    small window of leading/trailing elements per page, not just the
-    single first/last element.
-    """
-    by_page: dict[int, list[str]] = {}
-    for element in extracted:
-        text = normalise_whitespace(element.text)
-        if not text:
-            continue
-        by_page.setdefault(element.page_number, []).append(text)
-
-    counts = Counter(
-        normalise_whitespace(element.text)
-        for element in extracted
-        if element.text.strip()
-    )
-
-    # For each page, count which text appears at leading position 0, 1,
-    # 2... (and trailing position 0, 1, 2... from the end) across pages.
-    first_position_counts: dict[int, Counter] = {}
-    last_position_counts: dict[int, Counter] = {}
-
-    for texts in by_page.values():
-        window = min(HEADER_FOOTER_WINDOW, len(texts))
-        for offset in range(window):
-            first_position_counts.setdefault(offset, Counter())[texts[offset]] += 1
-            last_position_counts.setdefault(offset, Counter())[texts[-1 - offset]] += 1
-
-    headers: set[str] = set()
-    footers: set[str] = set()
-
-    for text, count in counts.items():
-        if count < MIN_HEADER_FOOTER_OCCURRENCES:
-            continue
-
-        if PAGE_NUMBER_PATTERN.match(text):
-            footers.add(text)
-            continue
-
-        is_header = any(
-            position_counts.get(text, 0) >= MIN_HEADER_FOOTER_OCCURRENCES
-            for position_counts in first_position_counts.values()
-        )
-        is_footer = any(
-            position_counts.get(text, 0) >= MIN_HEADER_FOOTER_OCCURRENCES
-            for position_counts in last_position_counts.values()
-        )
-
-        if is_header:
-            headers.add(text)
-        elif is_footer:
-            footers.add(text)
-
-    return headers, footers
+def detect_headers_and_footers(extracted):
+    pairs = [
+        (el.page_number, normalise_whitespace(el.text))
+        for el in extracted if el.text.strip()
+    ]
+    return _detect_headers_and_footers_generic(pairs)
 
 
 def remove_page_numbers(text: str) -> str:
@@ -305,115 +217,23 @@ def remove_page_numbers(text: str) -> str:
     return text
 
 
-def strip_dot_leaders(text: str) -> str:
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+def _extract_element(
+    element: ExtractedElement,
+) -> CleanedElement:
     """
-    Remove OCR-generated dot leaders.
-
-    Example:
-
-        Introduction ........ 12
-
-    becomes:
-
-        Introduction
-
-    Args:
-        text:
-            Input text.
-
-    Returns:
-        Cleaned text.
+    Convert an extracted element into a cleaning representation.
     """
 
-    return DOT_LEADER_PATTERN.sub("", text)
-
-
-
-def remove_toc_artifacts(text: str) -> str:
-    """
-    Remove table-of-contents style entries.
-
-    Unstructured sometimes merges an entire TOC section into one element,
-    so this checks for dot-leader entries anywhere in the text rather than
-    requiring the whole block to be a single entry.
-    """
-    stripped = text.strip()
-    if not stripped:
-        return text
-
-    matches = list(TOC_ENTRY_PATTERN.finditer(stripped))
-    if not matches:
-        return text
-
-    if len(matches) >= 2:
-        # Multiple dot-leader entries packed into one element = a merged
-        # TOC block. Drop the whole thing.
-        return ""
-
-    # Single entry: only drop if it accounts for essentially the whole
-    # element (this preserves the old single-line TOC behaviour).
-    match = matches[0]
-    covered = match.end() - match.start()
-    if covered / len(stripped) > 0.8:
-        return ""
-
-    return text
-
-
-def remove_stray_characters(text: str) -> str:
-    """
-    Remove OCR blocks containing only meaningless symbols.
-
-    Examples removed:
-
-        ||||
-        •••
-        ----
-
-    Real punctuation inside sentences is preserved.
-
-    Args:
-        text:
-            Input text.
-
-    Returns:
-        Cleaned text.
-    """
-
-    if STRAY_CHARACTER_PATTERN.match(text.strip()):
-        return ""
-
-    text = OCR_GARBAGE_PATTERN.sub(" ", text)
-
-    return text
-
-
-def normalise_whitespace(text: str) -> str:
-    """
-    Normalise whitespace while preserving paragraph structure.
-
-    Args:
-        text:
-            Input text.
-
-    Returns:
-        Whitespace-normalised text.
-    """
-
-    text = text.replace("\r\n", "\n")
-    text = text.replace("\r", "\n")
-
-    text = MULTIPLE_WHITESPACE_PATTERN.sub(
-        " ",
-        text,
+    return CleanedElement(
+        text=element.text,
+        category=element.category,
+        page_number=element.page_number,
+        section_title=element.section_title,
     )
-
-    text = MULTIPLE_NEWLINES_PATTERN.sub(
-        "\n\n",
-        text,
-    )
-
-    return text.strip()
 
 
 def _detect_page_labels(extracted: list[CleanedElement]) -> dict[int, int]:
@@ -432,22 +252,3 @@ def _detect_page_labels(extracted: list[CleanedElement]) -> dict[int, int]:
         labels[physical_page] = label if label is not None else physical_page
 
     return labels
-
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-
-def _extract_element(
-    element: ExtractedElement,
-) -> CleanedElement:
-    """
-    Convert an extracted element into a cleaning representation.
-    """
-
-    return CleanedElement(
-        text=element.text,
-        category=element.category,
-        page_number=element.page_number,
-        section_title=element.section_title,
-    )

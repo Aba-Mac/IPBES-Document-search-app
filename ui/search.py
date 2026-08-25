@@ -38,6 +38,8 @@ YEAR_FILTER_ID = "year_filter"
 
 PAGE_SIZE_ID = "page_size"
 
+GLOSSARY_LIST_ID = "glossary_list_selection"
+
 ###############################################################################
 # UI construction
 ###############################################################################
@@ -61,6 +63,20 @@ def build_search_controls(
     return ui.div(
 
         #
+        # Glossary check box
+        #
+        ui.div(
+            ui.input_checkbox_group(
+                GLOSSARY_LIST_ID,
+                "Search glossary list:",
+                choices={"ILK": "ILK", "Glossary": "Glossary"},
+                selected=["ILK", "Glossary"],
+                inline=True,
+            ),
+            class_="glossary-selector-card",
+        ),
+
+        #
         # Main search input
         #
         ui.div(
@@ -68,12 +84,13 @@ def build_search_controls(
                 id=SEARCH_QUERY_ID,
                 label=(
                     "Currently, only terms from the dropdown glossary list are searchable. "
-                    "Use AND, OR, NOT, NOR and parentheses."
+                    "Use AND, OR, NOT, NOR and parentheses, for example:\n"
+                    "Biodiversity AND (Climate OR Environment)\n"
+                    "Conceptual Framework NOR Frameworks"
                 ),
                 value="",
                 placeholder=(
-                    "Example: biodiversity AND "
-                    "(climate OR environment)"
+                    "Type to search terms..."
                 ),
                 width="100%",
             ),
@@ -85,39 +102,11 @@ def build_search_controls(
             ),
 
             class_="search-input-container",
-
-        ),
-            
-        #
-        # Filters
-        #
-        ui.div(
-            ui.input_slider(
-                id=YEAR_FILTER_ID,
-                label="Year range",
-                min=y_min,
-                max=y_max,
-                value=(y_min, y_max),
-                step=1,
-                sep="",
-            ),
         ),
 
         #
         # Pagination
         #
-
-        ui.div(
-            ui.input_numeric(
-                id=PAGE_SIZE_ID,
-                label="Results per page",
-                value=20,
-                min=5,
-                max=100,
-                step=5,
-            ),
-            class_="pagination-controls",
-        ),
 
         ui.div(
             ui.input_action_button(
@@ -158,6 +147,9 @@ def build_search_controls(
 # These helper functions isolate the rest of the application from
 # Shiny input IDs.
 #
+def selected_glossary_lists(input) -> tuple[str, ...]:
+    value = input[GLOSSARY_LIST_ID]()
+    return tuple(value) if value else ()
 
 
 def search_query(input) -> str:
