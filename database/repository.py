@@ -1257,15 +1257,6 @@ def search_paragraphs(
     if glossary_lists:
         sql += """
             GROUP BY p.id
-            ORDER BY bm25_score
-            LIMIT ?
-            OFFSET ?
-        """
-    else:
-        sql += """
-            ORDER BY bm25_score
-            LIMIT ?
-            OFFSET ?
         """
 
     sql += """
