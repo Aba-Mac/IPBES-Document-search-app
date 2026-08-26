@@ -212,10 +212,11 @@ def server(input, output, session) -> None:
     @reactive.calc
     def search_results():
         query = submitted_query.get()
-        filters: dict[str, object] = {}
 
         if not query:
             return None
+
+        filters: dict[str, object] = {}
 
         lists = selected_glossary_lists(input)
         if lists:
