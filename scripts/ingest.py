@@ -45,7 +45,7 @@ if missing:
 ingest_directory(
     directory=PDF_DIR,
     glossary_sources=glossary_sources,
-    doi_txt=DOI_DIR,
+    doi_map=DOI_DIR,
 )
 
 LOGGER.info(

@@ -480,7 +480,7 @@ def ingest_directory(
     directory: str | Path,
     *,
     glossary_sources: dict[str, Path], 
-    doi_txt: str | Path | None = None,
+    doi_map: str | Path | None = None,
     recursive: bool = True,
 ) -> list[IngestionResult]:
     """
@@ -509,7 +509,7 @@ def ingest_directory(
 
         raise FileNotFoundError(directory)
 
-    doi_map = doi_lookup.load_doi_map(Path(doi_txt)) if doi_txt else {}
+    doi_map = doi_lookup.load_doi_map(Path(doi_map)) if doi_map else {}
 
     pattern = "**/*.pdf" if recursive else "*.pdf"
 
@@ -522,8 +522,8 @@ def ingest_directory(
             results.append(
                 ingest_document(
                     pdf,
-                    glossary_sources,
-                    doi_map,
+                    glossary_sources=glossary_sources,
+                    doi_map=doi_map,
                 )
             )
 
