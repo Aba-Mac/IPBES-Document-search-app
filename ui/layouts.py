@@ -292,20 +292,20 @@ def build_about_modal():
         ),
         ui.p(
             "The idea for the search platform was conceptualised "
-            "by Aidin Niamir, Head of the IPBES Technical Support Unit " \
-            "on Data and Knowledge Management, and implemented and maintained " \
+            "by Aidin Niamir, Head of the IPBES Technical Support Unit " 
+            "on Data and Knowledge Management, and implemented and maintained " 
             "by Annabell Macphee at the Senckenberg Biodiversity and Climate Research Centre."
         ),
         ui.p(
-            "The IPBES glossary (and ILK terms) are derived from the respective location on" \
-            "the IPBES website while IPBES workshop documents were retrieved " \
-            "from the IPBES Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services (IPBES) " \
+            "The IPBES glossary (and ILK terms) are derived from the respective location on " 
+            "the IPBES website while IPBES workshop documents were retrieved " 
+            "from the IPBES Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services (IPBES) " 
             "Zenodo community."
         ),
         ui.p(
-            "While this tool may be helpful for exploratory searches and utmost " \
-            "care was invested to ensure accuracy, returned results may be incomplete or " \
-            "otherwise faulty. For formal use, users should always refer to relevant IPBES workshop documents directly." \
+            "While this tool may be helpful for exploratory searches and utmost " 
+            "care was invested to ensure accuracy, returned results may be incomplete or " 
+            "otherwise faulty. For formal use, users should always refer to relevant IPBES workshop documents directly." 
         ),
         title="About: IPBES Document Search",
         easy_close=True,
@@ -324,7 +324,7 @@ def build_footer():
                 ui.span("Data: ", class_="footer-label"),
                 ui.a(
                     "IPBES ILK Reports",
-                    href="https://www.ipbes.net/ilk-dialogue-reports",
+                    href="https://zenodo.org/communities/ipbes/records?q=&f=subject%3AIndigenous%20and%20Local%20Knowledge%20Systems&l=list&p=1&s=10&sort=newest",
                     class_="footer-link",
                 ),
                 ui.span(" | ", class_="footer-separator"),
