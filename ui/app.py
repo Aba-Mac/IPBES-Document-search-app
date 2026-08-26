@@ -212,6 +212,7 @@ def server(input, output, session) -> None:
     @reactive.calc
     def search_results():
         query = submitted_query.get()
+        filters: dict[str, object] = {}
 
         if not query:
             return None
@@ -232,8 +233,6 @@ def server(input, output, session) -> None:
             input,
             full_range=full_range,
         )
-
-        filters: dict[str, object] = {}
 
         if year_range:
             filters["year"] = year_range
