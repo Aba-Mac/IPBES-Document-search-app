@@ -224,22 +224,6 @@ def server(input, output, session) -> None:
 
         page = current_page.get()
 
-        years = available_years.get()
-        full_range = (
-            min(years),
-            max(years),
-        )
-
-        year_range = selected_year_range(
-            input,
-            full_range=full_range,
-        )
-
-        if year_range:
-            filters["year"] = year_range
-
-        size = page_size(input)
-
         logger.info(
             "Executing search (query=%r, page=%s)",
             query,
@@ -251,7 +235,6 @@ def server(input, output, session) -> None:
                 query=query,
                 filters=filters or None,
                 page=page,
-                page_size=size,
             )
 
         except SearchServiceError:
