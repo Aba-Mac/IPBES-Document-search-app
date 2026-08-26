@@ -36,7 +36,7 @@ configure(repository)
 
 
 LOGGER.info("Importing UI...")
-from ui.app import app as shiny_app
+from ui.app import app #as shiny_app
 
 
 # app = Starlette(
