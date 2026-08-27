@@ -152,7 +152,7 @@ a:focus {
 
 
 .about-details {
-    color: var(--colour-text-muted);
+    color: var(--colour-link);
     font-size: 0.85rem;
 }
 
@@ -303,14 +303,6 @@ font-size: 0.75rem;
 
 .search-input-container {
     position: relative;
-}
-
-.search-input-container label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--colour-text-muted);
-    margin-bottom: var(--spacing-xs);
 }
 
 .glossary-autocomplete {
@@ -525,7 +517,6 @@ font-size: 0.75rem;
 .footer-inner {
     align-items: flex-start;
     display: flex;
-    justify-content: space-between;
     gap: var(--spacing-lg);
 }
 

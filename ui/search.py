@@ -68,7 +68,6 @@ def build_search_controls(
                 (
                     "Currently, only terms from the glossary list below are searchable. "
                     "Use AND, OR, NOT, NOR and parentheses, for example:\n"
-                    "\n"
                     "Biodiversity AND (Climate OR Environment)\n"
                     "Biodiversity AND (Conceptual Framework NOR Frameworks)\n" 
                     "Climate NOT Climate Change"

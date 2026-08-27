@@ -32,7 +32,7 @@ from shiny import ui
 
 RESULTS_CONTAINER_ID = "results_container"
 
-APP_VERSION = "1.0.0 (21 August 2026)"
+APP_VERSION = "1.0.1 (27 August 2026)"
 
 ###############################################################################
 # Layout builders
@@ -271,15 +271,6 @@ def build_header():
             class_="app-meta",
         ),
 
-        ui.p(
-            (
-                "Search workshop documents using Boolean "
-                "queries. Results are returned at paragraph level with "
-                "highlighted search terms and linked glossary entries."
-            ),
-            class_="app-subtitle",
-        ),
-
         class_="app-header",
     )
 
@@ -291,7 +282,7 @@ def build_about_modal():
         ui.p(
             "IPBES Document Search provides a search platform to find "
             "IPBES glossary and ILK terms in workshop documents using Boolean queries, with results returned at the "
-            "paragraph level and linked IPBES glossary entries. This tool is supposed "
+            "paragraph level. This tool is supposed "
             "to simplify and speed up the process of finding information " 
             "and increase accessibility to IPBES knowledge resources."
         ),
