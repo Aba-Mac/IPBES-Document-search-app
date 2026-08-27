@@ -103,7 +103,7 @@ def build_search_controls(
             ui.input_checkbox_group(
                 GLOSSARY_LIST_ID,
                 label=None,
-                choices={"ILK": "ILK", "IPBES Glossary": "Glossary"},
+                choices={"ILK": "ILK terms", "Glossary": "IPBES Glossary"},
                 selected=["ILK", "Glossary"],
                 inline=True,
             ),
