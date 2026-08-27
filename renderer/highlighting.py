@@ -4,39 +4,15 @@ renderer/highlighting.py
 
 Search-term highlighting for rendered paragraph HTML.
 
-This module applies search-term highlighting **after** glossary hyperlinks
-have been inserted. It operates on HTML fragments and ensures that only
-visible text nodes are modified—never HTML tags or the contents of
-existing hyperlinks.
+Highlighting is glossary-aware:
 
-Pipeline
---------
-
-    raw paragraph
-        │
-        ▼
-    renderer.html.escape_html()
-        │
-        ▼
-    renderer.hyperlinks.hyperlink_glossary_terms()
-        │
-        ▼
-    highlight_search_terms()
-        │
-        ▼
-    final HTML
-
-Design goals
-------------
-
-* Highlight only visible text.
-* Never modify HTML tags.
-* Never highlight inside an existing hyperlink.
-* Case-insensitive matching.
-* Preserve original letter casing.
-* Support multi-word search phrases.
-* Longest query terms are highlighted first.
-* Produce deterministic output.
+* Directly searched terms are highlighted.
+* Glossary terms are highlighted only when they overlap with a
+  directly searched term.
+* Unrelated glossary terms are never highlighted merely because their
+  letters occur in the paragraph.
+* Matching is case-insensitive and word/phrase bounded.
+* Existing glossary hyperlinks are never modified.
 """
 
 from __future__ import annotations
@@ -121,7 +97,14 @@ _normalise_query = normalise_query
 
 def _compile_pattern(term: str) -> re.Pattern[str]:
     """
-    Compile a regex for one search term.
+    Compile a whole-word/whole-phrase, case-insensitive regex for one
+    search term.
+
+    Word boundaries prevent partial-letter matches inside unrelated
+    words (e.g. searching "use" should not highlight "used" or
+    "useful"), while still matching the term wherever it appears as a
+    standalone word or phrase — including inside a longer glossary
+    hyperlink such as "Climate Action" when searching "Climate".
 
     Parameters
     ----------
@@ -134,7 +117,7 @@ def _compile_pattern(term: str) -> re.Pattern[str]:
     escaped = re.escape(html.escape(term))
 
     return re.compile(
-        escaped,
+        rf"(?<!\w)({escaped})(?!\w)",
         flags=re.IGNORECASE,
     )
 
