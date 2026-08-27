@@ -1525,40 +1525,40 @@ def list_terms(
 #     )
 
 
-# def get_paragraph_terms(
-#     paragraph_id: int,
-#     *,
-#     connection: sqlite3.Connection | None = None,
-# ) -> list[sqlite3.Row]:
-#     """
-#     Return every glossary term associated with a paragraph.
+def get_paragraph_terms(
+    paragraph_id: int,
+    *,
+    connection: sqlite3.Connection | None = None,
+) -> list[sqlite3.Row]:
+    """
+    Return every glossary term associated with a paragraph.
 
-#     Used by the UI to build hyperlinks.
-#     """
+    Used by the UI to build hyperlinks.
+    """
 
-#     return fetch_all(
-#         """
-#         SELECT
+    return fetch_all(
+        """
+        SELECT
 
-#             t.id,
+            t.id,
 
-#             t.term,
+            t.term,
 
-#             pt.occurrence_count
+            pt.occurrence_count
 
-#         FROM paragraph_terms pt
+        FROM paragraph_terms pt
 
-#         JOIN terms t
+        JOIN terms t
 
-#             ON t.id = pt.term_id
+            ON t.id = pt.term_id
 
-#         WHERE pt.paragraph_id = ?
+        WHERE pt.paragraph_id = ?
 
-#         ORDER BY t.term COLLATE NOCASE
-#         """,
-#         (paragraph_id,),
-#         connection=connection,
-#     )
+        ORDER BY t.term COLLATE NOCASE
+        """,
+        (paragraph_id,),
+        connection=connection,
+    )
 
 
 # def get_term_paragraphs(
