@@ -214,17 +214,17 @@ def build_page(
             ),
 
             #
+            # Pagination
+            #
+            build_pagination_controls(),
+
+            #
             # Results
             #
             ui.div(
                 build_results_container(),
                 class_="results-section",
             ),
-
-            #
-            # Pagination
-            #
-            build_pagination_controls(),
 
             #
             # Footer

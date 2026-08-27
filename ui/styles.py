@@ -204,7 +204,7 @@ font-size: 0.75rem;
 .app-subtitle {
     color: var(--colour-text-muted);
     font-size: 1.1rem;
-    max-width: 720px;
+    max-width: 100%;
     margin: 0;
 }
 

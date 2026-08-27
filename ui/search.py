@@ -64,22 +64,24 @@ def build_search_controls(
         ui.div(
             ui.tags.label("Search:", class_="control-title"),
 
+            ui.p(
+                (
+                    "Currently, only terms from the glossary list below are searchable. "
+                    "Use AND, OR, NOT, NOR and parentheses, for example:\n"
+                    "\n"
+                    "Biodiversity AND (Climate OR Environment)\n"
+                    "Biodiversity AND (Conceptual Framework NOR Frameworks)\n" 
+                    "Climate NOT Climate Change"
+                ),
+                class_="search-hint",
+            ),
+
             ui.input_text(
                 id=SEARCH_QUERY_ID,
                 label=None,
                 value="",
                 placeholder="Type to search terms...",
                 width="100%",
-            ),
-
-            ui.p(
-                (
-                    "Currently, only terms from the glossary list below are searchable. "
-                    "Use AND, OR, NOT, NOR and parentheses, for example:\n"
-                    "Biodiversity AND (Climate OR Environment)\n"
-                    "Conceptual Framework NOR Frameworks"
-                ),
-                class_="search-hint",
             ),
 
             ui.div(
@@ -91,7 +93,7 @@ def build_search_controls(
         ),
 
         #
-        # Glossary check box (moved below search box, no card background)
+        # Glossary check box 
         #
         ui.div(
             ui.tags.label("Search term sources:", class_="control-title"),
@@ -99,7 +101,7 @@ def build_search_controls(
             ui.input_checkbox_group(
                 GLOSSARY_LIST_ID,
                 label=None,
-                choices={"ILK": "ILK", "Glossary": "Glossary"},
+                choices={"ILK": "ILK", "IPBES Glossary": "Glossary"},
                 selected=["ILK", "Glossary"],
                 inline=True,
             ),
