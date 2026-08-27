@@ -327,12 +327,12 @@ def fetch_scalar(
 #     return Path(settings.database.path).exists()
 
 
-# def close(connection: sqlite3.Connection) -> None:
-#     """
-#     Close a database connection.
-#     """
+def close(connection: sqlite3.Connection) -> None:
+    """
+    Close a database connection.
+    """
 
-#     connection.close()
+    connection.close()
 
 
 ###############################################################################
@@ -1220,7 +1220,7 @@ def search_paragraphs(
             p.paragraph_number,
             p.text AS paragraph_text,
             p.chunk_method,
-            bm25(paragraphs_fts) AS bm25_score
+            MIN(bm25(paragraphs_fts)) AS bm25_score
 
         FROM paragraphs_fts
 
@@ -1266,6 +1266,8 @@ def search_paragraphs(
     """
 
     parameters.extend([limit, offset])
+
+    LOGGER.debug("search_paragraphs SQL:\n%s\nparams: %s", sql, parameters)
 
     return fetch_all(
         sql,
