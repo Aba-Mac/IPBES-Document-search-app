@@ -51,51 +51,37 @@ def build_search_controls(
 ):
     """
     Build the complete search control panel.
-
-    The search field is a normal free-text input.
-    Glossary autocomplete is attached separately by JavaScript.
     """
 
     years = tuple(years) or (2019, date.today().year)
-
     y_min, y_max = min(years), max(years)
 
     return ui.div(
 
         #
-        # Glossary check box
-        #
-        ui.div(
-            ui.input_checkbox_group(
-                GLOSSARY_LIST_ID,
-                "Search glossary list:",
-                choices={"ILK": "ILK", "Glossary": "Glossary"},
-                selected=["ILK", "Glossary"],
-                inline=True,
-            ),
-            class_="glossary-selector-card",
-        ),
-
-        #
         # Main search input
         #
         ui.div(
+            ui.tags.label("Search:", class_="control-title"),
+
             ui.input_text(
                 id=SEARCH_QUERY_ID,
-                label=(
-                    "Currently, only terms from the dropdown glossary list are searchable. "
+                label=None,
+                value="",
+                placeholder="Type to search terms...",
+                width="100%",
+            ),
+
+            ui.p(
+                (
+                    "Currently, only terms from the glossary list below are searchable. "
                     "Use AND, OR, NOT, NOR and parentheses, for example:\n"
                     "Biodiversity AND (Climate OR Environment)\n"
                     "Conceptual Framework NOR Frameworks"
                 ),
-                value="",
-                placeholder=(
-                    "Type to search terms..."
-                ),
-                width="100%",
+                class_="search-hint",
             ),
 
-            # Container populated by the autocomplete JavaScript.
             ui.div(
                 id="glossary-autocomplete",
                 class_="glossary-autocomplete",
@@ -105,22 +91,20 @@ def build_search_controls(
         ),
 
         #
-        # Pagination
+        # Glossary check box (moved below search box, no card background)
         #
-
         ui.div(
-            ui.input_action_button(
-                "prev_page",
-                "‹ Previous",
+            ui.tags.label("Search term sources:", class_="control-title"),
+
+            ui.input_checkbox_group(
+                GLOSSARY_LIST_ID,
+                label=None,
+                choices={"ILK": "ILK", "Glossary": "Glossary"},
+                selected=["ILK", "Glossary"],
+                inline=True,
             ),
-            ui.span(
-                ui.output_text("page_info"),
-            ),
-            ui.input_action_button(
-                "next_page",
-                "Next ›",
-            ),
-            class_="pagination-controls d-flex align-items-center gap-2",
+
+            class_="glossary-selector",
         ),
 
         #
@@ -135,7 +119,6 @@ def build_search_controls(
         ),
 
         class_="search-controls",
-
     )
 
 

@@ -142,7 +142,7 @@ a:focus {
 .app-description {
     color: var(--colour-text-muted);
     font-size: 1.1rem;
-    max-width: 720px;
+    max-width: 100%;
 }
 
 .app-version {
@@ -158,7 +158,7 @@ a:focus {
 
 
 .about-summary {
-    color: var(--colour-accent-dark);
+    color: var(--colour-link);
     cursor: pointer;
     font-weight: 500;
     list-style: none;
@@ -213,6 +213,25 @@ font-size: 0.75rem;
     flex-direction: column;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-xl);
+}
+
+.control-title {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--colour-text);
+    margin-bottom: var(--spacing-xs);
+}
+
+.search-hint {
+    color: var(--colour-text-muted);
+    font-size: 0.85rem;
+    white-space: pre-line;
+    margin: var(--spacing-xs) 0 0;
+}
+
+.glossary-selector {
+    margin-top: var(--spacing-md);
 }
 
 /* ==========================================================================
@@ -319,14 +338,24 @@ font-size: 0.75rem;
     background: #f0f0f0;
 }
 
-.glossary-selector-card {
-    background: var(--colour-accent-light);
-    border: 1px solid var(--colour-border-light);
-    border-radius: var(--radius-small);
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: 0.9rem;
+.pagination-controls {
+    margin-top: var(--spacing-sm);
+    justify-content: flex-start;
 }
 
+.pagination-button {
+    background: var(--colour-surface);
+    border: 1px solid var(--colour-border);
+    border-radius: var(--radius-small);
+    color: var(--colour-text);
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+}
+
+.pagination-button:hover {
+    background: var(--colour-accent-light);
+    border-color: var(--colour-accent);
+}
 
 /* ==========================================================================
    Result cards

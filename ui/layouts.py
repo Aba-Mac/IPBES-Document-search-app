@@ -222,6 +222,11 @@ def build_page(
             ),
 
             #
+            # Pagination
+            #
+            build_pagination_controls(),
+
+            #
             # Footer
             #
             build_footer(),
@@ -387,4 +392,26 @@ def build_results_container():
 
     return ui.output_ui(
         RESULTS_CONTAINER_ID,
+    )
+
+###############################################################################
+# Pagination
+###############################################################################
+
+def build_pagination_controls():
+    return ui.div(
+        ui.input_action_button(
+            "prev_page",
+            "‹ Previous",
+            class_="pagination-button",
+        ),
+        ui.span(
+            ui.output_text("page_info"),
+        ),
+        ui.input_action_button(
+            "next_page",
+            "Next ›",
+            class_="pagination-button",
+        ),
+        class_="pagination-controls d-flex align-items-center gap-2",
     )
