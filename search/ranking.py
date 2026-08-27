@@ -358,7 +358,7 @@ def _build_results(
             paragraph_id=paragraph_id,
             document_id=int(row["document_id"]),
             document_title=row["document_title"],
-            doi=row["doi"]
+            doi=row["doi"],
             filename=row["filename"],
             source=row["source"],
             year=row["year"],
