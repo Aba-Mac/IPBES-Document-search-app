@@ -305,25 +305,33 @@ font-size: 0.75rem;
     position: relative;
 }
 
+.search-input-wrapper {
+    position: relative;
+}
+
 .glossary-autocomplete {
     display: none;
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 9999;
 
-    background: white;
-    border: 1px solid #ccc;
+    background: #ffffff;
+    border: 1px solid var(--colour-border);
     border-top: none;
+    border-radius: 0 0 var(--radius-medium) var(--radius-medium);
 
     max-height: 300px;
     overflow-y: auto;
+
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .glossary-autocomplete-item {
     padding: 8px 12px;
     cursor: pointer;
+    background: #ffffff;
 }
 
 .glossary-autocomplete-item:hover {

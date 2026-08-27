@@ -75,22 +75,25 @@ def build_search_controls(
                 class_="search-hint",
             ),
 
-            ui.input_text(
-                id=SEARCH_QUERY_ID,
-                label=None,
-                value="",
-                placeholder="Type to search terms...",
-                width="100%",
-            ),
-
             ui.div(
-                id="glossary-autocomplete",
-                class_="glossary-autocomplete",
+                ui.input_text(
+                    id=SEARCH_QUERY_ID,
+                    label=None,
+                    value="",
+                    placeholder="Type to search terms...",
+                    width="100%",
+                ),
+
+                ui.div(
+                    id="glossary-autocomplete",
+                    class_="glossary-autocomplete",
+                ),
+
+                class_="search-input-wrapper",
             ),
 
             class_="search-input-container",
         ),
-
         #
         # Glossary check box 
         #
