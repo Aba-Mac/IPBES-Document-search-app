@@ -79,12 +79,13 @@ def register_card_renderer(
         if response.total_results == 0:
             return _empty_results()
 
-        return ui.TagList(
+        return ui.div(
             _results_summary(response),
             *[
                 _result_card(result, query=response.query)
                 for result in response.results
             ],
+            class_="results-container",
         )
 
 

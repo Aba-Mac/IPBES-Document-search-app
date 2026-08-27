@@ -224,19 +224,11 @@ def highlight_search_terms(
     for token in tokens:
 
         if token.type is TokenType.TAG:
-
             tag = token.value.lower()
-
             if tag.startswith("<a "):
                 inside_anchor = True
-
             elif tag.startswith("</a"):
                 inside_anchor = False
-
-            output.append(token.value)
-            continue
-
-        if inside_anchor:
             output.append(token.value)
             continue
 

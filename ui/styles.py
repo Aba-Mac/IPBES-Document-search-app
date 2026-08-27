@@ -30,7 +30,9 @@ STYLESHEET = """
 
 :root {
     --colour-background: #ffffff;
-    --colour-card-background: #eaf4fb; 
+    --colour-card-background: #eaf7ec; 
+    --colour-link: #1a56db; 
+    --colour-link-hover-bg: #eaf1ff;  
     --colour-surface: #ffffff;
     --colour-text: #1f2933;
     --colour-text-muted: #52606d;
@@ -48,8 +50,6 @@ STYLESHEET = """
         Helvetica,
         Arial,
         sans-serif;
-
-    --content-width: 1100px;
 
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
@@ -115,8 +115,9 @@ a:focus {
    ========================================================================== */
 
 .app-container {
-    max-width: var(--content-width);
-    margin: 0 auto;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
     padding:
         var(--spacing-xl)
         var(--spacing-lg);
@@ -207,6 +208,13 @@ font-size: 0.75rem;
     margin: 0;
 }
 
+.search-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
 /* ==========================================================================
    Search interface
    ========================================================================== */
@@ -278,6 +286,14 @@ font-size: 0.75rem;
     position: relative;
 }
 
+.search-input-container label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--colour-text-muted);
+    margin-bottom: var(--spacing-xs);
+}
+
 .glossary-autocomplete {
     display: none;
     position: absolute;
@@ -301,6 +317,14 @@ font-size: 0.75rem;
 
 .glossary-autocomplete-item:hover {
     background: #f0f0f0;
+}
+
+.glossary-selector-card {
+    background: var(--colour-accent-light);
+    border: 1px solid var(--colour-border-light);
+    border-radius: var(--radius-small);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.9rem;
 }
 
 
@@ -373,7 +397,7 @@ font-size: 0.75rem;
    ========================================================================== */
 
 .glossary-link {
-    color: var(--colour-accent-dark);
+    color: var(--colour-link);
     cursor: pointer;
     font-weight: 700;
     text-decoration:
@@ -385,7 +409,7 @@ font-size: 0.75rem;
 .glossary-link:hover,
 .glossary-link:focus {
     background:
-        var(--colour-accent-light);
+        var(--colour-link-hover-bg);
 }
 
 
@@ -422,9 +446,10 @@ font-size: 0.75rem;
 }
 
 .app-meta {
-    align-items: center;
     display: flex;
-    gap: 0.75rem;
+    flex-direction: column;  
+    align-items: flex-start; 
+    gap: 0.25rem;             
     margin-bottom: var(--spacing-md);
 }
 
