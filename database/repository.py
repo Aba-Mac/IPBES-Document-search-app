@@ -1156,54 +1156,38 @@ def search_paragraphs(
     offset: int,
     connection: sqlite3.Connection | None = None,
 ) -> list[sqlite3.Row]:
-    """
-    Perform an FTS5 search with optional document filters.
-
-    Pagination is expressed using SQL LIMIT/OFFSET.
-
-    Parameters
-    ----------
-    fts_query
-        SQLite FTS5 query.
-
-    source
-        Optional document source filter.
-
-    year
-        Optional inclusive year range.
-
-    document_id
-        Optional document filter.
-
-    glossary_lists
-        2 glossary lists.
-
-    limit
-        Number of results to return.
-
-    offset
-        Number of matching results to skip.
-
-    Returns
-    -------
-    list[sqlite3.Row]
-        Results for the requested page.
-    """
-
     if limit < 1:
         raise ValueError("limit must be >= 1")
-
     if offset < 0:
         raise ValueError("offset must be >= 0")
 
+    where = ["paragraphs_fts MATCH ?"]
     parameters: list[Any] = [fts_query]
 
-    joins = ""
     if glossary_lists:
-        joins = """
-            JOIN paragraph_terms AS pt ON pt.paragraph_id = p.id
-            JOIN terms AS t ON t.id = pt.term_id
-        """
+        placeholders = ",".join("?" for _ in glossary_lists)
+        where.append(f"""
+            p.id IN (
+                SELECT pt.paragraph_id
+                FROM paragraph_terms AS pt
+                JOIN terms AS t ON t.id = pt.term_id
+                WHERE t.list_name IN ({placeholders})
+            )
+        """)
+        parameters.extend(glossary_lists)
+
+    if source is not None:
+        where.append("d.source = ?")
+        parameters.append(source)
+
+    if year is not None:
+        year_min, year_max = year
+        where.append("d.year BETWEEN ? AND ?")
+        parameters.extend([year_min, year_max])
+
+    if document_id is not None:
+        where.append("d.id = ?")
+        parameters.append(document_id)
 
     sql = f"""
         SELECT
@@ -1220,46 +1204,11 @@ def search_paragraphs(
             p.paragraph_number,
             p.text AS paragraph_text,
             p.chunk_method,
-            MIN(bm25(paragraphs_fts)) AS bm25_score
-
+            bm25(paragraphs_fts) AS bm25_score
         FROM paragraphs_fts
-
-        JOIN paragraphs AS p
-            ON p.id = paragraphs_fts.rowid
-
-        JOIN documents AS d
-            ON d.id = p.document_id
-
-        {joins}
-
-        WHERE paragraphs_fts MATCH ?
-    """
-
-    if glossary_lists:
-        placeholders = ",".join("?" for _ in glossary_lists)
-        sql += f"\nAND t.list_name IN ({placeholders})"
-        parameters.extend(glossary_lists)
-
-    if source is not None:
-        sql += "\nAND d.source = ?"
-        parameters.append(source)
-
-    if year is not None:
-        year_min, year_max = year
-
-        sql += "\nAND d.year BETWEEN ? AND ?"
-        parameters.extend([year_min, year_max])
-
-    if document_id is not None:
-        sql += "\nAND d.id = ?"
-        parameters.append(document_id)
-
-    if glossary_lists:
-        sql += """
-            GROUP BY p.id
-        """
-
-    sql += """
+        JOIN paragraphs AS p ON p.id = paragraphs_fts.rowid
+        JOIN documents AS d ON d.id = p.document_id
+        WHERE {' AND '.join(where)}
         ORDER BY bm25_score
         LIMIT ?
         OFFSET ?
@@ -1267,13 +1216,7 @@ def search_paragraphs(
 
     parameters.extend([limit, offset])
 
-    LOGGER.debug("search_paragraphs SQL:\n%s\nparams: %s", sql, parameters)
-
-    return fetch_all(
-        sql,
-        parameters,
-        connection=connection,
-    )
+    return fetch_all(sql, parameters, connection=connection)
 
 
 # def search_document(
