@@ -39,6 +39,7 @@ from search.service import (
 from ui.cards import register_card_renderer
 from ui.layouts import build_page, build_about_modal
 from ui.search import (
+    build_search_controls,
     page_size,
     search_query,
     selected_year_range,
