@@ -59,17 +59,21 @@ _MONTH_RE = (
 
 _DATE_SPAN_RE = re.compile(
     r"\d{1,2}"
-    r"(?:\s*(?:-|\u2013|to)\s*\d{1,2})?"
+    r"(?:\s*(?:-|\u2013|to|and)\s*\d{1,2})?"
     r"\s+(?:" + _MONTH_RE + r")"
-    r"(?:\s*(?:-|\u2013|to)\s*\d{1,2}\s+(?:" + _MONTH_RE + r"))?"
+    r"(?:\s*(?:-|\u2013|to|and)\s*\d{1,2}\s+(?:" + _MONTH_RE + r"))?"
     r"(?:\s+(?:19|20)\d{2})?",
     re.IGNORECASE,
 )
+
+_SENTENCE_SPLIT_RE = re.compile(r"\.\s+(?!and\s)", re.IGNORECASE)
 
 _HELD_IN_ON_RE = re.compile(
     r"held\s+in\s+(?P<location>.+?)\s*,?\s*on\s*$", re.IGNORECASE
 )
 _HELD_IN_TRAILING_RE = re.compile(r",?\s*held\s+in\s*$", re.IGNORECASE)
+
+_TRAILING_HELD_RE = re.compile(r",?\s*held\s*$", re.IGNORECASE)
 
 
 
@@ -320,6 +324,15 @@ def _looks_like_location_sentence(sentence: str) -> bool:
     return _YEAR_RE.search(sentence) is None and "," in sentence
 
 
+def _split_sentences(text: str) -> list[str]:
+    return [s.strip() for s in _SENTENCE_SPLIT_RE.split(text) if s.strip()]
+
+
+_AUTHOR_LIST_END_RE = re.compile(
+    r"\band\s+[A-ZÀ-Ý][\wÀ-ÿ'-]+(?:\s+[A-Z]\.)+,\s*"
+)
+
+
 def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
     """
     Split citation body into (title, location).
@@ -361,34 +374,42 @@ def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
         # Location precedes the date in the same trailing sentence with
         # nothing after it, e.g. "... assessment. Online, 29 September
         # to 1 October 2020."
-        lead_sentences = [s.strip() for s in before.split(". ") if s.strip()]
+        lead_sentences = _split_sentences(before)
         if lead_sentences and len(lead_sentences[-1]) <= 40:
-            location = lead_sentences[-1]
+            location = lead_sentences[-1].rstrip(" ,.") or None
             before = ". ".join(lead_sentences[:-1])
 
     before = _HELD_IN_TRAILING_RE.sub("", before).rstrip(", .")
 
-    sentences = [s.strip() for s in before.split(". ") if s.strip()]
+    sentences = _split_sentences(before)
 
     if len(sentences) >= 2:
         title = sentences[-1] or None
     elif sentences:
-        title = sentences[0] or None
+        # No period boundary found — likely a comma-separated author list.
+        # Look for "... and LastName I., <title>" and cut there instead.
+        match = _AUTHOR_LIST_END_RE.search(sentences[0])
+        title = (sentences[0][match.end():] if match else sentences[0]) or None
     else:
         title = None
+
+    if title:
+        title = _TRAILING_HELD_RE.sub("", title).strip(" ,") or None
 
     return title, location
 
 
 def _parse_citation_body_legacy(body: str) -> tuple[str | None, str | None]:
     """Best-effort fallback when no recognisable date span is found."""
-    sentences = [s.strip() for s in body.split(". ") if s.strip()]
+    sentences = _split_sentences(body)
 
     if not sentences:
         return None, None
 
     if len(sentences) == 1:
-        return sentences[0], None
+        match = _AUTHOR_LIST_END_RE.search(sentences[0])
+        title = (sentences[0][match.end():] if match else sentences[0]) or None
+        return title, None
 
     location = None
     remaining = sentences
