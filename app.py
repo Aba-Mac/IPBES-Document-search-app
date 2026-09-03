@@ -5,6 +5,7 @@ ASGI entry point for the IPBES Document Search application.
 from __future__ import annotations
 
 import logging
+from core.logging_config import configure_logging
 from contextlib import asynccontextmanager
 
 from starlette.applications import Starlette
@@ -15,7 +16,7 @@ from database.migrations import migrate
 from search.service import configure
 
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+configure_logging()
 
 
 LOGGER.info("Running database migration...")

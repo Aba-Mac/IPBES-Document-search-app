@@ -59,39 +59,6 @@ _REQUIRED_TRIGGERS = {
 
 
 # ---------------------------------------------------------------------
-# Connection helpers
-# ---------------------------------------------------------------------
-
-
-# def _connect() -> sqlite3.Connection:
-#     """
-#     Create a migration connection.
-
-#     Returns
-#     -------
-#     sqlite3.Connection
-#     """
-
-#     database_path = Path(settings.database.path)
-#     database_path.parent.mkdir(parents=True, exist_ok=True)
-#     LOGGER.info("Migration database: %s", settings.database.path)
-
-#     connection = sqlite3.connect(
-#         database_path,
-#         detect_types=sqlite3.PARSE_DECLTYPES,
-#     )
-
-#     connection.row_factory = sqlite3.Row
-
-#     connection.execute("PRAGMA foreign_keys = ON;")
-#     connection.execute("PRAGMA journal_mode = WAL;")
-#     connection.execute("PRAGMA synchronous = NORMAL;")
-#     connection.execute("PRAGMA temp_store = MEMORY;")
-
-#     return connection
-
-
-# ---------------------------------------------------------------------
 # Schema application
 # ---------------------------------------------------------------------
 
@@ -224,22 +191,6 @@ def rebuild_fts(connection: sqlite3.Connection) -> None:
             VALUES('rebuild');
             """
         )
-
-
-# def optimize_fts(connection: sqlite3.Connection) -> None:
-#     """
-#     Optimize the FTS index.
-
-#     Optional maintenance operation.
-#     """
-
-#     with connection:
-#         connection.execute(
-#             """
-#             INSERT INTO paragraphs_fts(paragraphs_fts)
-#             VALUES('optimize');
-#             """
-#         )
 
 
 def _fts_is_populated(connection: sqlite3.Connection) -> bool:
