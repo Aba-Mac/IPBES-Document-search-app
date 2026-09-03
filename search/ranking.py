@@ -75,12 +75,6 @@ class SearchRepositoryProtocol(Protocol):
         """
         ...
 
-    def close(self, connection: Any) -> None:
-        """
-        Close a database connection.
-        """
-        ...
-
     def count_paragraphs(
         self,
         *,
@@ -285,7 +279,7 @@ def execute_ranked_search(
             connection=connection,
         )
     finally:
-        repository.close(connection)
+        connection.close()
 
     #
     # ------------------------------------------------------------------
