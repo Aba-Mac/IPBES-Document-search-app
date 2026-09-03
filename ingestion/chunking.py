@@ -82,7 +82,6 @@ def chunk_document(
             )
         )
 
-        # --- log if elements arrived out of page order -------------------
     if len(page_counters) > 1:
         pages_seen = [
             el.page_number
@@ -95,5 +94,4 @@ def chunk_document(
                 document_id,
             )
 
-    # --- return in reading order --------------------------------------
     return sorted(output, key=lambda p: (p.page_number, p.paragraph_number))

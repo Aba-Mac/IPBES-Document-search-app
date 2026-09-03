@@ -23,8 +23,6 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import dataclass
-from typing import Iterable
-from typing import Mapping
 from typing import Sequence
 
 from rapidfuzz import fuzz
@@ -32,8 +30,6 @@ from rapidfuzz import fuzz
 from core.config import settings
 
 logger = logging.getLogger(__name__)
-
-_WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9\-]+")
 
 
 # ---------------------------------------------------------------------
@@ -137,16 +133,6 @@ def normalize_text(text: str) -> str:
     return text.strip()
 
 
-# def tokenize(text: str) -> list[str]:
-#     """
-#     Tokenise text.
-
-#     Hyphenated words are preserved.
-#     """
-
-#     return _WORD_RE.findall(text.lower())
-
-
 # ---------------------------------------------------------------------
 # Matching engine
 # ---------------------------------------------------------------------
@@ -181,8 +167,6 @@ class AnchorMatcher:
             else settings.anchor_fuzzy_threshold
         )
 
-    # --------------------------------------------------------------
-
     def match(self, paragraph: str) -> list[AnchorMatch]:
         """
         Match paragraph against all configured anchors.
@@ -205,9 +189,7 @@ class AnchorMatcher:
         )
 
         return results
-
-    # --------------------------------------------------------------
-
+    
     def _match_anchor(
         self,
         anchor: TopicAnchor,
@@ -257,42 +239,6 @@ class AnchorMatcher:
             matched_phrase=matched,
             confidence=score / 100.0,
         )
-
-
-# ---------------------------------------------------------------------
-# Batch helper
-# ---------------------------------------------------------------------
-
-
-# def match_paragraphs(
-#     paragraphs: Iterable[str],
-#     matcher: AnchorMatcher | None = None,
-# ) -> Mapping[int, list[AnchorMatch]]:
-#     """
-#     Match multiple paragraphs.
-
-#     Returns
-#     -------
-#     dict
-
-#         Key
-
-#             paragraph index
-
-#         Value
-
-#             list of candidate topic tags
-#     """
-
-#     matcher = matcher or AnchorMatcher()
-
-#     output: dict[int, list[AnchorMatch]] = {}
-
-#     for index, paragraph in enumerate(paragraphs):
-
-#         output[index] = matcher.match(paragraph)
-
-#     return output
 
 
 # ---------------------------------------------------------------------

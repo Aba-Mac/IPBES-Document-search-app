@@ -34,10 +34,8 @@ or alternatively behave like a dictionary with:
 
 from __future__ import annotations
 
-import re
-from collections import Counter
+
 from dataclasses import dataclass
-from typing import Sequence
 from ingestion.extractor import ExtractedDocument, ExtractedElement
 from unstructured.documents.elements import (
     NarrativeText,

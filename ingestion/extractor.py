@@ -21,17 +21,6 @@ Extraction strategy
    automatically fall back to PyMuPDF block extraction.
 6. Return a common document model used by downstream cleaning,
    chunking and database ingestion.
-
-The module deliberately does not perform:
-
-* OCR
-* Text cleaning
-* Chunking
-* Topic tagging
-* Database storage
-
-Those belong to later pipeline stages.
-
 """
 
 from __future__ import annotations
@@ -274,31 +263,6 @@ def extract_document_metadata(
 ###############################################################################
 
 
-# def _element_category(
-#     element: Element,
-# ) -> str:
-#     """
-#     Convert an Unstructured element into a canonical category.
-#     """
-
-#     if isinstance(element, Title):
-#         return "title"
-
-#     if isinstance(element, NarrativeText):
-#         return "paragraph"
-
-#     if isinstance(element, ListItem):
-#         return "list"
-
-#     if isinstance(element, Table):
-#         return "table"
-
-#     if isinstance(element, Text):
-#         return "text"
-
-#     return element.category.lower()
-
-
 def _page_number(
     element: Element,
 ) -> int:
@@ -354,28 +318,6 @@ def _strip_document_noise(elements: list[Element]) -> list[Element]:
         kept.append(element)
 
     return kept
-
-
-# def _section_title(
-#     element: Element,
-#     current_section: str | None,
-# ) -> str | None:
-#     """
-#     Determine section ownership.
-
-#     Titles become the active section until another
-#     title is encountered.
-#     """
-
-#     if isinstance(element, Title):
-
-#         text = element.text.strip()
-
-#         if text:
-
-#             return text
-
-#     return current_section
 
 
 ###############################################################################
@@ -461,9 +403,7 @@ def extract_with_unstructured(
         )
 
         element_id += 1
-    #
-    # Build raw page text from the ordered extracted elements.
-    #
+
     for page in pages.values():
 
         page.raw_text = "\n\n".join(
@@ -545,82 +485,6 @@ def iter_elements(
     for page in document.pages:
 
         yield from page.elements
-
-
-# def iter_pages(
-#     document: ExtractedDocument,
-# ) -> Iterable[ExtractedPage]:
-#     """
-#     Iterate over pages.
-#     """
-
-#     yield from document.pages
-
-
-###############################################################################
-# Shared utility functions
-###############################################################################
-
-
-# def get_page(
-#     document: ExtractedDocument,
-#     page_number: int,
-# ) -> ExtractedPage:
-#     """
-#     Retrieve a page by page number.
-
-#     Raises
-#     ------
-#     KeyError
-#         If the requested page does not exist.
-#     """
-
-#     for page in document.pages:
-
-#         if page.page_number == page_number:
-#             return page
-
-#     raise KeyError(
-#         f"Page {page_number} not present."
-#     )
-
-
-# def document_text(
-#     document: ExtractedDocument,
-# ) -> str:
-#     """
-#     Return the document text in reading order.
-
-#     Page boundaries are preserved by blank lines.
-#     """
-
-#     return "\n\n".join(
-#         page.raw_text
-#         for page in document.pages
-#         if page.raw_text
-#     )
-
-
-# def section_titles(
-#     document: ExtractedDocument,
-# ) -> list[str]:
-#     """
-#     Return unique section titles preserving order.
-#     """
-
-#     titles: list[str] = []
-#     seen: set[str] = set()
-
-#     for element in iter_elements(document):
-
-#         if (
-#             element.section_title
-#             and element.section_title not in seen
-#         ):
-#             titles.append(element.section_title)
-#             seen.add(element.section_title)
-
-#     return titles
 
 
 ###############################################################################
@@ -870,63 +734,6 @@ def _chunk_body_text(chunk) -> str:
 
     return "\n\n".join(body_parts)
 
-###############################################################################
-# Fallback orchestration helpers
-###############################################################################
-
-def _merge_metadata(
-    primary: PDFMetadata,
-    secondary: PDFMetadata,
-) -> PDFMetadata:
-    """
-    Merge two metadata objects.
-
-    Missing values from the primary source are filled using the
-    secondary source.
-    """
-
-    return PDFMetadata(
-        title=primary.title or secondary.title,
-        author=primary.author or secondary.author,
-        subject=primary.subject or secondary.subject,
-        creator=primary.creator or secondary.creator,
-        producer=primary.producer or secondary.producer,
-        keywords=primary.keywords or secondary.keywords,
-        creation_date=(
-            primary.creation_date
-            or secondary.creation_date
-        ),
-        modification_date=(
-            primary.modification_date
-            or secondary.modification_date
-        ),
-        page_count=max(
-            primary.page_count,
-            secondary.page_count,
-        ),
-    )
-
-
-# def enrich_document(
-#     document: ExtractedDocument,
-#     metadata: PDFMetadata,
-# ) -> ExtractedDocument:
-#     """
-#     Replace incomplete metadata using an enriched metadata
-#     object.
-
-#     Returns
-#     -------
-#     ExtractedDocument
-#     """
-
-#     document.metadata = _merge_metadata(
-#         document.metadata,
-#         metadata,
-#     )
-
-#     return document
-
 
 ###############################################################################
 # Extraction orchestration
@@ -1143,17 +950,12 @@ __all__ = [
     "PyMuPDFExtractionError",
     "UnstructuredExtractionError",
     "document_has_content",
-    #"document_text",
-    #"enrich_document",
     "extract",
     "extract_document",
     "extract_document_metadata",
     "extract_with_pymupdf",
     "extract_with_unstructured",
     "extraction_statistics",
-    #"get_page",
     "iter_elements",
-    #"iter_pages",
-    #"section_titles",
     "validate_document",
 ]

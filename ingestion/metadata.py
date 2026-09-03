@@ -320,7 +320,6 @@ def _looks_like_location_sentence(sentence: str) -> bool:
     if _TRAILING_DATE_LOCATION_RE.match(sentence):
         return True
 
-    # No year and looks like "<place>, <place>" -> still a location line
     return _YEAR_RE.search(sentence) is None and "," in sentence
 
 
@@ -364,16 +363,9 @@ def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
         location = held_in_on.group("location").strip() or None
         before = before[: held_in_on.start()].rstrip()
     elif after:
-        # `after` may run on into unrelated boilerplate (compiled-by,
-        # disclaimer text, etc.) when the source PDF has no blank line
-        # between the citation and what follows it. Location is only
-        # ever the first clause/sentence here.
         first_sentence = after.split(". ", 1)[0]
         location = first_sentence.strip(" .,") or None
     else:
-        # Location precedes the date in the same trailing sentence with
-        # nothing after it, e.g. "... assessment. Online, 29 September
-        # to 1 October 2020."
         lead_sentences = _split_sentences(before)
         if lead_sentences and len(lead_sentences[-1]) <= 40:
             location = lead_sentences[-1].rstrip(" ,.") or None
@@ -386,8 +378,6 @@ def _parse_citation_body(body: str) -> tuple[str | None, str | None]:
     if len(sentences) >= 2:
         title = sentences[-1] or None
     elif sentences:
-        # No period boundary found — likely a comma-separated author list.
-        # Look for "... and LastName I., <title>" and cut there instead.
         match = _AUTHOR_LIST_END_RE.search(sentences[0])
         title = (sentences[0][match.end():] if match else sentences[0]) or None
     else:

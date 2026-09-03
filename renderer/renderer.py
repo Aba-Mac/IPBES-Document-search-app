@@ -101,10 +101,8 @@ def render_paragraph(
     matches = list(glossary_terms or ())
     search_terms = normalise_query(search_query) if search_query else []
 
-    # Step 1: Escape all document text.
     rendered = escape_html(paragraph)
 
-    # Step 2: Convert glossary terms into hyperlinks.
     if matches:
         rendered = hyperlink_glossary_terms(
             escaped_html=rendered,
@@ -112,8 +110,6 @@ def render_paragraph(
             exclude_terms=search_terms,
         )
 
-    # Step 3: Highlight active search terms without disturbing existing
-    # hyperlinks.
     if search_query:
         rendered = highlight_search_terms(
             html_fragment=rendered,

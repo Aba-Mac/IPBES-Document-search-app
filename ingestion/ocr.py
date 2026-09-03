@@ -256,36 +256,6 @@ class OCRResult:
 ###############################################################################
 
 
-def _sha256(path: Path) -> str:
-    """
-    Compute SHA256 for a PDF.
-
-    Parameters
-    ----------
-    path
-        PDF path.
-
-    Returns
-    -------
-    str
-    """
-
-    digest = hashlib.sha256()
-
-    with path.open("rb") as stream:
-
-        while True:
-
-            chunk = stream.read(1024 * 1024)
-
-            if not chunk:
-                break
-
-            digest.update(chunk)
-
-    return digest.hexdigest()
-
-
 def _safe_metadata(document: fitz.Document) -> dict[str, str | None]:
     """
     Extract document metadata.
@@ -526,7 +496,6 @@ def inspect_pdf(
         is_digital=is_digital,
         needs_ocr=needs_ocr,
         metadata=_safe_metadata(document),
-        sha256=_sha256(pdf_path),
     )
 
     document.close()

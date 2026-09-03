@@ -130,18 +130,7 @@ class Token:
 # ---------------------------------------------------------------------
 
 
-_TOKEN_PATTERN = re.compile(
-    r"""
-    \(
-    |
-    \)
-    |
-    "(?:[^"]|"")*"
-    |
-    [^\s()]+
-    """,
-    re.VERBOSE,
-)
+_TOKEN_PATTERN = re.compile(r"""\(|\)|"(?:[^"]|"")*"|[^\s()]+""",re.VERBOSE,)
 
 
 class BooleanLexer:
@@ -352,13 +341,9 @@ class BooleanParser:
 
         return merged
 
-    # -------------------------------------------------------------
-
     @property
     def current(self) -> Token:
         return self._tokens[self._index]
-
-    # -------------------------------------------------------------
 
     def parse(self, query: str) -> ASTNode:
         """
@@ -394,13 +379,9 @@ class BooleanParser:
 
         return root
 
-    # -------------------------------------------------------------
-
     def _advance(self) -> None:
         if self._index < len(self._tokens) - 1:
             self._index += 1
-
-    # -------------------------------------------------------------
 
     def _accept(
         self,
@@ -412,8 +393,6 @@ class BooleanParser:
             return True
 
         return False
-
-    # -------------------------------------------------------------
 
     def _expect(
         self,
@@ -428,12 +407,8 @@ class BooleanParser:
 
         raise BooleanSyntaxError(message)
 
-    # -------------------------------------------------------------
-
     def _expression(self) -> ASTNode:
         return self._or_expression()
-
-    # -------------------------------------------------------------
 
     def _or_expression(self) -> ASTNode:
 
@@ -453,8 +428,6 @@ class BooleanParser:
 
             return node
 
-    # -------------------------------------------------------------
-
     def _and_expression(self) -> ASTNode:
 
         node = self._unary_expression()
@@ -473,16 +446,12 @@ class BooleanParser:
 
             return node
 
-    # -------------------------------------------------------------
-
     def _unary_expression(self) -> ASTNode:
 
         if self._accept(TokenType.NOT):
             return NotNode(self._unary_expression())
 
         return self._primary()
-
-    # -------------------------------------------------------------
 
     def _primary(self) -> ASTNode:
 
@@ -552,8 +521,6 @@ class SQLiteFTS5Compiler:
         expression = self._compile_node(ast)
         return ("paragraphs_fts MATCH ?", [expression])
 
-    # -------------------------------------------------------------
-
     def _compile_node(self, node: ASTNode) -> str:
         if isinstance(node, TermNode):
             return self._compile_term(node)
@@ -590,8 +557,6 @@ class SQLiteFTS5Compiler:
             )
 
         raise TypeError(f"Unsupported AST node: {type(node)!r}")
-
-    # -------------------------------------------------------------
 
     def _compile_and_chain(self, node: AndNode) -> str:
         """
@@ -647,8 +612,6 @@ class SQLiteFTS5Compiler:
                 node.left
             ) + SQLiteFTS5Compiler._flatten_and(node.right)
         return [node]
-
-    # -------------------------------------------------------------
 
     @staticmethod
     def _compile_term(node: TermNode) -> str:

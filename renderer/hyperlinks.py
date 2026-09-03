@@ -163,7 +163,7 @@ def _replace_in_text(
         for m in pattern.finditer(text):
             start, end = m.start(), m.end()
             if any(claimed[start:end]):
-                continue  # overlaps a longer term already placed
+                continue  
             spans.append((start, end, match))
             for i in range(start, end):
                 claimed[i] = True

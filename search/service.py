@@ -97,10 +97,6 @@ class RepositoryProtocol(Protocol):
     database.repository.DatabaseRepository.
     """
 
-    #
-    # Search methods
-    #
-
     def search_paragraphs(self, **kwargs):
         ...
 
@@ -109,10 +105,6 @@ class RepositoryProtocol(Protocol):
 
     def get_paragraph_terms(self, paragraph_ids: list[int]):
         ...
-
-    #
-    # Metadata methods
-    #
 
     def get_document(
         self,
@@ -150,10 +142,6 @@ class SearchService:
         repository: RepositoryProtocol,
     ) -> None:
         self._repository = repository
-
-    ###########################################################################
-    # Public API
-    ###########################################################################
 
     def search(
         self,
@@ -309,14 +297,6 @@ class SearchService:
 # Module-level convenience API
 ###############################################################################
 
-#
-# The Shiny application can either instantiate SearchService
-# directly or call these convenience wrappers.
-#
-# The wrappers keep the UI code concise while remaining fully
-# testable through dependency injection.
-#
-
 _repository: RepositoryProtocol | None = None
 
 
@@ -376,65 +356,6 @@ def search(
 ###############################################################################
 
 
-# def get_document(
-#     document_id: int,
-# ) -> dict[str, Any] | None:
-#     """
-#     Return metadata for a single document.
-
-#     Parameters
-#     ----------
-#     document_id
-#         Internal document identifier.
-
-#     Returns
-#     -------
-#     dict[str, Any] | None
-#         Document metadata if found, otherwise ``None``.
-
-#     Raises
-#     ------
-#     SearchServiceError
-#         If the repository operation fails.
-#     """
-#     try:
-#         return _service()._repository.get_document(document_id)
-#     except Exception as exc:
-#         logger.exception(
-#             "Failed to retrieve document metadata "
-#             "(document_id=%s).",
-#             document_id,
-#         )
-#         raise SearchServiceError(
-#             "Unable to retrieve document."
-#         ) from exc
-
-
-# def get_available_sources() -> list[str]:
-#     """
-#     Return all available document sources.
-
-#     Returns
-#     -------
-#     list[str]
-#         Distinct sources ordered by the repository.
-
-#     Raises
-#     ------
-#     SearchServiceError
-#         If retrieval fails.
-#     """
-#     try:
-#         return _service()._repository.get_available_sources()
-#     except Exception as exc:
-#         logger.exception(
-#             "Failed to retrieve available sources."
-#         )
-#         raise SearchServiceError(
-#             "Unable to retrieve sources."
-#         ) from exc
-
-
 def get_available_years() -> list[int]:
     """
     Return all available publication years.
@@ -460,93 +381,8 @@ def get_available_years() -> list[int]:
         ) from exc
 
 
-# def get_available_documents() -> list[dict[str, Any]]:
-#     """
-#     Return document metadata for populating UI selectors.
-
-#     Each returned dictionary should contain sufficient information
-#     for display, typically including:
-
-#     - document_id
-#     - title
-#     - filename
-#     - source
-#     - year
-#     - plenary_session
-#     - location
-
-#     Returns
-#     -------
-#     list[dict[str, Any]]
-
-#     Raises
-#     ------
-#     SearchServiceError
-#         If retrieval fails.
-#     """
-#     try:
-#         return _service()._repository.get_available_documents()
-#     except Exception as exc:
-#         logger.exception(
-#             "Failed to retrieve available documents."
-#         )
-#         raise SearchServiceError(
-#             "Unable to retrieve document list."
-#         ) from exc
-
-
 def get_glossary_terms(list_names: tuple[str,...] | None = None) -> list[str]:
     return [
         row["term"]
         for row in repository.list_terms(list_names=list_names)
     ]
-
-
-###############################################################################
-# Design notes
-###############################################################################
-
-#
-# Layer responsibilities
-# ----------------------
-#
-# search.parser
-#     Validate and normalise incoming UI requests.
-#
-# search.boolean
-#     Parse Boolean syntax and generate an SQLite FTS5 query.
-#
-# search.ranking
-#     Execute repository searches and construct typed result models.
-#
-# search.service
-#     Compose the search pipeline and expose a stable API to the UI.
-#
-#
-# Future semantic search
-# ----------------------
-#
-# The current implementation intentionally performs exact-match
-# glossary search backed by SQLite FTS5 BM25 ranking only.
-#
-# Although the ingestion pipeline stores topic-anchor tags and
-# embeddings, they are NOT consulted here.
-#
-# A future implementation can extend the pipeline after
-# execute_ranked_search() by replacing or enhancing
-# _postprocess_response() without changing:
-#
-#     search(...)
-#     get_document(...)
-#     get_available_sources(...)
-#     get_available_years(...)
-#     get_available_documents(...)
-#
-# This preserves a stable API for the Shiny application while allowing
-# semantic re-ranking, topic filtering, or hybrid retrieval to be added
-# later.
-#
-
-###############################################################################
-# End of module
-###############################################################################

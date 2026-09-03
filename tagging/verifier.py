@@ -366,15 +366,11 @@ class TagVerifier:
             else settings.ollama_max_retries
         )
 
-    # --------------------------------------------------------------
-
     @property
     def model_name(self) -> str:
         """Return the configured Ollama model name."""
 
         return self._client.model
-
-    # --------------------------------------------------------------
 
     def verify(
         self,

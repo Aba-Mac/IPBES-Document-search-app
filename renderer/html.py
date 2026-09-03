@@ -82,7 +82,6 @@ __all__ = [
 ###############################################################################
 
 _TAG_RE = re.compile(r"(<[^>]+>)")
-_ANY_TAG_RE = re.compile(r"<[^>]+>")
 
 ###############################################################################
 # Token model
@@ -147,30 +146,6 @@ def escape_html(text: str | None) -> str:
     return html.escape(text, quote=True)
 
 
-# def is_html_escaped(text: str) -> bool:
-#     """
-#     Best-effort detection whether text already appears escaped.
-
-#     This function is intentionally conservative.
-
-#     It is used defensively to avoid accidental double escaping.
-
-#     Parameters
-#     ----------
-#     text:
-#         Candidate text.
-
-#     Returns
-#     -------
-#     bool
-#     """
-#     if not text:
-#         return True
-
-#     unescaped = html.unescape(text)
-#     return html.escape(unescaped, quote=True) == text
-
-
 ###############################################################################
 # HTML tokenisation
 ###############################################################################
@@ -215,88 +190,3 @@ def split_html(html_fragment: str) -> List[HTMLToken]:
             )
 
     return tokens
-
-
-###############################################################################
-# Safe injection
-###############################################################################
-
-
-# def safe_inject(
-#     escaped_text: str,
-#     replacements: Iterable[tuple[int, int, str]],
-# ) -> str:
-#     """
-#     Inject trusted HTML into already-escaped text.
-
-#     Parameters
-#     ----------
-#     escaped_text:
-#         HTML-escaped text.
-
-#     replacements:
-#         Iterable of (start, end, replacement_html).
-
-#         Indices refer to positions within the escaped string.
-
-#         Replacement HTML is assumed to originate solely from trusted
-#         renderer code.
-
-#     Returns
-#     -------
-#     str
-
-#     Raises
-#     ------
-#     ValueError
-#         If replacement spans overlap or are invalid.
-#     """
-#     ordered = sorted(replacements, key=lambda item: item[0])
-
-#     if not ordered:
-#         return escaped_text
-
-#     output: list[str] = []
-#     cursor = 0
-
-#     for start, end, replacement in ordered:
-
-#         if start < cursor:
-#             raise ValueError(
-#                 "Replacement spans overlap."
-#             )
-
-#         if start > end:
-#             raise ValueError(
-#                 "Replacement start exceeds end."
-#             )
-
-#         output.append(escaped_text[cursor:start])
-#         output.append(replacement)
-
-#         cursor = end
-
-#     output.append(escaped_text[cursor:])
-
-#     return "".join(output)
-
-
-###############################################################################
-# Utilities
-###############################################################################
-
-
-# def strip_tags(html_fragment: str) -> str:
-#     """
-#     Remove HTML tags.
-
-#     Parameters
-#     ----------
-#     html_fragment:
-#         HTML fragment.
-
-#     Returns
-#     -------
-#     str
-#     """
-#     return _ANY_TAG_RE.sub("", html_fragment)

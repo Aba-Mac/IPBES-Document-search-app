@@ -188,8 +188,6 @@ class EmbeddingModel:
     def model_name(self) -> str:
         return self._model_name
 
-    # --------------------------------------------------------------
-
     def embed(
         self,
         text: str,
@@ -212,8 +210,6 @@ class EmbeddingModel:
             model=self._model_name,
             dimension=int(vector.shape[0]),
         )
-
-    # --------------------------------------------------------------
 
     def embed_many(
         self,
@@ -373,8 +369,6 @@ class SimilarityTagger:
             else settings.embedding_similarity_threshold
         )
 
-    # --------------------------------------------------------------
-
     def tag(
         self,
         paragraph: str,
@@ -441,8 +435,6 @@ class SimilarityTagger:
         )
 
         return paragraph_embedding, matches
-
-    # --------------------------------------------------------------
 
     def tag_many(
         self,

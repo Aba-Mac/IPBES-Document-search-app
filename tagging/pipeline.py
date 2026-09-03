@@ -200,8 +200,6 @@ class TopicTaggingPipeline:
             or repository
         )
 
-    # --------------------------------------------------------------
-
     def process_paragraph(
         self,
         paragraph_id: int,
@@ -307,8 +305,6 @@ class TopicTaggingPipeline:
             tags=tuple(tags),
         )
 
-    # --------------------------------------------------------------
-
     @staticmethod
     def _deduplicate_tags(
         tags: Iterable[TopicTag],
@@ -357,8 +353,6 @@ class TopicTaggingPipeline:
         return list(
             grouped.values()
         )
-
-    # --------------------------------------------------------------
 
     def process_paragraphs(
         self,
@@ -426,8 +420,6 @@ class TopicTagRepository:
             or repository
         )
 
-    # --------------------------------------------------------------
-
     def save_embedding(
         self,
         paragraph_id: int,
@@ -445,8 +437,6 @@ class TopicTagRepository:
             model=embedding.model,
             dimension=embedding.dimension,
         )
-
-    # --------------------------------------------------------------
 
     def save_tags(
         self,
@@ -466,8 +456,6 @@ class TopicTagRepository:
                 embedding_model=tag.embedding_model,
                 verified=tag.verified,
             )
-
-    # --------------------------------------------------------------
 
     def save_result(
         self,
@@ -523,8 +511,6 @@ class TopicTaggingJob:
             storage
             or TopicTagRepository()
         )
-
-    # --------------------------------------------------------------
 
     def run(
         self,

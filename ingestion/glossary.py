@@ -281,7 +281,7 @@ def reindex_all_glossary_matches(
     Use this after editing a glossary .txt file, instead of
     re-running the full ingestion pipeline.
     """
-    from database import repository  # local import avoids a cycle at module load
+    from database import repository
 
     paragraphs = repository.get_all_paragraphs_for_glossary(connection=connection)
 
