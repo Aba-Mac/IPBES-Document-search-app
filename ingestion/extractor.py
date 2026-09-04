@@ -111,11 +111,7 @@ class ExtractionConfig:
 
     include_page_breaks: bool = False
 
-    max_characters: int = 2000
-
     combine_text_under_n_chars: int = 200
-
-    new_after_n_chars: int = 1200
 
     extract_images: bool = False
 
@@ -275,11 +271,21 @@ def _page_number(
     if metadata is None:
         return 1
 
-    page = getattr(
-        metadata,
-        "page_number",
-        None,
-    )
+    orig_elements = getattr(metadata, "orig_elements", None)
+
+    if orig_elements:
+        for orig in orig_elements:
+            orig_metadata = getattr(orig, "metadata", None)
+            page = getattr(orig_metadata, "page_number", None)
+            if page is not None:
+                return int(page)
+
+    else:
+        page = getattr(
+            metadata,
+            "page_number",
+            None,
+        )
 
     if page is None:
         return 1
@@ -358,9 +364,7 @@ def extract_with_unstructured(
 
         chunks = chunk_by_title(
             elements,
-            max_characters=config.max_characters,
             combine_text_under_n_chars=config.combine_text_under_n_chars,
-            new_after_n_chars=config.new_after_n_chars,
             multipage_sections=True,
         )
 

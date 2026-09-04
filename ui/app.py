@@ -40,11 +40,8 @@ from ui.cards import register_card_renderer
 from ui.layouts import build_page, build_about_modal
 from ui.search import (
     build_search_controls,
-    page_size,
     search_query,
-    selected_year_range,
     selected_glossary_lists,
-    YEAR_FILTER_ID,
 )
 from ui.styles import app_css
 
@@ -185,24 +182,6 @@ def server(input, output, session) -> None:
         await session.send_custom_message(
             "glossary_terms",
             {"terms": terms},
-        )
-
-    # ---------------------------------------------------------------
-    # Years
-    # ---------------------------------------------------------------
-
-    @reactive.effect
-    def _update_year_choices():
-        years = _load_years()
-
-        logger.info("Loaded years: %s", years)
-
-        ui.update_slider(
-            YEAR_FILTER_ID,
-            min=min(years),
-            max=max(years),
-            value=(min(years), max(years)),
-            step=1,
         )
 
     # ---------------------------------------------------------------

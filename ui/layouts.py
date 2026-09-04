@@ -32,7 +32,7 @@ from shiny import ui
 
 RESULTS_CONTAINER_ID = "results_container"
 
-APP_VERSION = "1.0.1 (27 August 2026)"
+APP_VERSION = "1.0.2 (3 September 2026)"
 
 ###############################################################################
 # Layout builders
@@ -64,9 +64,6 @@ def build_page(
     return ui.page_fluid(
         css,
 
-        #
-        # JavaScript dependencies
-        #
         ui.tags.script(
             """
         (function () {

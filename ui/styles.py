@@ -138,56 +138,14 @@ a:focus {
     margin: 0 0 var(--spacing-md);
 }
 
-
-.app-description {
-    color: var(--colour-text-muted);
-    font-size: 1.1rem;
-    max-width: 100%;
-}
-
 .app-version {
     color: var(--colour-text-muted);
     font-size: 0.85rem;
 }
 
 
-.about-details {
-    color: var(--colour-link);
-    font-size: 0.85rem;
-}
-
-
-.about-summary {
-    color: var(--colour-link);
-    cursor: pointer;
-    font-weight: 500;
-    list-style: none;
-}
-
-
-.about-summary::-webkit-details-marker {
-    display: none;
-}
-
-
-.about-summary::after {
-    content: " ▾";
-font-size: 0.75rem;
-}
-
-
 .about-details[open] .about-summary::after {
     content: " ▴";
-}
-
-
-.about-content {
-    background: #fafafa;
-    border: 1px solid var(--colour-border-light);
-    border-radius: var(--radius-small);
-    margin-top: 0.75rem;
-    max-width: 720px;
-    padding: 0.9rem 1rem;
 }
 
 
@@ -198,14 +156,6 @@ font-size: 0.75rem;
 
 .about-content p:last-child {
     margin-bottom: 0;
-}
-
-
-.app-subtitle {
-    color: var(--colour-text-muted);
-    font-size: 1.1rem;
-    max-width: 100%;
-    margin: 0;
 }
 
 .search-section {
@@ -237,10 +187,6 @@ font-size: 0.75rem;
 /* ==========================================================================
    Search interface
    ========================================================================== */
-
-.search-container {
-    margin-bottom: var(--spacing-xl);
-}
 
 
 .search-input {
@@ -387,21 +333,6 @@ font-size: 0.75rem;
         0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
-
-.result-card-title {
-    color: var(--colour-text);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin:
-        0 0 var(--spacing-sm);
-}
-
-
-.result-card-text {
-    color: var(--colour-text);
-    margin: 0;
-}
-
 .result-footer {
     margin-top: var(--spacing-md);
     padding-top: var(--spacing-sm);
@@ -457,55 +388,12 @@ font-size: 0.75rem;
    Metadata and filters
    ========================================================================== */
 
-.filter-panel {
-    background:
-        #fafafa;
-    border:
-        1px solid var(--colour-border-light);
-    border-radius: var(--radius-medium);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
-}
-
-
-.filter-label {
-    color: var(--colour-text-muted);
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
 .app-meta {
     display: flex;
     flex-direction: column;  
     align-items: flex-start; 
     gap: 0.25rem;             
     margin-bottom: var(--spacing-md);
-}
-
-
-/* ==========================================================================
-   Empty states and messages
-   ========================================================================== */
-
-.empty-state {
-    color: var(--colour-text-muted);
-    padding:
-        var(--spacing-xxl)
-        var(--spacing-lg);
-    text-align: center;
-}
-
-
-.error-message {
-    background:
-        #fff5f5;
-    border:
-        1px solid #fed7d7;
-    border-radius: var(--radius-medium);
-    color:
-        #9b2c2c;
-    padding:
-        var(--spacing-md);
 }
 
 

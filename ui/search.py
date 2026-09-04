@@ -34,10 +34,6 @@ from shiny import ui
 
 SEARCH_QUERY_ID = "search_query"
 
-YEAR_FILTER_ID = "year_filter"
-
-PAGE_SIZE_ID = "page_size"
-
 GLOSSARY_LIST_ID = "glossary_list_selection"
 
 ###############################################################################
@@ -130,10 +126,7 @@ def build_search_controls(
 # Input accessors
 ###############################################################################
 
-#
-# These helper functions isolate the rest of the application from
-# Shiny input IDs.
-#
+
 def selected_glossary_lists(input) -> tuple[str, ...]:
     value = input[GLOSSARY_LIST_ID]()
     return tuple(value) if value else ()
@@ -146,34 +139,3 @@ def search_query(input) -> str:
 
     value = input[SEARCH_QUERY_ID]()
     return value or ""
-
-
-def selected_year_range(
-    input,
-    full_range: tuple[int, int] | None = None,
-) -> tuple[int, int] | None:
-
-    value = input[YEAR_FILTER_ID]()
-
-    if not value:
-        return None
-
-    value = tuple(value)
-
-    if full_range is not None and value == full_range:
-        return None
-
-    return value
-
-
-def page_size(input) -> int:
-    """
-    Return requested page size.
-    """
-
-    value = input[PAGE_SIZE_ID]()
-
-    if not value:
-        return 20
-
-    return int(value)
