@@ -228,8 +228,6 @@ class PDFInspection:
 
     metadata: dict[str, str | None]
 
-    sha256: str
-
 
 @dataclass(slots=True)
 class OCRResult:
