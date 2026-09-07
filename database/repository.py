@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+import re
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -41,6 +42,15 @@ from core.config import settings
 
 LOGGER = logging.getLogger(__name__)
 
+
+###############################################################################
+# Constants
+###############################################################################
+
+_SENTENCE_SPLIT_RE = re.compile(r'(?<=[.!?])\s+(?=[A-Z0-9"\u201c(])')
+
+SENTENCES_BEFORE = 3
+SENTENCES_AFTER = 3
 
 ###############################################################################
 # Connection
@@ -854,6 +864,58 @@ def search_paragraphs(
     parameters.extend([limit, offset])
 
     return fetch_all(sql, parameters, connection=connection)
+
+
+def _split_sentences(text: str) -> list[str]:
+    text = text.strip()
+    if not text:
+        return []
+    return [s.strip() for s in _SENTENCE_SPLIT_RE.split(text) if s.strip()]
+
+
+def _merge_windows(windows: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    windows = sorted(windows)
+    merged = [list(windows[0])]
+    for start, end in windows[1:]:
+        if start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return [tuple(w) for w in merged]
+
+
+def build_term_windows(paragraph_text: str, terms: list[str]) -> list[str]:
+    """
+    Return one or more excerpts from paragraph_text, each spanning up
+    to SENTENCES_BEFORE/SENTENCES_AFTER sentences around a matched
+    term. Windows always start and end on sentence boundaries — never
+    mid-sentence — so no separate truncation rule is needed. Windows
+    never reach beyond the paragraph itself, since this operates on a
+    single stored paragraph row.
+    """
+
+    sentences = _split_sentences(paragraph_text)
+    if not sentences or not terms:
+        return [paragraph_text]
+
+    pattern = re.compile(
+        r"\b(" + "|".join(re.escape(t) for t in terms) + r")\b",
+        re.IGNORECASE,
+    )
+
+    match_indices = [i for i, s in enumerate(sentences) if pattern.search(s)]
+    if not match_indices:
+        return [paragraph_text]
+
+    raw_windows = [
+        (max(0, i - SENTENCES_BEFORE), min(len(sentences), i + SENTENCES_AFTER + 1))
+        for i in match_indices
+    ]
+
+    return [
+        " ".join(sentences[start:end]).strip()
+        for start, end in _merge_windows(raw_windows)
+    ]
 
 
 ###############################################################################
