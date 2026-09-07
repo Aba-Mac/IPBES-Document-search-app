@@ -32,7 +32,7 @@ from shiny import ui
 
 RESULTS_CONTAINER_ID = "results_container"
 
-APP_VERSION = "1.0.2 (3 September 2026)"
+APP_VERSION = "1.0.3 (7 September 2026)"
 
 ###############################################################################
 # Layout builders
@@ -249,8 +249,16 @@ def build_header():
 
     return ui.div(
         ui.h1(
-            "IPBES Document Search",
+            "IPBES ILK dialogue workshop report search",
             class_="app-title",
+        ),
+
+        ui.div(
+            ui.h2(
+                "Search IPBES ILK dialogue workshop reports for glossary and ILK terms using Boolean queries.",
+                class_="app-subtitle",
+            ),
+            class_="app-subtitle-container",
         ),
 
         ui.div(
@@ -277,11 +285,11 @@ def build_about_modal():
     """
     return ui.modal(
         ui.p(
-            "IPBES Document Search provides a search platform to find "
-            "IPBES glossary and ILK terms in workshop documents using Boolean queries, with results returned at the "
+            "IPBES ILK dialogue workshop report search provides a search platform to find "
+            "IPBES glossary and ILK terms in ILK dialogue workshop documents using Boolean queries, with results returned at the "
             "paragraph level. This tool is supposed "
             "to simplify and speed up the process of finding information " 
-            "and increase accessibility to IPBES knowledge resources."
+            "and increase accessibility to IPBES ILK dialogue workshop reports."
         ),
         ui.p(
             "The idea for the search platform was conceptualised "
@@ -290,8 +298,8 @@ def build_about_modal():
             "by Annabell Macphee at the Senckenberg Biodiversity and Climate Research Centre."
         ),
         ui.p(
-            "The IPBES glossary (and ILK terms) are derived from the respective location on " 
-            "the IPBES website while IPBES workshop documents were retrieved " 
+            "The IPBES glossary and ILK terms are derived from the respective location on " 
+            "the IPBES website while IPBES ILK dialogue workshop documents were retrieved " 
             "from the IPBES Intergovernmental Science-Policy Platform on Biodiversity and Ecosystem Services (IPBES) " 
             "Zenodo community."
         ),
@@ -300,7 +308,7 @@ def build_about_modal():
             "care was invested to ensure accuracy, returned results may be incomplete or " 
             "otherwise faulty. For formal use, users should always refer to relevant IPBES workshop documents directly." 
         ),
-        title="About: IPBES Document Search",
+        title="About: IPBES ILK dialogue workshop report search",
         easy_close=True,
         footer=ui.modal_button("Close"),
     )

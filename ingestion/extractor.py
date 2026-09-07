@@ -111,7 +111,11 @@ class ExtractionConfig:
 
     include_page_breaks: bool = False
 
+    max_characters: int = 1000
+
     combine_text_under_n_chars: int = 200
+
+    new_after_n_chars: int = 800
 
     extract_images: bool = False
 
@@ -365,7 +369,10 @@ def extract_with_unstructured(
         chunks = chunk_by_title(
             elements,
             combine_text_under_n_chars=config.combine_text_under_n_chars,
+            max_characters=config.max_characters,
+            new_after_n_chars=config.new_after_n_chars,
             multipage_sections=True,
+            include_orig_elements=True,
         )
 
     except Exception as exc:
