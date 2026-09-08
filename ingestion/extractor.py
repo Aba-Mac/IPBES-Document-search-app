@@ -111,11 +111,11 @@ class ExtractionConfig:
 
     include_page_breaks: bool = False
 
-    max_characters: int = 1000
+    max_characters: int = 3000
 
     combine_text_under_n_chars: int = 200
 
-    new_after_n_chars: int = 800
+    new_after_n_chars: int = 1200
 
     extract_images: bool = False
 

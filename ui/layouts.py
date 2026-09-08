@@ -254,7 +254,7 @@ def build_header():
         ),
 
         ui.div(
-            ui.h2(
+            ui.h5(
                 "Search IPBES ILK dialogue workshop reports for glossary and ILK terms using Boolean queries.",
                 class_="app-subtitle",
             ),
