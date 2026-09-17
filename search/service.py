@@ -356,29 +356,29 @@ def search(
 ###############################################################################
 
 
-def get_available_years() -> list[int]:
-    """
-    Return all available publication years.
+# def get_available_years() -> list[int]:
+#     """
+#     Return all available publication years.
 
-    Returns
-    -------
-    list[int]
-        Sorted publication years.
+#     Returns
+#     -------
+#     list[int]
+#         Sorted publication years.
 
-    Raises
-    ------
-    SearchServiceError
-        If retrieval fails.
-    """
-    try:
-        return _service()._repository.get_available_years()
-    except Exception as exc:
-        logger.exception(
-            "Failed to retrieve available years."
-        )
-        raise SearchServiceError(
-            "Unable to retrieve years."
-        ) from exc
+#     Raises
+#     ------
+#     SearchServiceError
+#         If retrieval fails.
+#     """
+#     try:
+#         return _service()._repository.get_available_years()
+#     except Exception as exc:
+#         logger.exception(
+#             "Failed to retrieve available years."
+#         )
+#         raise SearchServiceError(
+#             "Unable to retrieve years."
+#         ) from exc
 
 
 def get_glossary_terms(list_names: tuple[str,...] | None = None) -> list[str]:

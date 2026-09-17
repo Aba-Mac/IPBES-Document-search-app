@@ -29,8 +29,8 @@ Example
 >>> request.query
 'data AND governance'
 
->>> request.filters.year
-2024
+#>>> request.filters.year
+#2024
 """
 
 from __future__ import annotations
@@ -294,13 +294,13 @@ def _parse_filters(
         )
 
     source = _parse_source(filters.get("source"))
-    year = _parse_year(filters.get("year"))
+    #year = _parse_year(filters.get("year"))
     document = _parse_document(filters.get("document"))
     glossary_lists = _parse_glossary_lists(filters.get("glossary_lists"))
 
     return SearchFilters(
         source=source,
-        year=year,
+        #year=year,
         document=document,
         glossary_lists=glossary_lists,
     )
@@ -324,43 +324,43 @@ def _parse_source(value: Any) -> str | None:
     return value
 
 
-def _parse_year(value: Any) -> tuple[int, int] | None:
-    """
-    Parse year range filter.
+# def _parse_year(value: Any) -> tuple[int, int] | None:
+#     """
+#     Parse year range filter.
 
-    Expects a 2-tuple/list of (min_year, max_year). A bare single
-    year (int or numeric string) is also accepted for convenience
-    and normalised to a one-year range.
-    """
-    if value in ("", None):
-        return None
+#     Expects a 2-tuple/list of (min_year, max_year). A bare single
+#     year (int or numeric string) is also accepted for convenience
+#     and normalised to a one-year range.
+#     """
+#     if value in ("", None):
+#         return None
 
-    if isinstance(value, (tuple, list)):
-        if len(value) != 2:
-            raise SearchParserError(
-                "Year filter must contain exactly two values (min, max)."
-            )
-        raw_min, raw_max = value
-    else:
-        raw_min = raw_max = value
+#     if isinstance(value, (tuple, list)):
+#         if len(value) != 2:
+#             raise SearchParserError(
+#                 "Year filter must contain exactly two values (min, max)."
+#             )
+#         raw_min, raw_max = value
+#     else:
+#         raw_min = raw_max = value
 
-    try:
-        year_min = int(raw_min)
-        year_max = int(raw_max)
-    except Exception as exc:
-        raise SearchParserError(
-            "Year filter values must be integers."
-        ) from exc
+#     try:
+#         year_min = int(raw_min)
+#         year_max = int(raw_max)
+#     except Exception as exc:
+#         raise SearchParserError(
+#             "Year filter values must be integers."
+#         ) from exc
 
-    if year_min < 1900 or year_max > 3000:
-        raise SearchParserError(
-            "Year filter is outside the valid range."
-        )
+#     if year_min < 1900 or year_max > 3000:
+#         raise SearchParserError(
+#             "Year filter is outside the valid range."
+#         )
 
-    if year_min > year_max:
-        year_min, year_max = year_max, year_min
+#     if year_min > year_max:
+#         year_min, year_max = year_max, year_min
 
-    return (year_min, year_max)
+#     return (year_min, year_max)
 
 
 def _parse_document(value: Any) -> int | None:

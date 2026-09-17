@@ -13,7 +13,7 @@ Responsibilities
 ----------------
 - Execute parameterised FTS5 searches via database.repository.
 - Apply SQLite BM25 ranking.
-- Apply document/source/year filtering.
+- Apply document/source(/year) filtering.
 - Apply pagination.
 - Attach glossary term matches.
 - Return paragraph-level results.
