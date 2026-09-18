@@ -81,9 +81,7 @@ def build_app_ui():
     """
 
     page = build_page(
-        search_controls=build_search_controls(
-            years=years,
-        ),
+        search_controls=build_search_controls(),
         css=app_css(),
     )
 
