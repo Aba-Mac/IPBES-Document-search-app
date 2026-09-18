@@ -31,7 +31,6 @@ from search.service import get_glossary_terms
 
 from search.service import (
     SearchServiceError,
-    get_available_years,
     search,
     configure
 )
@@ -71,18 +70,6 @@ document.addEventListener('click', function (e) {
 });
 """
 
-###############################################################################
-# Static application data
-###############################################################################
-
-def _load_years() -> tuple[int, ...]:
-    """
-    Load available document years.
-
-    Loaded lazily after the application has started.
-    """
-    return tuple(get_available_years())
-
 
 ###############################################################################
 # User interface
@@ -92,7 +79,6 @@ def build_app_ui():
     """
     Build the Shiny UI after services are configured.
     """
-    years = _load_years()
 
     page = build_page(
         search_controls=build_search_controls(
@@ -118,8 +104,6 @@ def server(input, output, session) -> None:
     The server coordinates reactive state only. All searching is
     delegated to ``search.service``.
     """
-
-    available_years = reactive.value(_load_years())
 
     current_page = reactive.value(1)
 
@@ -286,8 +270,6 @@ def server(input, output, session) -> None:
         output=output,
         results=search_results,
     )
-
-    _ = available_years
 
 
 ###############################################################################

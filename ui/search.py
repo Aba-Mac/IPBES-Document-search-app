@@ -8,7 +8,6 @@ Responsibilities
 ----------------
 * Define search input widgets.
 * Define Boolean search controls.
-* Define document year filter.
 * Define pagination controls.
 * Expose helper functions for reading reactive input values.
 
