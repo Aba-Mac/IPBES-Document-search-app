@@ -1,12 +1,11 @@
 import os
 from docx import Document
-
-folder_path = "/home/annabell/Documents/IPBES/2026_Document_search_engine/Github_files/data/docx/"
+from core.paths import DOCX_DIR
 
 with open("heading_levels.txt", "w") as out:
-    for filename in os.listdir(folder_path):
+    for filename in os.listdir(DOCX_DIR):
         if filename.endswith(".docx") and not filename.startswith("~$"):
-            full_path = os.path.join(folder_path, filename)
+            full_path = os.path.join(DOCX_DIR, filename)
             doc = Document(full_path)
             out.write(f"\n--- {filename} ---\n")
             for p in doc.paragraphs:
