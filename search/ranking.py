@@ -463,7 +463,6 @@ _REQUIRED_COLUMNS: frozenset[str] = frozenset(
         "filename",
         "source",
         "year",
-        "plenary_session",
         "location",
         "section_title",
         "paragraph_number",
