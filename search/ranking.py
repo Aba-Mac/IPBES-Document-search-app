@@ -45,7 +45,7 @@ _BULLET_PREFIX_RE = re.compile(
     r"^(?:[-*+\u2022\u2023\u25e6\u25aa\u25b8]|\d+[.)])\s+"
 )
 _SENTENCE_BOUNDARY_RE = re.compile(r"(?<=[.!?])\s+")
-_TERMINAL_PUNCTUATION = ".?!"
+_TERMINAL_PUNCTUATION = ".?!;"
 
 __all__ = [
     "SearchResult",
