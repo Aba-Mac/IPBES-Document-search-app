@@ -1,1744 +1,1641 @@
-Abiotic Pollination
-Abundance
-Abundance (Ecological)
-Abyssal Plain
-Acaricide
-Acceptance
-Access And Benefit Sharing
-Accessibility
-Acclimatization
-Accountability
-Acid Deposition
-Acid Sulfate Soil
-Acidification
-Active Disruption
-Active Restoration
-Actor
-Adaptability
-Adaptation
-Adaptation Response
-Adaptive Capacity
-Adaptive Co-Management
-Adaptive Governance
-Adaptive Learning
-Adaptive Management
-Adaptive Radiation
-Adoption
-Aerobic
-Aerosol
-Affected Actor
-Afforestation
-Agency
-Agenda Setting
-Aggregating
-Agribusiness
-Agricultural Biodiversity
-Agricultural Commodity
-Agricultural Ecosystem / Agroecosystem
-Agricultural Extensification
-Agricultural Extension
-Agricultural Intensification
-Agricultural Orientation Index
-Agricultural Production Landscapes
-Agriculture
-Agri-Environmental Scheme
-Agrisilvicultural System
-Agrisilvipastoral System
-Agrobiodiversity
-Agrochemical
-Agro-Deforestation
-Agroecological Agriculture
-Agro-Ecological Zone
-Agroecology
-Agroecosystem
-Agroforestry
-Ahimsā
-Aichi (Biodiversity) Targets
-Albedo
-Alien Invasive Species
-Alien Species
-Alliance For Zero Extinction Sites
-Alluvial Soil
-Alpha Diversity
-Alternative Futures
-Alternative Trajectories
-Ameliorative Policy Arrangements
-Amorphous
-Anaerobic
-Ancestors
-Animism
-Annual
-Anoxic
-Anoxic Event
-Anthrome
-Anthropocene
-Anthropocentric
-Anthropocentric Value
-Anthropocentrism
-Anthropogenic
-Anthropogenic Assets
-Anthropogenic Biome
-Anthropogenic Drivers
-Anthropogenic Impact
-Anthropogenic Landscape
-Anthropogenic Pressure
-Anthropogenic Value
-Aphotic Zone
-Apiculture
-Approach
-Approval
-Aquaculture
-Aqueous Slurries
-Aquifer
-Arable
-Archetype
-Areas
-Arenas Of Engagement
-Arid Ecosystem
-Arid Region
-Aridification
-Article 8(j) of the CBD
-Asia-Pacific Region
-Aspirations
-Assessment Report
-Assisted Colonization
-Asymmetry (In Plant-Pollinator Networks (Q.V.))
-Available Water Capacity
-Average Genetic Variation
-Avoided Deforestation In Conjunction With Afforestation And Reforestation
-Ayni
-Backcasting
-Badland
-Balance
-Ballast Water
-Bare Soil
-Barrier
-Basal Area
-Baseline
-Beekeeping
-Behaviour Change
-Behavioural Economics
-Benchmarking (Of Models)
-Beneficiary
-Beneficiary Pays Principle
-Benefit
-Benefit Sharing
-Benefits
-Benthic
-Benthos
-Bequest Value
-Best Practice
-Biennial
-Bioaccumulation
-Biocapacity
-Biocentric Perspectives
-Biocentric Worldview
-Biocentrism
-Biochar
-Biochemical Oxygen Demand
-Biocultural
-Biocultural Approaches To Conservation
-Biocultural Community Protocol
-Biocultural Diversity
-Biocultural Management
-Biocultural Refugia
-Biodegradation
-Biodiesel
-Biodiversity
-Biodiversity Conservation
-Biodiversity Dilution Effect
-Biodiversity Finance
-Biodiversity Finance (Blended)
-Biodiversity Finance (Private)
-Biodiversity Finance (Public Domestic)
-Biodiversity Finance (Public International)
-Biodiversity Financing Gap
-Biodiversity Footprint Hotspot
-Biodiversity Hotspot
-Biodiversity Intactness Index
-Biodiversity Loss
-Biodiversity Offset
-Biodiversity Offsets
-Biodynamic Agriculture
-Bioeconomy
-Bioenergy
-Bioenergy With Carbon Capture And Storage
-Bioethanol
-Biofuel
-Biogas
-Biogenic Volatile Organic Compound
-Biogeochemical Cycle
-Biogeochemistry
-Biological Conservation
-Biological Control
-Biological Diversity
-Biological Invasion
-Biological Oxygen Demand
-Biological Pump
-Biological Resource
-Biological Sustainable Level (Fished Within)
-Biomass
-Biomass (Ecology)
-Biomass (For Production)
-Biome
-Biophysical System
-Biophysical Value
-Bioprospecting
-Bio-Prospectors
-Bioremediation
-Biosecurity
-Biosphere
-Biota
-Bio-Technical Stabilization
-Biotechnology
-Biotechnology (Modern)
-Bioterrorism
-Biotic Facilitation
-Biotic Homogenization
-Biotic Resistance To Invasion
-Birgejupmi
-Black Carbon
-Blue Carbon
-Blue Carbon Ecosystem
-Bog
-Bonn Challenge
-Bottom-Up
-Bottom-up
-Bottom-Up Control Of The Food Web
-Boundary Object
-Brackish Water
-Breadth
-Bridging Organizations
-Broad Values
-Buen Vivir
-Buen Vivir (Sumak Kawsay In Quechua, Suma Qamaña In Aymara)
-Buffer (Ecology)
-Buffer Zones (Protected Areas)
-Built Environment
-Bumble Bee
-Burden
-Burden Of Disease
+abiotic pollination
+abundance (ecological)
+abyssal plain
+acaricide
+acceptance
+access and benefit sharing
+acclimatization
+accountability
+acid deposition
+acid sulfate soil
+acidification
+active disruption
+active restoration
+actor
+adaptability
+adaptation
+adaptation response
+adaptive capacity
+adaptive co-management
+adaptive governance
+adaptive learning
+adaptive management
+adaptive radiation
+adoption
+aeorobic
+aerosol
+affected actor
+afforestation
+agency
+agenda setting
+agri-environmental scheme
+agribusiness
+agricultural biodiversity
+agricultural commodity
+agricultural ecosystem / agroecosystem
+agricultural extensification
+agricultural extension
+agricultural intensification
+agricultural orientation index
+agricultural production landscapes
+agrisilvicultural system
+agrisilvipastoral system
+agro-deforestation
+agro-ecological zone
+agrobiodiversity
+agrochemical
+agroecological agriculture
+agroecology
+agroecosystem
+agroforestry
+ahims?
+Aichi (biodiversity) targets
+albedo
+alien invasive species
+alien species
+alliance for zero extinction sites
+alluvial soil
+alpha diversity
+alternative futures
+alternative trajectories
+ameliorative policy arrangements
+amorphous
+anaerobic
+animism
+annual
+anoxic
+anoxic event
+anthrome
+anthropocene
+anthropocentric
+anthropocentric value
+anthropocentrism
+anthropogenic
+anthropogenic assets
+anthropogenic biome
+anthropogenic drivers
+anthropogenic impact
+anthropogenic landscape
+anthropogenic pressure
+anthropogenic value
+aphotic zone
+apiculture
+approval
+aquaculture
+aqueous slurries
+aquifer
+arable
+archetype
+arenas of engagement
+arid ecosystem
+arid region
+aridification
+article 8(j) of the CBD
+asia-pacific region
+assessment report
+assisted colonization
+asymmetry (in plant-pollinator networks (q.v.))
+available water capacity
+average genetic variation
+avoided deforestation in conjunction with afforestation and reforestation
+ayni
+backcasting
+badland
+ballast water
+bare soil
+barrier
+basal area
+baseline
+beekeeping
+behaviour change
+behavioural economics
+benchmarking (of models)
+beneficiary
+beneficiary pays principle
+benefit
+benefit sharing
+benthic
+benthos
+bequest value
+best practice
+biennial
+bio-prospectors
+bio-technical stabilization
+bioaccumulation
+biocapacity
+biocentric perspectives
+biocentric worldview
+biocentrism
+biochar
+biochemical oxygen demand
+biocultural approaches to conservation
+biocultural community protocol
+biocultural diversity
+biocultural management
+biocultural refugia
+biodegradation
+biodiesel
+biodiversity
+biodiversity conservation
+biodiversity dilution effect
+biodiversity finance
+biodiversity finance (blended)
+biodiversity finance (private)
+biodiversity finance (public domestic)
+biodiversity finance (public international)
+biodiversity financing gap
+biodiversity footprint hotspot
+biodiversity hotspot
+biodiversity intactness index
+biodiversity loss
+biodiversity offset
+biodiversity offsets
+biodynamic agriculture
+bioeconomy
+bioenergy
+bioenergy with carbon capture and storage
+bioethanol
+biofuel
+biogas
+biogenic volatile organic compound
+biogeochemical cycle
+biogeochemistry
+biological conservation
+biological control
+biological diversity
+biological invasion
+integrated governance for biological invasions
+biological oxygen demand
+biological pump
+biological resource
+biological sustainable level (fished within)
+biomass
+biomass (ecology)
+biomass (for production)
+biome
+biophysical system
+biophysical value
+bioprospecting
+bioremediation
+biosecurity
+biosphere
+biota
+biotechnology
+biotechnology (modern)
+bioterrorism
+biotic facilitation
+biotic homogenization
+biotic resistance to invasion
+birgejupmi
+black carbon
+blue carbon
+blue carbon ecosystem
+bog
+Bonn challenge
+bottom-up
+bottom-up control of the food web
+boundary object
+brackish water
+breadth
+bridging organizations
+broad values
+buen vivir
+buen vivir (sumak kawsay in quechua, suma qama�a in aymara)
+buffer (ecology)
+buffer zones (protected areas)
+built environment
+bumble bee
+burden
+burden of disease
 Bureau
-Bush Encroachment
-Bushmeat
-Bushmeat Hunting
-Business 
-Business-As-Usual
-Businesses
-Bycatch
-C3 Photosynthesis
-C3 Plants
-C4 Photosynthesis
-C4 Plants
-Calendars
-Calibration (Of Models)
-Canned Hunting
-Capacity Development
-Capacity Dimensions
-Capacity-Building
-Cap-And-Trade
-Capital
-Capitalism
-Carbon Capture And Storage
-Carbon Cycle
-Carbon Dioxide Equivalent
-Carbon Footprint
-Carbon Offset
-Carbon Sequestration
-Carbon Sink
-Carbon Storage
-Carbon Tax
-Carbon Uptake
-Carbon-Lock-In Phase
-Carrying Capacity
-Cascading Impact
-Casual Species
-Catalogue Of Policy Support Tools And Methodologies
-Causal Chains
-Causal Effect
-Century
-Ceremonial Uses (Of Wild Species)
-Certainty
-Certainty Terminology
-Certification (Environmental)
-Certification Principles And Standards
-Challenge
-Challenges
-Charismatic Species
-Chemosynthesis
-Chemosynthetic Ecosystem
-Circular Economy
-Citizen Science
-Citizens
-Civil Society
-Clade
-Classical Biological Control
-Clean Development Mechanism
-Clean Technology
-Climate
-Climate Action
-Climate Change
-Climate Change Adaptation
-Climate Change Impacts
-Climate Change Mitigation
-Climate Envelope
-Climate Regulation
-Climate Smart Agriculture
-Climate Variability
-Climatic Driver
-Climatological Anomalies
-Climatological Normal
-Closed Water Systems
-Coastal Squeeze
-Co-Benefit
-Co-Benefit Strategies
-Co-Creation
-Cold Seep
-Collaborative 
-Collaborative Governance
-Collapse (Socioecological System)
-Collecting
-Collective Action
-Colonialism
-Coloniality
-Colonization Pressure
-Co-Management
-Commercialization
-Comminution
-Common Pool Resource
-Common Property Theory
-Commons
-Communication
-Community (Ecological)
-Community (Social)
-Community Forestry
-Community-Based
-Community-Based Conservation
-Community-Based Forest Management
-Community-Based Monitoring
-Community-Based Monitoring And Information Systems
-Community-Based Natural Resource Management
-Community-Based Tourism
-Community-Managed Forest
-Compensation
-Compliance
-Compounding Impact
-Concepts
-Conceptual Framework
-Conceptualization
-Conceptualizations
-Conditions
-Confidence
-Conflict
-Conflicts
-Connectance (In Plant-Pollinator Networks (Q.V.))
-Connected Water Systems
-Connections
-Connectivity 
-Conservation Agriculture
-Conservation Benefit
-Conservation Biology
-Conservation Easement
-Conservation Tender
-Consumer Surplus
-Consumerism
-Containment
-Contaminant
-Continental Shelf
-Continental Slope
-Contingent Valuation
-Continuity
-Control
-Convention On International Trade In Endangered Species Of Wild Fauna And Flora
-Conventional Agricultural Methods 
-Conventions
-Co-Production
-Co-Production (Of Contributions Between Nature And People)
-Coral Bleaching
-Coral Triangle
-Correlative Model
-Corridor
-Cosmic Model
-Cosmocentric
-Cosmologies
-Cosmovision
-Cost-Benefit Analysis
-Cost-Effectiveness Analysis
-Country Of Origin Of Genetic Resources
-Country Providing Genetic Resources
-Coupled Social-Ecological Systems
-Crop Intensification
-Crop Wild Relative
-Cropland
-Cropping System
-Cross Pollination
-Cross-Scale Analysis
-Cross-Sectoral
-Crowding Out
-Cryosphere
-Cryptogenic Species
-Cultural Change
-Cultural Continuity
-Cultural Diversity
-Cultural Ecosystem Services
-Cultural Identity
-Cultural Keystone Species
-Cultural Landscape
-Cultural Values
-Culture
-Cumulative
-Cumulative Impacts
-Customary
-Customary Land Tenure
-Customary Law
-Customary Practices
-Customary Rights
-Customary Sustainable Use
-Customs
-Cycles
-Daoism
-Decadal
-Decision Context
-Decision Support Tools
-Decision Uncertainty
-Decision-Making
-Decision-Making Framework
-Decomposition
-Decorative And Aesthetic Uses
-Deflation (Wind)
-Deforestation
-Degraded Land
-Degraded Lands
-Degrowth
-Demographic Change
-Demographic Transition
-Denitrification
-Densification
-Deoxygenation (Ocean)
-Depositional Sites
-Depth
-Descriptive Scenarios
-Desertification
-Development Pathways
-Dialogue
-Diet (Healthy)
-Diet (Sustainable Healthy)
-Dietary Diversity
-Direct Drivers
-Direct Drivers (Of Biodiversity)
-Direct Drivers (Of Environmental Change)
-Disability-Adjusted Life Year
-Disaster Risk Reduction
-Discourse
-Disease
-Disease (Zoonotic)
-Dispersal
-Displacement
-Dissemination
-Distributional Equity
-Distributive Justice
-Diverse Values
-Diversified Farming
-Diversified Farming System
-Diversity
-Dna Barcoding
-Domain
-Domesticated Species
-Domestication
-Domestication Of Agreements’ Commitment
-Double Counting Of Services
-Double Materiality
-Downscaling
-Driver
-Drivers
-Drivers Of Change
-Drivers, Anthropogenic Direct
-Drivers, Natural Direct
-Drought
-Dry Forest
-Drylands
-Dynamic Downscaling
-Dynamic Model
-Dynamics And Processes
-Earth Jurisprudence
-Earth System Justice
-Ecocentrism
-Eco-Certification
-Ecocide
-Eco-Communalism
-Eco-Evolutionary Dynamics
-Ecohealth
-Eco-Informatics
-Ecolabelling
-Ecological Breakpoint Or Threshold
-Ecological Civilization
-Ecological Community
-Ecological Connectivity
-Ecological Crisis
-Ecological Destruction
-Ecological Disturbance (Natural And Anthropogenic)
-Ecological Footprint
-Ecological Infrastructure
-Ecological Integrity
-Ecological Intensification
-Ecological Justice
-Ecological Marginalization
-Ecological Processes
-Ecological Solidarity
-Ecologically Intensified Agriculture
-Ecologically Unequal Exchange
-Ecology
-E-Commerce
-Economic And Financial Instruments
-Economic Valuation
-Economic Value
-Economic Vulnerability
-Ecoregion
-Eco-Social Contracts
-Ecosystem
-Ecosystem Accounting
-Ecosystem Approach
-Ecosystem Degradation
-Ecosystem Disservices
-Ecosystem Ecology
-Ecosystem Engineer
-Ecosystem Function
-Ecosystem Functioning
-Ecosystem Goods
-Ecosystem Health
-Ecosystem Integrity
-Ecosystem Management
-Ecosystem Restoration
-Ecosystem Sensitivity
-Ecosystem Service
-Ecosystem Services
-Ecosystem Structure
-Ecosystem-Based Adaptation
-Ecosystem-Based Adaptation To Climate Change
-Ecosystem-Based Approach
-Ecosystem-Based Disaster Risk Reduction
-Ecosystem-Based Management
-Ecotone
-Ecotourism
-Ectotherm
-Edge Effect
-Education
-El Niño
-Empowerment
-Enabler
-Enabling Conditions
-Enabling Environment
-Enabling Factors
-Endangered Species
-Endemic Species
-Endemism
-Endogenous Drivers
-Energy Security
-Energy Source
-Energy System
-Engagement
-Environmental Additionality
-Environmental Asset
-Environmental Crime
-Environmental Education
-Environmental Envelope
-Environmental Governance
-Environmental Gradient
-Environmental Hazard
-Environmental Health
-Environmental Impact
-Environmental Impact Assessment
-Environmental Income
-Environmental Justice
-Environmental Kuznets Curve
-Environmental Tax
-Epifauna
-Epistemic Community
-Epistemic Justice
-Epistemology
-Epizootics
-Equality
-Equitable
-Equity
-Eradication
-Erodibility
-Erosion Hotspots
-Essential Biodiversity Variables
-Established Alien Species
-Established But Incomplete (Certainty Term (Q.V.))
-Ethics
-Ethics Of Care
-Ethnobiology
-Etuaptmumk
-Euphotic Zone
-Eutrophic
-Eutrophication
-Evaluation (Of Models)
-Evapotranspiration
-Evenness
-Evolutionary Adaptation
-Evolutionary Anthropology
-Evolutionary Biology
-Evolutionary Distinctiveness
-Ex-Ante Assessment
-Exclusions
-Exclusive Economic Zone
-Exclusive Economic Zone Areas
-Existence Value
-Exogenous Drivers
-Exotic Pollinator
-Exotics
-Expert
-Expert-Based Model
-Exploitation
-Exploratory Scenario
-Ex-Post Assessment
-Exposure
-Extensive Forest Management
-Extensive Grazing
-Extensive Grazing (Lands)
-Extent (Spatial Or Temporal)
-Externality
-Extinction
-Extinction Debt
-Extractive Practice
-Extractives
-Extractivism
-Fairness
-Fallow
-Family Forestry
-Farm
-Feedback
-Feedback Loop
-Feedback Loops
-Feedbacks
-Feral
-Fiction
-Field
-Finance
-Financing
-Fire Regime
-Fire-Stick Farming
-Fisherman
-Fishery
-Fishing
-Fitness (Ecology)
-Flagship Species
-Flower Strip
-Flowering Plant
-Flower-Visitor
-Folk Biology
-Folk Categories
-Folk Medicine
-Food
-Food Security
-Food Self-Sufficiency
-Food Sovereignty
-Food Sovereignty (Paradigm)
-Food System
-Food System (Sustainable)
-Food Web
-Forecast
-Forest
-Forest Degradation
-Forest Garden
-Forest Law Enforcement, Governance And Trade
-Forest Management
-Forest Transition
-Formal Institution
-Fossil Fuel
-Fpic
-Fragmentation
-Frameworks
-Free, Prior And Informed Consent
-Functional Diversity
-Functional Extinction
-Functional Group
-Functional Redundancy
-Functional Trait
-Funding
-Fungicide
-Gaga
-Ganma
-Gaps
-Gathering
-Gender
-Gene
-Gene Flow
-General Circulation Model
-Generalist Species
-Genetic Composition
-Genetic Diversity
-Genetic Engineering
-Genetic Erosion
-Genetic Manipulation Or Genetic Engineering
-Genetic Resources
-Genetically Modified Organism
-Genotype
-Geographic Information Systems
-Geographic Range
-Germplasm
-Gini Index
-Global
-Global Biodiversity Financing Gap
-Global Commons Pool Resources
-Global North - Global South
-Global Warming
-Globalisation
-Goal-Seeking Scenarios
-Good Governance
-Good Quality Of Life
-Governance
-Governance (Modes Of)
-Governance Framework
-Governance Options
-Governance System
-Governments
-Grabbing (Of Wild Species And Spaces)
-Grain (Spatial Or Temporal)
-Grassland
-Grazing
-Grazing Land Management
-Great Acceleration
-Green (Environmental) Gentrification
-Green And Blue Infrastructure
-Green Bonds
-Green Growth
-Green Hunting
-Green Infrastructure
-Green Public Procurement
-Green Revolution
-Green Technology
-Green Water
-Greenhouse Gas
-Greenwashing
-Grey Water
-Gross Primary Production
-Gross Primary Productivity
-Growth Paradigm
-Habitat
-Habitat Connectivity
-Habitat Degradation
-Habitat Ecosystem Functions
-Habitat Fragmentation
-Habitat Heterogeneity
-Habitat Modification
-Habitat Service
-Habitat Specialist
-Harmful Algal Bloom
-Harmonization
-Harmony
-Hazard
-Health
-Health (Global)
-Health (Human)
-Health (Public)
-Health (Settings For)
-Health (Social Determinants Of)
-Health Coverage (Universal)
-Health Equity
-Health Impact Assessment
-Health Policy
-Health Promotion
-Health System
-Healthcare
-Healthcare (Primary)
-Heat Island Effect
-Hedgerow
-Hedonic Pricing
-Herbicide
-Herder
-Heuristics
-Holism
-Holistic Decision-Making
-Holocene
-Homegarden
-Homeotherm
-Homogenisation
-Honey Bee
-Horticulture
-Hotspot Of Agrobiodiversity
-Hotspot Of Endemism
-Human Appropriation Of Net Primary Production
-Human Capital
-Human History
-Human Rights
-Human Rights Instruments
-Human Rights-Based Approach
-Human Values
-Human Well-Being
-Human-Induced Climate Change
-Humanistic Economics
-Human-Nature Relations
-Humification
-Hunting
-Hurai
-Hybrid Model
-Hydraulic Fracturing
-Hydrothermal Vent
-Hypoxia
-Identity
-Illegal Logging
-Illegal Practices
-Illegal, Unreported And Unregulated Fishing
-Immaterial Patrimony
-Impact Investments
-Impacts
-Implementation
-Important Bird & Biodiversity Areas
-In Situ Conservation Of Biodiversity
-Inclusive
-Inclusive Governance
-Inclusive Innovation
-Inclusive Wealth
-Incommensurability
-Inconclusive (Certainty Term (Q.V.))
-Incremental Change
-Indicator
-Indicators
-Indigenous And Community Conserved Areas
-Indigenous And Local Knowledge
-Indigenous And Local Knowledge Holders
-Indigenous And Local Knowledge System
-Indigenous And Local Knowledge Systems
-Indigenous Communities
+bush encroachment
+bushmeat
+bushmeat hunting
+business-as-usual
+bycatch
+c3 photosynthesis
+c3 plants
+c4 photosynthesis
+c4 plants
+calibration (of models)
+canned hunting
+cap-and-trade
+capacity development
+capacity dimensions
+capacity-building
+capital
+capitalism
+carbon capture and storage
+carbon cycle
+carbon dioxide equivalent
+carbon footprint
+carbon offset
+carbon sequestration
+carbon sink
+carbon storage
+carbon tax
+carbon uptake
+carbon-lock-in phase
+carrying capacity
+cascading impact
+casual species
+Catalogue of policy support tools and methodologies
+causal chains
+causal effect
+century
+ceremonial uses (of wild species)
+certainty
+certainty terminology
+certification (environmental)
+certification principles and standards
+challenge
+charismatic species
+chemosynthesis
+chemosynthetic ecosystem
+circular economy
+citizen science
+citizens
+civil society
+clade
+classical biological control
+clean development mechanism
+clean technology
+climate
+climate action
+climate change
+climate change adaptation
+climate change impacts
+climate change mitigation
+climate envelope
+climate regulation
+climate smart agriculture
+climate variability
+climatic driver
+climatological anomalies
+climatological normal
+closed water systems
+co-benefit
+co-benefit strategies
+co-creation
+co-management
+co-production
+co-production (of contributions between nature and people)
+coastal squeeze
+cold seep
+collaborative governance
+collapse (socioecological system)
+collecting
+collective action
+colonialism
+coloniality
+colonization pressure
+comminution
+common pool resource
+common property theory
+commons
+communication
+community (ecological)
+community (social)
+community forestry
+community-based conservation
+community-based forest management
+community-based monitoring
+community-based monitoring and information systems
+community-based natural resource management
+community-based tourism
+community-managed forest
+compensation
+compounding impact
+concepts
+conceptual framework
+confidence
+conflict
+connectance (in plant-pollinator networks (q.v.))
+connected water systems
+conservation agriculture
+conservation benefit
+conservation biology
+conservation easement
+conservation tender
+consumer surplus
+consumerism
+containment
+contaminant
+continental shelf
+continental slope
+contingent valuation
+control
+convention on international trade in endangered species of wild fauna and flora
+conventional agricultural
+conventions
+coral bleaching
+coral triangle
+correlative model
+corridor
+cosmic model
+cosmocentric
+cosmologies
+cosmovision
+cost-benefit analysis
+cost-effectiveness analysis
+country of origin of genetic resources
+country providing genetic resources
+coupled social-ecological systems
+crop intensification
+crop wild relative
+cropland
+cropping system
+cross pollination
+cross-scale analysis
+cross-sectoral
+crowding out
+cryosphere
+cryptogenic species
+cultural change
+cultural continuity
+cultural diversity
+cultural ecosystem services
+cultural identity
+cultural keystone species
+cultural landscape
+cultural values
+culture
+cumulative impacts
+customary land tenure
+customary law
+customary practices
+customary rights
+customary sustainable use
+daoism
+decadal
+decision context
+decision support tools
+decision uncertainty
+decision-making
+decision-making framework
+decomposition
+decorative and aesthetic uses
+deflation (wind)
+deforestation
+degraded land
+degraded lands
+degrowth
+demographic change
+demographic transition
+denitrification
+densification
+deoxygenation (ocean)
+depositional sites
+depth
+descriptive scenarios
+desertification
+development pathways
+diet (healthy)
+diet (sustainable healthy)
+dietary diversity
+direct drivers
+direct drivers (of biodiversity)
+direct drivers (of environmental change)
+disability-adjusted life year
+disaster risk reduction
+discourse
+disease
+disease (zoonotic)
+dispersal
+distributional equity
+distributive justice
+diverse values
+diversified farming
+diversified farming system
+diversity
+dna barcoding
+domain
+domesticated species
+domestication
+domestication of agreements� commitment
+double counting of services
+double materiality
+downscaling
+driver
+drivers of change
+drivers, anthropogenic direct
+drivers, natural direct
+drought
+dry forest
+drylands
+dynamic downscaling
+dynamic model
+dynamics and processes
+e-commerce
+earth jurisprudence
+earth system justice
+eco-certification
+eco-communalism
+eco-evolutionary dynamics
+eco-informatics
+eco-social contracts
+ecocentrism
+ecocide
+ecohealth
+ecolabelling
+ecological breakpoint or threshold
+ecological civilization
+ecological community
+ecological connectivity
+ecological crisis
+ecological destruction
+ecological disturbance (natural and anthropogenic)
+ecological footprint
+ecological infrastructure
+ecological integrity
+ecological intensification
+ecological justice
+ecological marginalization
+ecological processes
+ecological solidarity
+ecologically intensified agriculture
+ecologically unequal exchange
+ecology
+economic and financial instruments
+economic valuation
+economic value
+economic vulnerability
+ecoregion
+ecosystem
+ecosystem accounting
+ecosystem approach
+ecosystem degradation
+ecosystem disservices
+ecosystem ecology
+ecosystem engineer
+ecosystem function
+ecosystem functioning
+ecosystem goods
+ecosystem health
+ecosystem integrity
+ecosystem management
+ecosystem restoration
+ecosystem sensitivity
+ecosystem service
+ecosystem services
+ecosystem structure
+ecosystem-based adaptation
+ecosystem-based adaptation to climate change
+ecosystem-based approach
+ecosystem-based disaster risk reduction
+ecosystem-based management
+ecotone
+ecotourism
+ectotherm
+edge effect
+el nino
+el ni�o / la ni�a
+empowerment
+enabler
+enabling conditions
+endangered species
+endemic species
+endemism
+endogenous drivers
+energy security
+energy source
+energy system
+environmental additionality
+environmental asset
+environmental crime
+environmental education
+environmental envelope
+environmental governance
+environmental gradient
+environmental hazard
+environmental health
+environmental impact
+environmental impact assessment
+environmental income
+environmental justice
+environmental kuznets curve
+environmental tax
+epifauna
+epistemic community
+epistemic justice
+epistemology
+epizootics
+equality
+equitable
+equity
+eradication
+erodibility
+erosion hotspots
+essential biodiversity variables
+established alien species
+established but incomplete (certainty term (q.v.))
+ethics
+ethics of care
+ethnobiology
+etuaptmumk
+euphotic zone
+eutrophic
+eutrophication
+evaluation (of models)
+evapotranspiration
+evenness
+evolutionary adaptation
+evolutionary anthropology
+evolutionary biology
+evolutionary distinctiveness
+ex-ante assessment
+ex-post assessment
+exclusive economic zone
+exclusive economic zone areas
+existence value
+exogenous drivers
+exotic pollinator
+exotics
+expert
+expert-based model
+exploitation
+exploratory scenario
+exposure
+extensive forest management
+extensive grazing
+extensive grazing (lands)
+extent (spatial or temporal)
+externality
+extinction
+extinction debt
+extractive practice
+extractives
+extractivism
+fairness
+fallow
+family forestry
+farm
+feedback
+feedback loop
+feedback loops
+feedbacks
+feral
+fiction
+field
+fire regime
+fire-stick farming
+fishery
+fishing
+fitness (ecology)
+flagship species
+flower strip
+flower-visitor
+flowering plant
+folk biology
+folk categories
+folk medicine
+food
+food security
+food self-sufficiency
+food sovereignty
+food sovereignty (paradigm)
+food system
+food system (sustainable)
+food web
+forecast
+forest
+forest degradation
+forest garden
+forest law enforcement, governance and trade
+forest management
+forest transition
+formal institution
+fossil fuel
+fragmentation
+free, prior and informed consent
+functional diversity
+functional extinction
+functional group
+functional redundancy
+functional trait
+fungicide
+gaga
+ganma
+gathering
+gender
+gene
+gene flow
+general circulation model
+generalist species
+genetic composition
+genetic diversity
+genetic engineering
+genetic erosion
+genetic manipulation or genetic engineering
+genetic resources
+genetically modified organism
+genotype
+geographic information systems
+geographic range
+germplasm
+gini index
+global
+global biodiversity financing gap
+global commons pool resources
+global north - global south
+global warming
+globalisation
+goal-seeking scenarios
+good governance
+good quality of life
+governance
+governance (modes of)
+governance framework
+governance options
+governance system
+grabbing (of wild species and spaces)
+grain (spatial or temporal)
+grassland
+grazing
+grazing land management
+great acceleration
+green (environmental) gentrification
+green and blue infrastructure
+green bonds
+green growth
+green hunting
+green infrastructure
+green public procurement
+green revolution
+green technology
+green water
+greenhouse gas
+greenwashing
+grey water
+gross primary production
+gross primary productivity
+growth paradigm
+habitat
+habitat connectivity
+habitat degradation
+habitat ecosystem functions
+habitat fragmentation
+habitat heterogeneity
+habitat modification
+habitat service
+habitat specialist
+harmful algal bloom
+harmonization
+hazard
+health
+health (global)
+health (human)
+health (public)
+health (settings for)
+health (social determinants of)
+health coverage (universal)
+health equity
+health impact assessment
+health policy
+health promotion
+health system
+healthcare
+healthcare (primary)
+heat island effect
+hedgerow
+hedonic pricing
+herbicide
+heuristics
+holism
+holistic decision-making
+holocene
+homegarden
+homeotherm
+homogenisation
+honey bee
+horticulture
+hotspot of agrobiodiversity
+hotspot of endemism
+human appropriation of net primary production
+human capital
+human history
+human rights
+human rights instruments
+human rights-based approach
+human values
+human well-being
+human-induced climate change
+human-nature relations
+humanistic economics
+humification
+hunting
+hurai
+hybrid model
+hydraulic fracturing
+hydrothermal vent
+hypoxia
+identity
+illegal logging
+illegal practices
+illegal, unreported and unregulated fishing
+immaterial patrimony
+impact investments
+impacts
+important bird & biodiversity areas
+in situ conservation of biodiversity
+inclusive
+inclusive governance
+inclusive innovation
+inclusive wealth
+incommensurability
+inconclusive (certainty term (q.v.))
+incremental change
+indicator
+indigenous and community conserved areas
+indigenous and local knowledge
+indigenous and local knowledge holders
+indigenous and local knowledge system
+indigenous and local knowledge systems
+indigenous communities
 Indigenous People
-Indigenous Peoples And Community Conserved Territories And Areas
-Indigenous Peoples And Local Communities
-Indigenous Peoples And Local Community Conserved Areas And Territories
-Indirect Driver (Including Institutions And Governance Systems)
-Indirect Driver (Of Biodiversity)
-Indirect Drivers
-Indirect Use Value
-Individual Behaviour
-Individual Fishing Quotas
-Individual Transferable Quotas
-Individualism
-Industrial Effluent
-Industrial Fisheries
-Industrialization
-Industry
-Inequality
-Infauna
-Influencer
-Information
-Information And Communication Technology
-Information Systems
-Inner Dimensions Of Sustainability
-Inner Transformation (For Sustainability)
-Innovation
-Innovation System
-Insectary Strip
-Insecticide
-Institution
-Institutional Arrangements
-Institutional Competencies
-Institutional Failure
-Institutional Misfits
-Institutions
-Institutions And Governance Systems And Other Indirect Drivers
-Instrumental Value
-Insular System
-Insurance Value
-Integrated Approach
-Integrated Assessment Model
-Integrated Governance For Biological Invasions
-Integrated Land Use System
-Integrated Landscape Management
-Integrated Pest Management
-Integrated Policy For Biological Invasions
-Integrated Valuation
-Integrated Water Resource Management
-Intellectual And Cultural Property
-Intellectual Property
-Intellectual Property Rights
-Intensive Agriculture
-Intensive Grazing Land
-Interaction
-Interconnectedness
-Intercropping
-Inter-Generational Equity
-Intermediate Disturbance Hypothesis
-Intervention Scenarios
-Intra-Generational Equity
-Intrinsic Value
-Introduced Pollinator
-Introduction Pathway
-Invasion Cold Spot
-Invasion Curve
-Invasion Debts
-Invasion Hotspot
-Invasion Stages
-Invasional Meltdown
-Invasive
-Invasive Alien Species
-Invasive Pollinator
-Ipbes Conceptual Framework
-Iucn Habitats Classification Scheme
-Iucn Protected Area Category
-Iucn Red List
-Jevons Paradox
-Joint Production
-Just
-Justice
-Kametsa Asaike
-Kawsak Sacha
-Kciye
-Kelp
-Key Biodiversity Area
-Key Players
-Keystone Species
-Kinship-Centric Principle (Non-Humans)
-Kinship-Centric Principle (Other Humans)
-Kmgbf
-KM-GBF
-Knowledge
-Knowledge System
-Kunming-Montreal Global Biodiversity Framework
-Kyoto Protocol
-La Niña
-Lag Phase
-Land
-Land Abandonment
-Land Cover
-Land Degradation
-Land Degradation Neutrality
-Land Grabbing
-Land Sharing
-Land Sharing And Sparing
-Land Sparing
-Land Tenure
-Land Transformation
-Land Use
-Land Use And Land Use/Cover Change
-Land Use Change
-Land Use Intensification
-Landrace
-Landscape
-Landscape Composition
-Landscape Configuration
-Landscape Functioning
-Landscape Heterogeneity
-Landscape Planning
-Landscape Socio-Ecological Approach
-Land-Use Change
-Language
-Large Scale Land Acquisition
-Law Of The Sea
-Laws
-Leaching
-Leaf Area Index
-Leakage
-Leakage Effect
-Learning
-Learning (Traditional And Formal)
-Legal And Regulatory Instrument
-Legal Personality
-Legal Pluralism
-Lekil Kuxlejal
-Lessons
-Level Of Resolution
-Leverage Points
-Life Frames Of Nature’S Values
-Limestone Karsts
-Linguistic Uncertainty
-Livelihood Diversification
-Livelihood Resilience
-Livelihood Security
-Livelihoods
-Living In Harmony With Nature
-Local
-Local Communities
-Local Community
-Local Ecological Knowledge
-Local Economies
-Lock-In Traps
-Logging
-Macroecology
-Mainstreaming
-Mainstreaming Biodiversity
-Maintaining
-Maladaptation
-Malnutrition
-Managed Pollinator
-Management
-Management Of Wild Species
-Managing
-Mangrove
-Mapping
-Marginal Lands
-Marginalization
-Marginalized Community
-Mariculture
-Market Failures
-Market Forces
-Market-Based Instruments
-Mass Balance (Analysis)
-Materialism
-Maximum Sustainable Yield
-Mean Species Abundance (Species Abundance)
-Measurements
-Mechanistic Model
-Mechanistic Modelling
-Megadiverse Countries
-Megadiverse Country
-Mental Models
-Mesic Areas
-Meta-Analysis
-Metabolic Activity
-Metabolic Rift
-Metacoupling
-Methods
-Microevolution
-Micro-Habitat
-Micronutrients
-Microparticles
-Micro-Plastics
-Migration
-Millennium Ecosystem Assessment
-Mindset
-Mineral Resource Extraction
-Mineralization
-Minimum Tillage
-Mining
-Mino-Bimaatisiwin
-Mino-Mnaamodzawin
-Mitigation
-Mitigation (Of Climate Change)
-Model
-Models
-Modern Agroecological Management System
-Modernity
-Modified
-Moisture Recycling
-Monetary Valuation
-Monitoring
-Monitoring 
-Monitoring, Evaluation And Learning
-Monoculture
-Monophyletic
-Moral Economy
-Mosaic Landscape
-Mosaic Restoration
-Mother Earth
-Motivation
-Motivation Crowding
-Multi Stakeholder Based Scenario Development
-Multi-Criteria Analysis
-Multidisciplinary Expert Panel
-Multifunctional Agriculture
-Multifunctional 'Scape
-Multifunctionality
-Muti-Use System
-Mutualism
-Nagoya Protocol
-Nanao Ñu’U
-Narrative
-National
-National Biodiversity Strategies And Action Plans
-Native Forest
-Native Pollinator
-Native Species
-Natural Area
-Natural Assets
-Natural Capital
-Natural Capital Accounts
-Natural Direct Drivers
-Natural Disaster
-Natural Habitat
-Natural Heritage
-Natural Resources
-Natural Social Contracts
-Naturalized Species
-Nature
-Nature Deficit Disorder
-Nature Futures Framework
-Nature’S Benefits To People
-Nature’S Non-Material Benefits
-Nature-Based Recreation
-Nature-Based Solutions
-Nature-Based Tourism
-Nature-Positive Financial Flows
-Nature'S Contributions To People
-Ncp (Potential)
-Ncp (Realized)
-Near Surface Ozone
-Negative
-Neo-Endemic Taxa
-Neoliberalism
-Nested (In Plant-Pollinator Networks (Q.V.))
-Net Biome Production
-Net Ecosystem Production
-Net Positive Impact
-Net Present Value
-Net Primary Production
-Network Governance
-Networking
-Nexus
-Nexus Approach
-Nexus Challenges
-Nexus Element
-Nexus Governance
-Nexus Scenario Archetype
-Niche (Ecological)
-Niche Model
-Night Light Development Index
-Nitrogen Deposition
-Nitrogen-Fixing Species
-Non-Anthropocentric
-Non-Anthropocentric Value
-Non-Anthropogenic
-Non-Extractive Practices
-Non-Human Entities
-Non-Indigenous Species
-Non-Instrumental Value
-Non-Lethal Harvest
-Non-Linear
-Non-Monetary Valuation
-Non-Timber Forest Product
-Non-Timber Resource
-Normative Principles
-Normative Scenarios
-Norms
-Nox
-Nutrient Availability
-Nutrient Cycle
-Nutrient Cycling
-Objectives
-Observation
-Observing
-Ocean Acidification
-Oceanic Gyre
-Oceanic Oxygen Minimum Zones
-Oecm
-Official Development Assistance
-Official Development Finance
-Offshore Wind Farms
-Oil Spill
-Old-Growth Forest
-Oligotrophic
-One Biosecurity
-One Health
-Ontology
-Open Ocean Pelagic Systems
-Opportunity Cost
-Option Value
-Organic Agriculture
-Organic Farming
-Other Effective Area-Based Conservation Measures
-Other Official Flows
-Outcomes
-Overexploitation
-Over-Exploitation
-Overgrazing
-Overstocking
-Ownership
-Paired Catchment
-Paleological Data
-Palma Ratio
-Paradigms
-Parasite
-Paris Agreement
-Participation
-Participatory
-Participatory Governance
-Participatory Mapping
-Participatory Method
-Participatory Process
-Participatory Scenario Development (And Planning)
-Particulate And Gaseous Pollutant
-Particulate Matter
-Particulate Organic Carbon
-Particulate Organic Matter
-Partnership
-Passive Restoration
-Pastoralism
-Pastoralist
-Path Dependency
-Pathway Management
-Pathways
-Patriarchy
-Patrimonial Species
-Payment For Ecosystem Services
-Peatland
-Pedosphere
-Pelagic
-People And Plants Initiative
-Perceptions
-Perennial
-Permaculture
-Permafrost
-Permeability
-Persistent Organic Pollutant
-Pest
-Pesticide
-Phenological Shifts
-Phenology
-Phenotype
-Phenotypic Attributes (Biodiversity)
-Phenotypic Plasticity
-Phylogenetic Diversity
-Phylogenetic Endemism
-Phylum
-Phytophilia
-Phytoplankton
-Planetary Boundary
-Planetary Health
-Plankton
-Planned Obsolescence
-Planning
-Planning And Zoning
-Plant Breeding System
-Plant Mating System
-Plantation Forest
-Plant-Pollinator Network
-Plausible Futures
-Plenary
-Pluralism
-Plurality
-Pluriverse
-Poaching
-Point Source
-Policy
-Policy And Socio-Political Options
-Policy Autonomy
-Policy Coherence
-Policy Context
-Policy Cycle
-Policy Inertia
-Policy Instrument
-Policy Instruments
-Policy Mix
-Policy Option
-Policy Options (For The Use Of Wild Species)
-Policy Regime
-Policy Scenarios
-Policy Support Tool
-Policy Tool
-Policy-Cycle
-Policy-Evaluation Scenarios
-Policymaking
-Policy-Screening Scenarios
-Policy-Support Tools
-Policy-Support Tools And Methodologies
-Pollen Limitation
-Pollination
-Pollination Effectiveness
-Pollination Efficiency
-Pollination Service
-Pollination Web
-Pollinator
-Pollinator Decline
-Pollinator Dependence
-Polluter-Pays Principle
-Pollution
-Polycentric Governance
-Polycentric Governance System
-Polycentricity
-Polycrisis
-Polyculture
-Polymerase Chain Reaction
-Polyphyletic Taxon
-Population Bottleneck
-Population Dynamics
-Population Genetic Structure
-Pore-Water Pressure
-Poverty
-Poverty Line
-Power
-Power Relations
-Powerful Actors
-Practice
-Practices
-Practices (Type Of Wild Species Practices)
-Precautionary Approach
-Precautionary Principle
-Prediction
-Predictive Modelling
-Preference
-Preparedness (In The Context Of Invasive Alien Species Management)
-Pressures
-Prevention
-Preventive Response
-Price
-Primary Production
-Primary Vegetation
-Principle Of Compatibility
-Principles
-Prior Informed Consent
-Private Deforestation
-Problem Identification
-Procedural Justice
-Procedures
-Process-Based Model
-Producer Surplus
-Production Function
-Profit
-Projection
-Propagule Pressure
-Protected Area
-Protected Area Downgrading, Downsizing And Degazettement
-Protected Areas
-Protocols
-Provisioning Service
-Public-Private Partnership
-Purchasing Power Parity
-Qualitative Storyline
-Quality Of Life
-Quantitative Model
-Racism
-Radiative Forcing
-Ramsar Convention On Wetlands
-Ramsar Site
-Range
-Range Shift
-Rangeland
-Reactive Nitrogen
-Reality
-Realm (Biogeography)
-Rebound Effect
-Rebound Effects
-Reciprocity
-Reclamation
-Recognition
-Recreational Uses (Of Wild Species)
-Recreational Values
-Recruitment
-Reduced Impact Logging
-Reducing Emissions From Deforestation And Forest Degradation
-Reflexivity
-Reforestation
-Reformist Responses (In The Context Of Biodiversity)
-Regeneration
-Regenerative Agriculture
-Regime
-Regime Shift
-Regional
-Regional Cooperation Platform
-Regulations
-Rehabilitation
-Relational Value
-Relational Values
-Relations Of Domination
-Remediation
-Remote Sensing
-Renewable Energy
-Report
-Reporting
-Representation Concentration Pathway
-Representative Concentration Pathways
-Resilience
-Resilience (Of Socio-Ecological Systems)
-Resolution (Spatial Or Temporal)
-Resources
-Respect (Towards Nature)
-Response Option
-Response Options
-Responsibilities
-Responsibility
-Restoration
-Restore
-Retributive Justice
-Revalorization
-Revitalization
-Rewilding
-Re-Wilding
-Richness
-Richness (Biodiversity)
-Richness (Species Richness)
-Rightholder
-Rights
-Rights Based Approach
-Rights-Based And Customary Instrument
-Risk
-Risks
-Ritual Uses (Of Wild Species)
-Roles
-Rotational Grazing
-Roundwood (Industrial)
-Route Of Invasion
-Rubin Causal Model
-Rules And Regulations
-Rural Development
-Sacred Grove
-Sacred Natural Sites
-Sacrilegious
-Safe Trade
-Safeguards
-Saffu
-Salinization
-Satoyama Initiative
-Satoyama, Satoumi, Fūdo
-Satoyama-Satoumi
-Savanna
-Sawnwood
-Scale
-Scale Paradox
-Scaling
-Scapes (Land/Sea) Approach
-Scenario
-Scenario Analysis
-Scenario Archetypes
-Scenario Storylines Or Narratives
-Scenarios
-Scenarios (Nexus)
-Scenarios Archetypes (Nexus)
-Scenarios 
-Science-Policy Interface
-Scientific Uncertainty
-Sea Ice
-Sea Mount
-Sea Surface Temperature
-Sea-Level Rise
-Seascape
-Seasonal
-Second-Growth Forest
-Sector
-Sedentarization
-Sedimentary Upper Slope
-Selection Pressure
-Selective Hunting
-Selective Logging
-Semi-Natural Ecosystem
-Sense Of Place
-Sentinel Sites Or Locations
-Sessile
-Set-Aside Fields
-Sewage
-Shale Gas
-Shamanism
-Shared Socioeconomic Pathways
-Shared Socio-Economic Pathways
-Shared Values
-Shareholder Primacy
-Sharing
-Shelf Ecosystem
-Shifting Baseline Syndrome
-Shifting Cultivation
-Shinto Shrine
-Short-Lived Climate Forcers
-Short-Lived Climate Pollutants
-Siida
-Siloed Approach
-Silviculture
-Silvopastoralism
-Site-Based Management
-Slash-And-Burn Agriculture
-Small-Scale Fisheries
-Smart City
-Smriti Veda
-Social And Cultural Based Instrument
-Social Behaviour
-Social Capital
-Social Construction
-Social Inequality
-Social Justice
-Social Learning
-Social Marginalization
-Social Movements
-Social Network
-Social Norms
-Social Responsibility
-Social Safety Net
-Social Security
-Social Tipping Point
-Social Values
-Social Welfare
-Social-Ecological Resilience
-Social-Ecological Systems
-Socialism
-Societies
-Socio-Cultural Value
-Socio-Ecological Production Landscapes And Seascapes
-Socio-Ecological Systems
-Socio-Economic Driver
-Socio-Economic System
-Socioeconomic Transformations
-Socionature
-Sociotechnical Infrastructures
-Sociotechnical Transitions
-Soil
-Soil Acidification
-Soil Biodiversity Loss
-Soil Compaction
-Soil Contamination
-Soil Degradation
-Soil Ecosystem Function
-Soil Fertility
-Soil Formation Rate
-Soil Health
-Soil Organic Carbon
-Soil Organic Matter
-Soil Pollution
-Soil Process
-Soil Quality
-Soil Salinization
-Soil Sealing
-Soil Stability
-Soil Structure
-Solitary Bee
-Sovereignty Principle
-Spatial
-Spatial Downscaling
-Spatial Scale
-Specialist Species
-Species
-Species Composition
-Species Distribution Model
-Species Extirpation
-Species Richness
-Species Trait
-Species-Area Relationship
-Species-Led Management
-Specific Values
-Speculative (Certainty Term (Q.V.))
-Spheres Of Influence
-Spillover
-Spillover (A. Reference To Populations; B. Reference To Disease Transmission)
-Spillover Effect
-Spillover Effects
-Spiritual Reconnection
-Spirituality
-Stability (Socio-Ecological System)
-Stages Of Invasion
-Stakeholder
-State (Socio-Ecological System)
-Statistical Downscaling
-Statistical Model
-Status
-Stewardship
-Stewardship Practice
-Stingless Bee
-Stochastic Uncertainty
-Storyline
-Stranded Assets
-Strategic Environmental Assessment
-Stratification (Water Column)
-Strengths
-Stressor
-Structures
-Subregion
-Subsistence
-Subsistence Agriculture
-Succession (Ecological)
-Suma Qamaña
-Sumak Kawsay And Suma Qamaña
-Summary For Policymakers
-Supporting Material
-Surface Mining
-Surveillance
-Sustainability
-Sustainability Transitions
-Sustainable Community Forestry
-Sustainable Development
-Sustainable Development Goals
-Sustainable Forest Management
-Sustainable Intensification
-Sustainable Intensive Agriculture
-Sustainable Land Management
-Sustainable Land Use
-Sustainable Livelihood
-Sustainable Resource Management
-Sustainable Soil Management
-Sustainable Use
-Sustainable Use (Of Biodiversity And Its Components)
-Sustainable Use
-Sustainably-Intensified Agriculture
-Swidden
-Swidden Agriculture
-Symbiosis
-Synergies
-Synergy
-Synthesis Report
-Synthetic Biology
-System
-Systematic Review
-Systems Of Life
-Systems Thinking
-Taboo
-Target
-Target Condition
-Target-Seeking Scenario
-Taxon
-Taxonomic Diversity
-Technical Paper
-Technical Summary
-Technocracy
-Technology
-Technology Transfer
-Teleconnection
-Telecoupling
-Tele-Grabbing
-Temporal Scale
-Temporal Scales
-Tenure
-Tenure Security
-Teratogen
-Term
-Terrestrial
-Terrestrial Animal Harvesting
-Terrestrial Productivity
-Territorial Use Rights In Fisheries
-Territories
-Territories Of Life
-Thermodynamics
-Threatened Species
-Threats
-Threshold
-Threshold Effect
-Tidal Flat
-Tillage
-Timber Line
-Tipping Point
-Tiwizi (ⵜⵉⵡⵉⵣⵉ)
-Top Down
-Topsoil
-Total Allowable Catch
-Total Economic Value
-Totemism
-Trade (Formal Or Informal)
-Trade-Off
-Traditional Agriculture
-Traditional And Community-Based Management System
-Traditional And Local Knowledge
-Traditional Ecological Knowledge
-Traditional Ecological/Environmental Knowledge
-Traditional Ecosystem Healing Principle
-Traditional Farming
-Traditional Knowledge
-Traditional Medicinal Practice
-Tragedy Of The Commons
-Transboundary
-Transboundary Pollution
-Transdisciplinary
-Transformability (Part Of Resilience)
-Transformation
-Transformative Capacities
-Transformative Change
-Transformative Governance
-Transformative Innovation Policy
-Transformative Learning
-Transformative Potential
-Transhumance
-Transition
-Transition (Socio-Technical)
-Transition Risk
-Transitional Pathway
-Translocation
-Transmission
-Tree-Covered Area
-Trees Outside Forest
-Trend
-Trends
-Trophic Cascades
-Trophic Level
-Trophic Transfer
-Trophy Hunting
-Turbidity
-Typology
-Ubuntu
-Ukama
-Uncertainty
-Underlying Causes
-Units Of Analysis
-Universal Health Coverage
-Unpredictability
-Unresolved (Certainty Term (Q.V.))
-Unsustainable
-Upanishad
-Upscaling
-Upwelling
-Urban
-Urban Ecosystem
-Urban Heat Island Effect
-Urban Metabolism
-Urban Planning
-Urbanization
-Use
-Use Of Wild Species
-Users
-Usufruct Right
-Validation (Of Models)
-Valuation
-Valuation Approach
-Valuation Method
-Value
-Value (As Importance)
-Value (As Measure)
-Value (As Preference)
-Value (As Principle)
-Value (As Principles)
-Value Action Gap
-Value Articulating Institution
-Value Chains
-Value Chains (That Link Production Systems, Markets And Consumers)
-Value Change
-Value Expression
-Value Formation
-Value Indicator
-Value Monism
-Value Pluralism
-Value System
-Values
-Values Of Nature
-Values System
-Valuing
-Vector
-Vector-Borne Pathogen
-Vested Interests
-Views
-Violence
-Virtual Water
-Virtual Water Balance
-Vision
-Visioning
-Visions (Of The Future)
-Volatilization
-Vulnerability
-Vulnerability Reduction
-Vulnerable Population
-Waka Taurua
-Warinyi
-Water
-Water (Virtual)
-Water Footprint
-Water Governance
-Water Grabbing
-Water Logging
-Water Purification
-Water Security
-Water Security Index
-Water Stress
-Water Table
-Water Use Efficiency
-Weaving
-Weed
-Welfare
-Well Established (Certainty Term (Q.V.))
-Wellbeing
-Well-Being
-Wellbeing (Human)
-Western Culture
-Western Science
-Wetland
-Whakapapa
-Whakataukī
-Widespread Species
-Wild Food
-Wild Habitat
-Wild Meat
-Wild Pollinator
-Wild Relative
-Wild Species
-Wild Species Watching
-Wild 
-Wilderness
-Wildlife
-Willingness-To-Accept
-Willingness-To-Pay
-Woody Encroachment
-World Heritage Site
-Worldview
-Worldviews
-Yindyamarra
-Zoonotic Disease
+Indigenous Peoples and local communities
+Indigenous Peoples and local communities
+indigenous peoples' and local community conserved areas and territories
+indigenous peoples� and community conserved territories and areas
+indirect driver (including institutions and governance systems)
+indirect driver (of biodiversity)
+indirect drivers
+indirect use value
+individual behaviour
+individual fishing quotas
+individual transferable quotas
+individualism
+industrial effluent
+industrial fisheries
+industrialization
+inequality
+infauna
+influencer
+information and communication technology
+information systems
+inner dimensions of sustainability
+inner transformation (for sustainability)
+innovation
+innovation system
+insecticide
+insectory strip
+institution
+institutional arrangements
+institutional competencies
+institutional failure
+institutional misfits
+institutions
+institutions and governance systems and other indirect drivers
+instrumental value
+insular system
+insurance value
+integrated approach
+integrated assessment model
+integrated governance for biological invasions
+integrated land use system
+integrated landscape management
+integrated pest management
+integrated policy for biological invasions
+integrated valuation
+integrated water resource management
+intellectual and cultural property
+intellectual property rights
+intensive agriculture
+intensive grazing land
+inter-generational equity
+interaction
+interconnectedness
+intercropping
+intermediate disturbance hypothesis
+intervention scenarios
+intra-generational equity
+intrinsic value
+introduced pollinator
+introduction pathway
+invasion cold spot
+invasion curve
+invasion debts
+invasion hotspot
+invasion stages
+invasional meltdown
+invasive alien species
+invasive pollinator
+ipbes conceptual framework
+IUCN habitats classification scheme
+IUCN protected area category
+IUCN red list
+jevons paradox
+joint production
+just
+justice
+kametsa asaike
+kawsak sacha
+kciye
+kelp
+key biodiversity area
+key players
+keystone species
+kinship-centric principle (non-humans)
+kinship-centric principle (other humans)
+knowledge system
+kunming-montreal global biodiversity framework
+kyoto protocol
+lag phase
+land
+land abandonment
+land cover
+land degradation
+land degradation neutrality
+land grabbing
+land sharing
+land sharing and sparing
+land sparing
+land tenure
+land transformation
+land use
+land use and land use/cover change
+land use change
+land use intensification
+land-use change
+landrace
+landscape
+landscape composition
+landscape configuration
+landscape functioning
+landscape heterogeneity
+landscape planning
+landscape socio-ecological approach
+large scale land acquisition
+law of the sea
+leaching
+leaf area index
+leakage
+leakage effect
+learning (traditional and formal)
+legal and regulatory instrument
+legal personality
+legal pluralism
+lekil kuxlejal
+level of resolution
+leverage points
+life frames of nature�s values
+limestone karsts
+linguistic uncertainty
+livelihood diversification
+livelihood resilience
+livelihood security
+livelihoods
+living in harmony with nature
+local
+local communities
+local community
+local ecological knowledge
+local economies
+lock-in traps
+logging
+macroecology
+mainstreaming
+mainstreaming biodiversity
+maladaptation
+malnutrition
+managed pollinator
+management
+management of wild species
+mangrove
+marginal lands
+marginalization
+marginalized community
+mariculture
+market failures
+market forces
+market-based instruments
+mass balance (analysis)
+materialism
+maximum sustainable yield
+mean species abundance (species abundance)
+mechanistic model
+mechanistic modelling
+megadiverse countries
+megadiverse country
+mental models
+mesic areas
+meta-analysis
+metabolic activity
+metabolic rift
+metacoupling
+micro-habitat
+micro-plastics
+microevolution
+micronutrients
+microparticles
+migration
+millennium ecosystem assessment
+mindset
+mineral resource extraction
+mineralization
+minimum tillage
+mining
+mino-bimaatisiwin
+mino-mnaamodzawin
+mitigation
+mitigation (of climate change)
+model
+models
+modern agroecological management system
+modernity
+modified
+moisture recycling
+monetary valuation
+monitoring
+monitoring, evaluation and learning
+monoculture
+monophyletic
+moral economy
+mosaic landscape
+mosaic restoration
+mother earth
+motivation
+motivation crowding
+multi stakeholder based scenario development
+multi-criteria analysis
+multidisciplinary expert panel
+multifunctional �scape
+multifunctional agriculture
+multifunctionality
+muti-use system
+mutualism
+nagoya protocol
+nanao �u�u
+narrative
+national
+national biodiversity strategies and action plans
+native forest
+native pollinator
+native species
+natural area
+natural assets
+natural capital
+natural capital accounts
+natural direct drivers
+natural disaster
+natural habitat
+natural heritage
+natural resources
+natural social contracts
+naturalized species
+nature
+nature deficit disorder
+nature futures framework
+nature-based recreation
+nature-based solutions
+nature-based tourism
+nature-positive financial flows
+nature's contributions to people
+nature�s benefits to people
+nature�s non-material benefits
+ncp (potential)
+ncp (realized)
+near surface ozone
+neo-endemic taxa
+neoliberalism
+nested (in plant-pollinator networks (q.v.))
+net biome production
+net ecosystem production
+net positive impact
+net present value
+net primary production
+network governance
+nexus
+nexus approach
+nexus challenges
+nexus element
+nexus governance
+nexus scenario archetype
+niche (ecological)
+niche model
+night light development index
+nitrogen deposition
+nitrogen-fixing species
+non-anthropocentric
+non-anthropocentric value
+non-anthropogenic
+non-extractive practices
+non-human entities
+non-indigenous species
+non-instrumental value
+non-lethal harvest
+non-linear
+non-monetary valuation
+non-timber forest product
+non-timber resource
+normative principles
+normative scenarios
+norms
+nox
+nutrient availability
+nutrient cycle
+nutrient cycling
+observing
+ocean acidification
+oceanic gyre
+oceanic oxygen minimum zones
+official development assistance
+official development finance
+offshore wind farms
+oil spill
+old-growth forest
+oligotrophic
+one biosecurity
+one health
+ontology
+open ocean pelagic systems
+opportunity cost
+option value
+organic agriculture
+organic farming
+other effective area-based conservation measures
+other effective area-based conservation measures
+other official flows
+overexploitation
+overgrazing
+overstocking
+paired catchment
+paleological data
+palma ratio
+paradigms
+parasite
+paris agreement
+participatory governance
+participatory mapping
+participatory method
+participatory process
+participatory scenario development (and planning)
+particulate and gaseous pollutant
+particulate matter
+particulate organic carbon
+particulate organic matter
+passive restoration
+pastoralism
+path dependency
+pathway management
+pathways
+patriarchy
+patrimonial species
+payment for ecosystem services
+peatland
+pedosphere
+pelagic
+people and plants initiative
+perceptions
+perennial
+permaculture
+permafrost
+permeability
+persistent organic pollutant
+pest
+pesticide
+phenological shifts
+phenology
+phenotype
+phenotypic attributes (biodiversity)
+phenotypic plasticity
+phylogenetic diversity
+phylogenetic endemism
+phylum
+phytophilia
+phytoplankton
+planetary boundary
+planetary health
+plankton
+planned obsolescence
+planning and zoning
+plant breeding system
+plant mating system
+plant-pollinator network
+plantation forest
+plausible futures
+plenary
+pluralism
+plurality
+pluriverse
+poaching
+point source
+policy
+policy and socio-political options
+policy autonomy
+policy coherence
+policy context
+policy cycle
+policy inertia
+policy instrument
+policy instruments
+policy mix
+policy option
+policy options (for the use of wild species)
+policy regime
+policy scenarios
+policy support tool
+policy tool
+policy-cycle
+policy-evaluation scenarios
+policy-screening scenarios
+policy-support tools
+policy-support tools and methodologies
+pollen limitation
+pollination
+pollination effectiveness
+pollination efficiency
+pollination service
+pollination web
+pollinator
+pollinator decline
+pollinator dependence
+polluter-pays principle
+pollution
+polycentric governance
+polycentric governance system
+polycentricity
+polycrisis
+polyculture
+polymerase chain reaction
+polyphyletic taxon
+population bottleneck
+population dynamics
+population genetic structure
+pore-water pressure
+poverty
+poverty line
+power
+power relations
+powerful actors
+practice
+practices
+practices (type of wild species practices)
+precautionary approach
+precautionary principle
+prediction
+predictive modelling
+preference
+preparedness (in the context of invasive alien species management)
+pressures
+prevention
+preventive response
+price
+primary production
+primary vegetation
+principle of compatibility
+principles
+prior informed consent
+private deforestation
+problem identification
+procedural justice
+process-based model
+producer surplus
+production function
+profit
+projection
+propagule pressure
+protected area
+protected area downgrading, downsizing and degazettement
+provisioning service
+public-private partnership
+purchasing power parity
+qualitative storyline
+quality of life
+quantitative model
+racism
+radiative forcing
+ramsar convention on wetlands
+ramsar site
+range
+range shift
+rangeland
+re-wilding
+reactive nitrogen
+reality
+realm (biogeography)
+rebound effect
+rebound effects
+reciprocity
+reclamation
+recognition
+recreational uses (of wild species)
+recreational values
+recruitment
+reduced impact logging
+reducing emissions from deforestation and forest degradation
+reducing emissions from deforestation and forest degradation
+reflexivity
+reforestation
+reformist responses (in the context of biodiversity)
+regeneration
+regenerative agriculture
+regime
+regime shift
+regional
+regional cooperation platform
+rehabilitation
+relational value
+relational values
+relations of domination
+remediation
+remote sensing
+renewable energy
+replexity
+report
+representation concentration pathway
+representative concentration pathways
+resilience
+resilience (of socio-ecological systems)
+resolution (spatial or temporal)
+respect (towards nature)
+response option
+response options
+responsibility
+restoration
+restore
+retributive justice
+rewilding
+richness
+richness (biodiversity)
+richness (species richness)
+rightholder
+rights based approach
+rights-based and customary instrument
+rights-based instruments and customary norm
+risk
+ritual uses (of wild species)
+rotational grazing
+roundwood (industrial)
+route of invasion
+rubin causal model
+rules and regulations
+rural development
+sacred grove
+sacred natural sites
+sacrilegious
+safe trade
+saffu
+salinization
+satoyama initiative
+satoyama-satoumi
+satoyama, satoumi, f?do
+satoyama, satoumi, f?do
+savanna
+sawnwood
+scale
+scale paradox
+scaling
+scapes (land/sea) approach
+scenario
+scenario analysis
+scenario archetypes
+scenario storylines or narratives
+scenarios
+scenarios (nexus)
+scenarios archetypes (nexus)
+science-policy interface
+scientific uncertainty
+sea ice
+sea mount
+sea surface temperature
+sea-level rise
+seascape
+seasonal
+second-growth forest
+sector
+sedentarization
+sedimentary upper slope
+selection pressure
+selective hunting
+selective logging
+semi-natural ecosystem
+sense of place
+sentinel sites or locations
+sessile
+set-aside fields
+sewage
+shale gas
+shamanism
+shared socio-economic pathways
+shared socioeconomic pathways (ssps)
+shared values
+shareholder primacy
+shelf ecosystem
+shifting baseline syndrome
+shifting cultivation
+shinto shrine
+short-lived climate forcers
+short-lived climate pollutants
+siida
+siloed approach
+silviculture
+silvopastoralism
+site-based management
+slash-and-burn agriculture
+small-scale fisheries
+smart city
+smriti veda
+social and cultural based instrument
+social behaviour
+social capital
+social construction
+social inequality
+social justice
+social learning
+social marginalization
+social movements
+social network
+social norms
+social responsibility
+social safety net
+social security
+social tipping point
+social values
+social welfare
+social-ecological resilience
+social-ecological systems
+socio-ecological systems
+socialism
+societies
+socio-cultural value
+socio-ecological production landscapes and seascapes
+socio-ecological systems
+socio-economic driver
+socio-economic system
+socioeconomic transformations
+socionature
+sociotechnical infrastructures
+sociotechnical transitions
+soil
+soil acidification
+soil biodiversity loss
+soil compaction
+soil contamination
+soil degradation
+soil ecosystem function
+soil fertility
+soil formation rate
+soil health
+soil organic carbon
+soil organic matter
+soil pollution
+soil process
+soil quality
+soil salinization
+soil sealing
+soil stability
+soil structure
+solitary bee
+sovereignty principle
+spatial downscaling
+spatial scale
+specialist species
+species
+species composition
+species distribution model
+species extirpation
+species richness
+species trait
+species-area relationship
+species-led management
+specific values
+speculative (certainty term (q.v.))
+spheres of influence
+spillover
+"spillover (a. reference to populations; b. reference to disease transmission)"
+spillover effect
+spillover effects
+spiritual reconnection
+spirituality
+stability (socio-ecological system)
+stages of invasion
+stakeholder
+state (socio-ecological system)
+statistical downscaling
+statistical model
+status
+stewardship
+stewardship practice
+stingless bee
+stochastic uncertainty
+storyline
+stranded assets
+strategic environmental assessment
+stratification (water column)
+stressor
+structures
+subregion
+subsistence
+subsistence agriculture
+succession (ecological)
+suma qama�a
+sumak kawsay and suma qama�a
+summary for policymakers
+supporting material
+surface mining
+surveillance
+sustainability
+sustainability transitions
+sustainable community forestry
+sustainable development
+sustainable development goals
+sustainable development goals
+sustainable forest management
+sustainable intensification
+sustainable intensive agriculture
+sustainable land management
+sustainable land use
+sustainable livelihood
+sustainable resource management
+sustainable soil management
+sustainable use
+sustainable use (of biodiversity and its components)
+sustainably-intensified agriculture
+swidden
+swidden agriculture
+symbiosis
+synergies
+synergy
+synthesis report
+synthetic biology
+system
+systematic review
+systems of life
+systems thinking
+taboo
+target
+target condition
+target-seeking scenario
+taxon
+taxonomic diversity
+technical paper
+technical summary
+technocracy
+technology
+technology transfer
+tele-grabbing
+teleconnection
+telecoupling
+temporal scale
+temporal scales
+tenure
+tenure security
+teratogen
+terrestrial animal harvesting
+terrestrial productivity
+territorial use rights in fisheries
+territories of life
+thermodynamics
+threatened species
+threshold
+threshold effect
+tidal flat
+tillage
+timber line
+tipping point
+tiwizi (??????)
+tiwizi (??????)
+top down
+topsoil
+total allowable catch
+total economic value
+totemism
+trade (formal or informal)
+trade-off
+traditional agriculture
+traditional and community-based management system
+traditional and local knowledge
+traditional ecological knowledge
+traditional ecological/environmental knowledge
+traditional ecosystem healing principle
+traditional farming
+traditional knowledge
+traditional medicinal practice
+tragedy of the commons
+transboundary
+transboundary pollution
+transdisciplinary
+transformability (part of resilience)
+transformation
+transformative capacities
+transformative change
+transformative governance
+transformative innovation policy
+transformative learning
+transformative potential
+transhumance
+transition
+transition (socio-technical)
+transition risk
+transitional pathway
+translocation
+tree-covered area
+trees outside forest
+trend
+trophic cascades
+trophic level
+trophic transfer
+trophy hunting
+turbidity
+ubuntu
+ukama
+uncertainty
+underlying causes
+units of analysis
+universal health coverage
+unpredictability
+unresolved (certainty term (q.v.))
+upanishad
+upscaling
+upwelling
+urban
+urban ecosystem
+urban heat island effect
+urban metabolism
+urban planning
+urbanization
+use of wild species
+users
+usufruct right
+validation (of models)
+valuation
+valuation approach
+valuation method
+value (as importance)
+value (as measure)
+value (as preference)
+value (as principle)
+value (as principles)
+value chains
+value chains (that link production systems, markets and consumers)
+value change
+value expression
+value formation
+value indicator
+value monism
+value pluralism
+value system
+value-action gap
+value-articulating institution
+value, values
+values
+values of nature
+values system
+valuing
+vector
+vector-borne pathogen
+vested interests
+views
+virtual water
+virtual water balance
+vision
+visioning
+visions (of the future)
+volatilization
+vulnerability
+vulnerability reduction
+vulnerable population
+waka taurua
+warinyi
+water
+water (virtual)
+water footprint
+water governance
+water grabbing
+water logging
+water purification
+water security
+water security index
+water stress
+water table
+water use efficiency
+weed
+welfare
+well established (certainty term (q.v.))
+well-being
+wellbeing
+wellbeing (human)
+western culture
+western science
+wetland
+whakapapa
+whakatauk?
+whakatauk?
+widespread species
+wild food
+wild habitat
+wild meat
+wild pollinator
+wild relative
+wild species
+wild species watching
+wilderness
+willingness-to-accept
+willingness-to-pay
+woody encroachment
+world heritage site
+worldview
+worldviews
+yindyamarra
+zoonotic disease

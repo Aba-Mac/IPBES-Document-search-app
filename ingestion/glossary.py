@@ -1,5 +1,5 @@
 """
-Glossary exact-match indexing module.
+glossary.py.
 
 This module performs the glossary matching used by the live search system.
 
@@ -35,6 +35,10 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
+import ftfy
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -102,6 +106,10 @@ class GlossaryMatcher:
 
         return re.sub(r"\s+", " ", value.strip())
 
+    @property
+    def terms(self) -> list[GlossaryTerm]:
+        return self._terms
+
     def find_matches(self, paragraph_id: int, text: str) -> list[GlossaryMatch]:
         """
         Find all exact glossary matches in a paragraph.
@@ -137,22 +145,28 @@ class GlossaryMatcher:
 
 def load_terms_txt(path: Path, list_name: str = "general") -> list[GlossaryTerm]:
     """
-    Load glossary terms from a plain text file.
-
-    Each line contains one glossary term.
-
-    Example:
-        biodiversity
-        ecosystem services
-        climate change
+    Load glossary terms from a plain text file, one term per line.
+    Tolerates files saved in a non-UTF-8 encoding (e.g. Windows-1252)
+    by repairing them with ftfy rather than failing ingestion.
     """
+    raw = path.read_bytes()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        logger.warning(
+            "%s is not valid UTF-8; repairing with ftfy. "
+            "Re-save it as UTF-8 to remove this warning.",
+            path,
+        )
+        text = ftfy.fix_text(raw.decode("latin-1"))
 
     terms: list[GlossaryTerm] = []
-    with path.open("r", encoding="utf-8-sig") as file:
-        for index, line in enumerate(file, start=1):
-            term = line.strip()
-            if not term:
-                continue
+    for index, line in enumerate(text.splitlines(), start=1):
+        term = line.strip()
+        if term:
             terms.append(GlossaryTerm(term_id=index, term=term, list_name=list_name))
     return terms
 
@@ -183,110 +197,83 @@ def upsert_glossary_terms(
     return {(row[1].lower(), row[2]): row[0] for row in rows}
 
 
-def index_paragraph_glossary_terms(
+def build_matcher(
     connection: sqlite3.Connection,
-    paragraphs: Iterable[tuple[int, str]],
     glossary_sources: dict[str, Path],
-) -> int:
+) -> GlossaryMatcher:
     """
-    Compute glossary matches for paragraphs and store them.
-
-    Existing paragraph_terms rows are removed first so ingestion is
-    idempotent.
-
-    Args:
-        connection:
-            SQLite connection.
-
-        paragraphs:
-            Iterable of:
-                (paragraph_id, paragraph_text)
-
-        glossary_sources:
-            Glossary term lists
-
-    Returns:
-        Number of stored matches.
+    Load the glossary files, upsert the terms into the database and return
+    a compiled matcher that uses the database term ids.
     """
-    paragraphs = list(paragraphs)
+    loaded = [
+        term
+        for list_name, path in glossary_sources.items()
+        for term in load_terms_txt(path, list_name=list_name)
+    ]
+    database_ids = upsert_glossary_terms(connection, loaded)
 
-    all_loaded_terms: list[GlossaryTerm] = []
-    for list_name, path in glossary_sources.items():
-        all_loaded_terms.extend(load_terms_txt(path, list_name=list_name))
-
-    database_ids = upsert_glossary_terms(connection, all_loaded_terms)
-
-    database_terms = [
+    return GlossaryMatcher(
         GlossaryTerm(
             term_id=database_ids[(t.term.lower(), t.list_name)],
             term=t.term,
             list_name=t.list_name,
         )
-        for t in all_loaded_terms
+        for t in loaded
+    )
+
+
+def index_paragraph_glossary_terms(
+    connection: sqlite3.Connection,
+    paragraphs: Iterable[tuple[int, str]],
+    matcher: GlossaryMatcher,
+) -> int:
+    """
+    Compute glossary matches for (paragraph_id, text) pairs and store them.
+    Existing rows for these paragraphs are removed first, so it is idempotent.
+    Returns the number of stored matches.
+    """
+    paragraphs = list(paragraphs)
+
+    connection.executemany(
+        "DELETE FROM paragraph_terms WHERE paragraph_id = ?",
+        [(paragraph_id,) for paragraph_id, _ in paragraphs],
+    )
+
+    rows = [
+        (m.paragraph_id, m.term_id, m.occurrence_count)
+        for paragraph_id, text in paragraphs
+        for m in matcher.find_matches(paragraph_id, text)
     ]
+    connection.executemany(
+        """
+        INSERT INTO paragraph_terms(paragraph_id, term_id, occurrence_count)
+        VALUES (?, ?, ?)
+        """,
+        rows,
+    )
+    return len(rows)
 
-    matcher = GlossaryMatcher(database_terms)
-
-    cursor = connection.cursor()
-
-    paragraph_ids = [paragraph_id for paragraph_id, _ in paragraphs]
-
-    if paragraph_ids:
-        placeholders = ",".join("?" for _ in paragraph_ids)
-        cursor.execute(
-            f"""
-            DELETE FROM paragraph_terms
-            WHERE paragraph_id IN ({placeholders})
-            """,
-            paragraph_ids,
-        )
-
-    inserted = 0
-
-    for paragraph_id, text in paragraphs:
-        matches = matcher.find_matches(
-            paragraph_id,
-            text,
-        )
-
-        for match in matches:
-            cursor.execute(
-                """
-                INSERT INTO paragraph_terms(
-                    paragraph_id,
-                    term_id,
-                    occurrence_count
-                )
-                VALUES (?, ?, ?)
-                """,
-                (
-                    match.paragraph_id,
-                    match.term_id,
-                    match.occurrence_count,
-                ),
-            )
-
-            inserted += 1
-
-    return inserted
 
 def reindex_all_glossary_matches(
     connection: sqlite3.Connection,
     glossary_sources: dict[str, Path],
 ) -> int:
     """
-    Recompute glossary matches for every paragraph currently in the
-    database, without touching OCR/extraction/chunking.
-
-    Use this after editing a glossary .txt file, instead of
-    re-running the full ingestion pipeline.
+    Recompute glossary matches for every paragraph and remove terms that
+    are no longer in any glossary file. Use after editing a glossary .txt.
     """
     from database import repository
 
+    matcher = build_matcher(connection, glossary_sources)
     paragraphs = repository.get_all_paragraphs_for_glossary(connection=connection)
+    inserted = index_paragraph_glossary_terms(connection, paragraphs, matcher)
 
-    return index_paragraph_glossary_terms(
-        connection,
-        paragraphs,
-        glossary_sources,
-    )
+    current_ids = {t.term_id for t in matcher.terms}
+    stale = [
+        (row[0],)
+        for row in connection.execute("SELECT id FROM terms").fetchall()
+        if row[0] not in current_ids
+    ]
+    connection.executemany("DELETE FROM terms WHERE id = ?", stale)
+
+    return inserted

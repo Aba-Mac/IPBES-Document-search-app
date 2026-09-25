@@ -68,7 +68,6 @@ def configure_logging() -> None:
     logging.getLogger("sentence_transformers").setLevel(
         logging.WARNING
     )
-    logging.getLogger("unstructured").setLevel(logging.INFO)
 
     logging.getLogger(__name__).info(
         "Logging initialised."

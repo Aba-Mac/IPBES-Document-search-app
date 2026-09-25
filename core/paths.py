@@ -26,9 +26,9 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 DATA_DIR: Final[Path] = PROJECT_ROOT / "data"
 
-PDF_DIR: Final[Path] = DATA_DIR / "pdfs"
+DOCX_DIR: Final[Path] = DATA_DIR / "docx"
 GLOSSARY_DIR: Final[Path] = DATA_DIR / "glossary"
-DOI_DIR: Final[Path] = PDF_DIR / "dois.csv"
+SECTION_DOI_DIR: Final[Path] = DOCX_DIR / "section_lookup.csv"
 
 ###############################################################################
 # Application directories
@@ -42,7 +42,7 @@ LOG_DIR: Final[Path] = PROJECT_ROOT / "logs"
 
 for directory in (
     DATA_DIR,
-    PDF_DIR,
+    DOCX_DIR,
     GLOSSARY_DIR,
     LOG_DIR,
 ):

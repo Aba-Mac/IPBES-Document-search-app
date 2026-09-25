@@ -4,7 +4,7 @@
 
 The **Document Search and Glossary Application** is a production-grade document discovery system built with **Shiny for Python** for deployment to **Posit Connect** via **GitHub**.
 
-The application indexes a curated collection of approximately twenty PDF documents (up to fifty pages each), extracts structured content at paragraph level, enriches documents with metadata and topic tags, and provides a fast, Boolean-enabled full-text search experience.
+The application indexes a curated collection of DOCX documents, extracts structured content at paragraph level, enriches documents with metadata and topic tags, and provides a fast, Boolean-enabled full-text search experience.
 
 The architecture is intentionally modular to support future expansion while maintaining a clear separation of concerns. Individual components—including the database layer, ingestion pipeline, topic-tagging module, search engine, and Shiny user interface—are implemented as independent modules and documented separately.
 
@@ -17,8 +17,7 @@ The live application currently provides **exact full-text search only** using SQ
 The application is designed to provide:
 
 - Paragraph-level search rather than page-level search
-- Automatic OCR of scanned PDF documents
-- High-quality extraction from digital-native PDFs
+- High-quality extraction from DOCX documents
 - Intelligent document section detection
 - Rich document metadata extraction
 - Robust text cleaning prior to chunking
@@ -40,9 +39,8 @@ The application is designed to provide:
 | Source Control | GitHub |
 | Database | SQLite |
 | Full-text Search | SQLite FTS5 |
-| OCR | OCRmyPDF |
-| PDF Metadata & Text | PyMuPDF |
-| Document Extraction | Unstructured |
+| Document Metadata & Text | python-docx |
+| Document Extraction | python-docx |
 | Text Cleaning | ftfy + custom cleaning pipeline |
 | Primary Chunking | Unstructured `chunk_by_title` |
 | Secondary Chunking | LangChain Recursive Character Text Splitter |
@@ -55,30 +53,16 @@ The application is designed to provide:
 # System Architecture
 
 ```text
-                     PDF Collection
+                     DOCX Collection
                            │
                            ▼
-          ┌────────────────────────────────┐
-          │ Determine PDF Type             │
-          │ Digital-native or Scanned      │
-          └────────────────────────────────┘
-                           │
-             ┌─────────────┴─────────────┐
-             │                           │
-             ▼                           ▼
-      Digital-native               Scanned PDF
-             │                           │
-             │                    OCRmyPDF
-             │                           │
-             └─────────────┬─────────────┘
-                           ▼
-                Document Extraction
-          (Unstructured + PyMuPDF Metadata)
+                   Document Extraction
+                      (python-docx)
                            │
                            ▼
                   Text Cleaning Stage
       • Repair encoding (ftfy)
-      • Remove headers and footers
+      • Exclude headers and footers
       • Remove page numbers
       • Remove table-of-contents artefacts
       • Strip OCR dot leaders
@@ -132,7 +116,7 @@ Detailed implementation of each module is documented separately.
 |---------|----------------|
 | Configuration | Core Infrastructure (configuration, paths, environment, logging) |
 | Database Layer | SQLite schema, persistence and FTS5 indexing |
-| Ingestion Pipeline | OCR → extraction → cleaning → chunking → metadata → glossary exact-match indexing |
+| Ingestion Pipeline | extraction → cleaning → chunking → metadata → glossary exact-match indexing |
 | Topic Tagging | Anchor matching, embeddings and LLM verification |
 | Rendering | Search-term highlighting and glossary hyperlink generation |
 | Search Engine | Boolean parsing, FTS queries and ranking |
@@ -142,21 +126,11 @@ Detailed implementation of each module is documented separately.
 
 # Core Features
 
-## PDF Processing
+## DOCX Processing
 
-The application is designed for document collections containing approximately:
+The application is designed for document collections containing document numbers in the double-digits with approximately 50 pages.
 
-- 20 PDF documents
-- Maximum 50 pages per document
-
-Each document is automatically classified as either:
-
-- Digital-native PDF
-- Scanned PDF
-
-Scanned documents are processed with OCRmyPDF before extraction.
-
-Digital-native documents are processed directly using Unstructured and PyMuPDF.
+DOCX body paragraphs and tables are extracted directly with `python-docx`. Headers and footers are read from their DOCX section parts and excluded from body text without relying on repeated-text or page-position heuristics.
 
 ---
 
@@ -167,12 +141,11 @@ Following extraction, every document passes through a dedicated cleaning stage b
 Cleaning includes:
 
 - Repairing mojibake and encoding problems using **ftfy**
-- Removing repeated page headers
-- Removing repeated page footers
-- Removing page numbers
+- Excluding formatted DOCX section headers
+- Excluding formatted DOCX section footers (and page numbers)
 - Removing table-of-contents artefacts
 - Stripping OCR dot leaders
-- Removing stray OCR symbols
+- Removing stray extraction symbols
 - Normalising whitespace
 - Preserving document paragraphs and section boundaries
 

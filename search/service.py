@@ -45,6 +45,7 @@ from search.boolean import (
     BooleanParser,
     BooleanSyntaxError,
     SQLiteFTS5Compiler,
+    iter_term_nodes,
 )
 
 from search.parser import (
@@ -119,6 +120,9 @@ class RepositoryProtocol(Protocol):
         ...
 
     def get_available_documents(self) -> list[dict[str, Any]]:
+        ...
+
+    def list_terms(self, **kwargs):
         ...
 
 
@@ -252,7 +256,9 @@ class SearchService:
         try:
             ast = BooleanParser().parse(request.query)
 
-            _sql_fragment, params = SQLiteFTS5Compiler().compile(ast)
+            self._validate_terms(ast, request.filters.glossary_lists)
+
+            _, params = SQLiteFTS5Compiler().compile(ast)
 
             return params[0]
 
@@ -273,6 +279,34 @@ class SearchService:
             raise SearchServiceError(
                 "Unable to process search query."
             ) from exc
+
+    def _validate_terms(
+        self,
+        ast,
+        glossary_lists: tuple[str, ...] | None,
+    ) -> None:
+        """
+        Reject terms that are not present in the selected glossary lists.
+        """
+        rows = self._repository.list_terms(list_names=glossary_lists)
+        available = {
+            str(row["term"]).casefold().strip()
+            for row in rows
+        }
+
+        invalid = [
+            term.value
+            for term in iter_term_nodes(ast)
+            if term.value.casefold().strip() not in available
+        ]
+
+        if invalid:
+            raise BooleanSyntaxError(
+                "Unknown search term(s): "
+                + ", ".join(f"'{term}'" for term in invalid)
+                + ". Use terms from the glossary and spell Boolean operators exactly as "
+                    "AND, OR, NOT."
+            )
 
     def _postprocess_response(
         self,
@@ -354,31 +388,6 @@ def search(
 ###############################################################################
 # Metadata API
 ###############################################################################
-
-
-# def get_available_years() -> list[int]:
-#     """
-#     Return all available publication years.
-
-#     Returns
-#     -------
-#     list[int]
-#         Sorted publication years.
-
-#     Raises
-#     ------
-#     SearchServiceError
-#         If retrieval fails.
-#     """
-#     try:
-#         return _service()._repository.get_available_years()
-#     except Exception as exc:
-#         logger.exception(
-#             "Failed to retrieve available years."
-#         )
-#         raise SearchServiceError(
-#             "Unable to retrieve years."
-#         ) from exc
 
 
 def get_glossary_terms(list_names: tuple[str,...] | None = None) -> list[str]:

@@ -11,7 +11,7 @@ import logging
 from database import repository
 from database.migrations import migrate
 from ingestion.pipeline import ingest_directory
-from core.paths import PDF_DIR, GLOSSARY_DIR, DOI_DIR
+from core.paths import DOCX_DIR, GLOSSARY_DIR, SECTION_DOI_DIR
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,14 +20,14 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.info("Running migrations...")
 migrate()
 
-LOGGER.info("PDF directory: %s", PDF_DIR.resolve())
+LOGGER.info("DOCX directory: %s", DOCX_DIR.resolve())
 
-if not PDF_DIR.exists():
-    raise FileNotFoundError(PDF_DIR)
+if not DOCX_DIR.exists():
+    raise FileNotFoundError(DOCX_DIR)
 
 LOGGER.info(
-    "Found %d PDFs",
-    len(list(PDF_DIR.glob("*.pdf")))
+    "Found %d DOCX files",
+    len(list(DOCX_DIR.glob("*.docx")))
 )
 
 glossary_sources = {
@@ -43,9 +43,10 @@ if missing:
     )
 
 ingest_directory(
-    directory=PDF_DIR,
+    directory=DOCX_DIR,
     glossary_sources=glossary_sources,
-    doi_map=DOI_DIR,
+    lookup_path=SECTION_DOI_DIR,
+    metadata_path=SECTION_DOI_DIR.with_name("document_metadata.csv"),
 )
 
 LOGGER.info(

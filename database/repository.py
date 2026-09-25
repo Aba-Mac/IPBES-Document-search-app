@@ -363,7 +363,7 @@ def count_paragraphs(
     glossary_lists = getattr(filters, "glossary_lists", None)
 
     joins = ""
-    where = ["paragraphs_fts MATCH ?"]
+    where = ["paragraphs_fts MATCH ?", "p.is_searchable = 1"]
     parameters: list[Any] = [fts_query]
 
     if glossary_lists:
@@ -506,13 +506,11 @@ def create_document(
     filename: str,
     title: str | None,
     doi: str | None,
-    plenary_session: str | None,
     year: int | None,
     date: str | None,
     location: str | None,
     source: str | None,
     source_hash: str | None,
-    page_count: int,
     *,
     connection: sqlite3.Connection | None = None,
 ) -> int:
@@ -523,27 +521,23 @@ def create_document(
             filename,
             title,
             doi,
-            plenary_session,
             year,
             date,
             location,
             source,
-            source_hash,
-            page_count
+            source_hash
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             filename,
             title,
             doi,
-            plenary_session,
             year,
             date,
             location,
             source,
             source_hash,
-            page_count,
         ),
         connection=connection,
     )
@@ -586,70 +580,6 @@ def get_available_years(
     return [row["year"] for row in rows]
 
 
-def insert_metadata_provenance(
-    connection: sqlite3.Connection,
-    document_id: int,
-    fields: Mapping[
-        str,
-        tuple[str | int | None, str | None],
-    ],
-) -> None:
-    """
-    Store metadata extraction provenance.
-
-    Parameters
-    ----------
-    connection:
-        SQLite database connection.
-
-    document_id:
-        Parent document identifier.
-
-    fields:
-        Mapping of metadata field names to:
-            (extracted value, extraction source)
-
-        Example:
-            {
-                "title": ("Annual Report", "pymupdf"),
-                "year": (2024, "llm"),
-            }
-    """
-
-    for field_name, (value, source) in fields.items():
-
-        if value is None:
-            continue
-
-        connection.execute(
-            """
-            INSERT INTO metadata_provenance(
-                document_id,
-                field_name,
-                extraction_source,
-                field_value
-            )
-            VALUES (?, ?, ?, ?)
-
-            ON CONFLICT(
-                document_id,
-                field_name
-            )
-            DO UPDATE SET
-
-                extraction_source = excluded.extraction_source,
-
-                field_value = excluded.field_value
-            """,
-            (
-                document_id,
-                field_name,
-                source,
-                str(value),
-            ),
-        )
-
-
 def delete_document(
     document_id: int,
     *,
@@ -681,96 +611,32 @@ def delete_document(
 def bulk_insert_paragraphs(
     rows: Iterable[Sequence[Any]],
     *,
-    return_ids: bool = False,
-    connection: sqlite3.Connection | None = None,
-) -> list[tuple[int, str]] | None:
+    connection: sqlite3.Connection,
+) -> list[tuple[int, str]]:
     """
-    Bulk insert paragraph records.
+    Insert paragraph rows for ONE document inside the caller's transaction.
 
-    Parameters
-    ----------
-    rows:
-        Iterable of tuples:
+    Row: (document_id, section_index, section_title, paragraph_number,
+          text, is_searchable)
 
-        (
-            document_id,
-            page_number,
-            paragraph_number,
-            text,
-            chunk_method,
-        )
-
-    return_ids:
-        If True, return generated paragraph IDs with text.
-
-    Returns
-    -------
-    None
-        When return_ids=False.
-
-    list[tuple[int, str]]
-        When return_ids=True:
-
-        (
-            paragraph_id,
-            paragraph_text,
-        )
+    Returns [(paragraph_id, text), ...] for glossary matching.
     """
-
     rows = list(rows)
-
-    if not return_ids:
-
-        executemany(
-            """
-            INSERT INTO paragraphs (
-                document_id,
-                page_number,
-                paragraph_number,
-                text,
-                chunk_method
-            )
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            rows,
-            connection=connection,
+    connection.executemany(
+        """
+        INSERT INTO paragraphs (
+            document_id, section_index, section_title, paragraph_number,
+            text, is_searchable
         )
-
-        return None
-
-
-    conn = connection or connect()
-
-    cursor = conn.cursor()
-
-    inserted: list[tuple[int, str]] = []
-
-    for row in rows:
-
-        cursor.execute(
-            """
-            INSERT INTO paragraphs (
-                document_id,
-                page_number,
-                paragraph_number,
-                text,
-                chunk_method
-            )
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            row,
-        )
-
-        inserted.append(
-            (
-                cursor.lastrowid,
-                row[3],   
-            )
-        )
-
-    conn.commit()
-
-    return inserted
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+    cursor = connection.execute(
+        "SELECT id, text FROM paragraphs WHERE document_id = ? ORDER BY id",
+        (rows[0][0],),
+    )
+    return [(r["id"], r["text"]) for r in cursor]
 
 
 def get_all_paragraphs_for_glossary(
@@ -808,7 +674,7 @@ def search_paragraphs(
     if offset < 0:
         raise ValueError("offset must be >= 0")
 
-    where = ["paragraphs_fts MATCH ?"]
+    where = ["paragraphs_fts MATCH ?", "p.is_searchable = 1"]
     parameters: list[Any] = [fts_query]
 
     if glossary_lists:
@@ -845,12 +711,10 @@ def search_paragraphs(
             d.filename,
             d.source,
             d.year,
-            d.plenary_session,
             d.location,
-            p.page_number,
+            p.section_title,
             p.paragraph_number,
             p.text AS paragraph_text,
-            p.chunk_method,
             bm25(paragraphs_fts) AS bm25_score
         FROM paragraphs_fts
         JOIN paragraphs AS p ON p.id = paragraphs_fts.rowid

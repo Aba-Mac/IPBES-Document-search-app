@@ -47,7 +47,6 @@ DOCUMENTS_TABLE = dedent(
 
         title               TEXT,
         doi                 TEXT,
-        plenary_session     TEXT,
 
         year                INTEGER,
         date                TEXT,
@@ -55,8 +54,6 @@ DOCUMENTS_TABLE = dedent(
 
         source              TEXT,
         source_hash         TEXT,
-
-        page_count          INTEGER NOT NULL,
 
         created_at          TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -70,13 +67,15 @@ PARAGRAPHS_TABLE = dedent(
 
         document_id         INTEGER NOT NULL,
 
-        page_number         INTEGER NOT NULL,
+        section_index        INTEGER NOT NULL,
+
+        section_title       TEXT,
 
         paragraph_number    INTEGER NOT NULL,
 
         text                TEXT NOT NULL,
 
-        chunk_method        TEXT NOT NULL,
+        is_searchable       INTEGER NOT NULL CHECK(is_searchable IN (0, 1)),
 
         FOREIGN KEY(document_id)
             REFERENCES documents(id)
@@ -84,37 +83,11 @@ PARAGRAPHS_TABLE = dedent(
 
         UNIQUE (
             document_id,
-            page_number,
+            section_index,
             paragraph_number
         )
     );
 """
-)
-
-
-METADATA_PROVENANCE_TABLE = dedent(
-    """
-    CREATE TABLE IF NOT EXISTS metadata_provenance (
-
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        document_id INTEGER NOT NULL,
-
-        field_name TEXT NOT NULL,
-
-        field_value TEXT,
-
-        extraction_source TEXT NOT NULL,
-
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-        UNIQUE(document_id, field_name),
-
-        FOREIGN KEY(document_id)
-            REFERENCES documents(id)
-            ON DELETE CASCADE
-    );
-    """
 )
 
 
@@ -348,13 +321,6 @@ INDEXES = [
 
     dedent(
         """
-        CREATE INDEX IF NOT EXISTS idx_paragraph_page
-        ON paragraphs(document_id, page_number);
-        """
-    ),
-
-    dedent(
-        """
         CREATE INDEX IF NOT EXISTS idx_terms_term
         ON terms(term);
         """
@@ -401,13 +367,6 @@ INDEXES = [
         ON embeddings(model_name);
         """
     ),
-
-    dedent(
-    """
-    CREATE INDEX IF NOT EXISTS idx_metadata_provenance_document
-    ON metadata_provenance(document_id);
-    """
-    ),
 ]
 
 ###############################################################################
@@ -417,8 +376,6 @@ INDEXES = [
 SCHEMA = [
 
     DOCUMENTS_TABLE,
-
-    METADATA_PROVENANCE_TABLE,
 
     PARAGRAPHS_TABLE,
 

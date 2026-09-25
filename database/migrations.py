@@ -48,7 +48,6 @@ _REQUIRED_TABLES = {
     "anchors",
     "paragraph_anchors",
     "embeddings",
-    "metadata_provenance",
 }
 
 _REQUIRED_TRIGGERS = {
@@ -84,16 +83,6 @@ def apply_schema(connection: sqlite3.Connection) -> None:
     """).fetchall()
 
     LOGGER.info("Tables after migration: %s", [t[0] for t in tables])
-
-def _ensure_source_hash_column(connection: sqlite3.Connection) -> None:
-    columns = {
-        row["name"]
-        for row in connection.execute("PRAGMA table_info(documents)").fetchall()
-    }
-    if "source_hash" not in columns:
-        LOGGER.info("Adding source_hash column to documents table.")
-        connection.execute("ALTER TABLE documents ADD COLUMN source_hash TEXT;")
-
 
 # ---------------------------------------------------------------------
 # Validation
@@ -228,8 +217,6 @@ def migrate() -> None:
     with connect() as connection:
 
         apply_schema(connection)
-
-        _ensure_source_hash_column(connection)
 
         validate_schema(connection)
 

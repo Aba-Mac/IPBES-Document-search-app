@@ -20,7 +20,6 @@ Supported operators
     AND
     OR
     NOT
-    NOR
 
 Parentheses may be nested arbitrarily.
 
@@ -28,7 +27,7 @@ Operator precedence:
 
     1. NOT
     2. AND
-    3. OR / NOR
+    3. OR
 
 Examples
 --------
@@ -39,7 +38,7 @@ Examples
 
     climate AND NOT biodiversity
 
-    (A OR B) NOR (C OR D)
+    (A OR B) AND (C OR D)
 
 The parser is intentionally independent from SQLite so that it can be
 unit-tested without a database connection.
@@ -51,7 +50,7 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 import re
-from typing import Sequence
+from typing import Sequence, Iterator
 
 __all__ = [
     "BooleanSyntaxError",
@@ -64,6 +63,7 @@ __all__ = [
     "OrNode",
     "NorNode",
     "BooleanParser",
+    "iter_term_nodes",
     "SQLiteFTS5Compiler",
 ]
 
@@ -95,7 +95,6 @@ class TokenType(Enum):
     AND = "AND"
     OR = "OR"
     NOT = "NOT"
-    NOR = "NOR"
 
     LPAREN = "("
     RPAREN = ")"
@@ -147,7 +146,6 @@ class BooleanLexer:
         "AND": TokenType.AND,
         "OR": TokenType.OR,
         "NOT": TokenType.NOT,
-        "NOR": TokenType.NOR,
     }
 
     def tokenize(self, text: str) -> list[Token]:
@@ -262,19 +260,6 @@ class OrNode(BinaryNode):
     """Logical OR."""
 
 
-@dataclass(slots=True)
-class NorNode(BinaryNode):
-    """
-    Logical NOR.
-
-    A NOR B
-
-    ==
-
-    NOT (A OR B)
-    """
-
-
 # ---------------------------------------------------------------------
 # Recursive-descent parser
 # ---------------------------------------------------------------------
@@ -294,7 +279,7 @@ class BooleanParser:
     or_expression
 
         := and_expression
-           ( (OR | NOR) and_expression )*
+           ( OR and_expression )*
 
     and_expression
 
@@ -423,7 +408,6 @@ class BooleanParser:
 
             if self._accept(TokenType.NOR):
                 rhs = self._and_expression()
-                node = NorNode(node, rhs)
                 continue
 
             return node
@@ -496,6 +480,20 @@ class BooleanParser:
         )
 
 
+def iter_term_nodes(node: ASTNode) -> Iterator[TermNode]:
+    """
+    Yield every glossary term in a parsed Boolean expression.
+    """
+    
+    if isinstance(node, TermNode):
+        yield node
+    elif isinstance(node, NotNode):
+        yield from iter_term_nodes(node.operand)
+    elif isinstance(node, BinaryNode):
+        yield from iter_term_nodes(node.left)
+        yield from iter_term_nodes(node.right)
+
+
 # ---------------------------------------------------------------------
 # SQLite compiler
 # ---------------------------------------------------------------------
@@ -529,11 +527,11 @@ class SQLiteFTS5Compiler:
             return self._compile_and_chain(node)
 
         if isinstance(node, OrNode):
-            if isinstance(node.left, (NotNode, NorNode)) or isinstance(
-                node.right, (NotNode, NorNode)
+            if isinstance(node.left, (NotNode)) or isinstance(
+                node.right, (NotNode)
             ):
                 raise BooleanSyntaxError(
-                    "NOT/NOR can't be combined directly with OR. "
+                    "NOT can't be combined directly with OR. "
                     "Use AND instead of OR, e.g. 'Climate AND NOT Biodiversity'."
                 )
             return (
@@ -546,14 +544,6 @@ class SQLiteFTS5Compiler:
                 "NOT needs a positive search term to exclude from — "
                 "try 'Climate NOT Biodiversity' or "
                 "'Climate AND NOT Biodiversity'."
-            )
-
-        if isinstance(node, NorNode):
-            raise BooleanSyntaxError(
-                "NOR can't stand alone because it excludes both terms "
-                "with nothing left to search for. Combine it with a "
-                "positive term, e.g. "
-                "'Governance AND (Climate NOR Biodiversity)'."
             )
 
         raise TypeError(f"Unsupported AST node: {type(node)!r}")
@@ -573,18 +563,15 @@ class SQLiteFTS5Compiler:
         for conjunct in conjuncts:
             if isinstance(conjunct, NotNode):
                 negatives.append(self._compile_node(conjunct.operand))
-            elif isinstance(conjunct, NorNode):
-                negatives.append(
-                    f"({self._compile_node(conjunct.left)} "
-                    f"OR {self._compile_node(conjunct.right)})"
-                )
+                f"({self._compile_node(conjunct.left)} "
+                f"OR {self._compile_node(conjunct.right)})"
             else:
                 positives.append(self._compile_node(conjunct))
 
         if not positives:
             raise BooleanSyntaxError(
                 "A search needs at least one positive term — "
-                "NOT/NOR alone can't be searched."
+                "NOT alone can't be searched."
             )
 
         positive_expr = (

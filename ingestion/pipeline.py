@@ -10,8 +10,6 @@ result through database.repository.
 
 Pipeline
 --------
-OCR (if required)
-    ↓
 Text extraction
     ↓
 Cleaning
@@ -53,8 +51,6 @@ from ingestion import chunking
 from ingestion import extractor
 from ingestion import glossary
 from ingestion import metadata
-from ingestion import ocr
-from ingestion import doi_lookup
 
 LOGGER = logging.getLogger(__name__)
 
@@ -104,7 +100,7 @@ class IngestionResult:
 ###############################################################################
 
 
-def calculate_file_hash(path: Path) -> str:
+def calculate_file_hash(path: Path, salt: str = "") -> str:
     """
     Calculate a SHA-256 hash for a document.
 
@@ -115,7 +111,7 @@ def calculate_file_hash(path: Path) -> str:
     Parameters
     ----------
     path
-        PDF path.
+        DOCX path.
 
     Returns
     -------
@@ -123,14 +119,10 @@ def calculate_file_hash(path: Path) -> str:
         Hex digest.
     """
 
-    digest = hashlib.sha256()
-
+    digest = hashlib.sha256(salt.encode())
     with path.open("rb") as stream:
-
         for block in iter(lambda: stream.read(1024 * 1024), b""):
-
             digest.update(block)
-
     return digest.hexdigest()
 
 
@@ -140,7 +132,8 @@ def calculate_file_hash(path: Path) -> str:
 
 
 def needs_reindex(
-    pdf_path: Path,
+    docx_path: Path,
+    salt = "",
 ) -> tuple[bool, int | None, str]:
     """
     Determine whether a document requires re-indexing.
@@ -158,9 +151,9 @@ def needs_reindex(
     The repository owns all database access.
     """
 
-    filename = pdf_path.name
+    filename = docx_path.name
 
-    current_hash = calculate_file_hash(pdf_path)
+    current_hash = calculate_file_hash(docx_path, salt)
 
     existing = repository.get_document_by_filename(filename)
 
@@ -192,19 +185,19 @@ def needs_reindex(
 
 
 def ingest_document(
-    pdf_path: str | Path,
+    docx_path: str | Path,
     *,
-    glossary_sources: dict[str, Path],
-    doi_map: dict[str,str] | None = None,
+    matcher: glossary.GlossaryMatcher,
+    lookup: metadata.SectionLookup,
 ) -> IngestionResult:
     """
     Run the complete ingestion pipeline.
 
     Parameters
     ----------
-    pdf_path
+    docx_path
 
-        PDF document.
+        DOCX document.
 
     glossary_sources
 
@@ -223,200 +216,71 @@ def ingest_document(
     it has already been committed/closed.
     """
 
-    pdf_path = Path(pdf_path)
+    docx_path = Path(docx_path)
+    name = docx_path.name
 
     LOGGER.info(
         "Beginning ingestion: %s",
-        pdf_path.name,
+        name,
     )
 
-    should_index, existing_document_id, current_hash = needs_reindex(
-        pdf_path
-    )
+    meta = lookup.metadata_for(name)
+    if meta is None:
+        raise ValueError(f"{name} has no row in document_metadata.csv")
+
+    salt = repr((
+        sorted(lookup.headings.get(name, ())),
+        name in lookup.include_all,
+        lookup.doi_for(name),
+        meta,
+    ))
+    should_index, existing_id, current_hash = needs_reindex(docx_path, salt)
 
     if not should_index:
-
         return IngestionResult(
-            document_id=existing_document_id,
-            paragraphs=0,
-            glossary_matches=0,
-            skipped=True,
+            document_id=existing_id, paragraphs=0, glossary_matches=0, skipped=True
         )
+    if existing_id is not None:
+        repository.delete_document(existing_id)
 
-    if existing_document_id is not None:
-
-        LOGGER.info(
-            "Replacing existing document %s",
-            existing_document_id,
-        )
-
-        repository.delete_document(
-            existing_document_id
-        )
-
-    ####################################################################
-    # Stage 1 - OCR
-    ####################################################################
-
-    LOGGER.info("Running OCR...")
-
-    ocr_result = ocr.ensure_searchable_pdf(pdf_path)
-
-    ####################################################################
-    # Stage 2 - Extraction
-    ####################################################################
-
-    LOGGER.info("Extracting document...")
-
-    extraction = extractor.extract(ocr_result)
-
-    ####################################################################
-    # Stage 3 - Metadata
-    ####################################################################
-
-    LOGGER.info("Extracting metadata...")
-
-    document_metadata = metadata.build_metadata(
-        pdf_path=ocr_result.processed_pdf,
-    )
-
-    ####################################################################
-    # Stage 4 - Cleaning
-    ####################################################################
-
-    LOGGER.info("Cleaning extracted text...")
-
-    cleaned_document = cleaning.clean_elements(
-        extraction
-    )
-
-    ####################################################################
-    # Persistence
-    #
-    # Everything that touches the database for this document happens
-    # inside a single transaction: document creation, paragraph
-    # insertion, chunking's document_id assignment, glossary matching,
-    # provenance, and FTS verification. This guarantees the connection
-    # is always open for every call below, and that a failure at any
-    # point rolls back the whole document rather than leaving partial
-    # data behind.
-    ####################################################################
-
-    LOGGER.info("Persisting document...")
+    extraction = extractor.extract_docx(docx_path, lookup=lookup)
+    elements = cleaning.clean_elements(extraction)
 
     with repository.transaction() as connection:
-
         document_id = repository.create_document(
-            filename=pdf_path.name,
-            title=document_metadata.title.value,
-            doi=(doi_map or {}).get(pdf_path.name),
-            plenary_session=document_metadata.plenary_session.value,
-            year=document_metadata.year.value,
-            date=document_metadata.date.value,
-            location=document_metadata.location.value,
-            source=str(pdf_path),
+            filename=name,
+            title=meta["title"],
+            doi=lookup.doi_for(name),
+            year=meta["year"],
+            date=meta["date"],
+            location=meta["location"],
+            source=str(docx_path),
             source_hash=current_hash,
-            page_count=extraction.page_count,
             connection=connection,
         )
 
-        ################################################################
-        # Stage 6 - Chunking
-        ################################################################
+        chunks = chunking.chunk_document(document_id=document_id, elements=elements)
+        if not chunks:
+            raise RuntimeError(f"No paragraphs produced for {docx_path}")
 
-        LOGGER.info("Chunking document...")
-
-        paragraph_chunks = chunking.chunk_document(
-            document_id=document_id,
-            elements=cleaned_document,
-        )
-
-        if not paragraph_chunks:
-
-            raise RuntimeError(
-                f"No paragraphs produced for {pdf_path}"
-            )
-
-        ################################################################
-        # Bulk paragraph insertion
-        ################################################################
-
-        paragraph_rows = [
-            (
-                chunk.document_id,
-                chunk.page_number,
-                chunk.paragraph_number,
-                chunk.text,
-                chunk.chunk_method,
-            )
-            for chunk in paragraph_chunks
+        rows = [
+            (c.document_id, c.section_index, c.section_title, c.paragraph_number,
+            c.text, int(c.is_searchable))
+            for c in chunks
         ]
-
         paragraphs_for_glossary = repository.bulk_insert_paragraphs(
-            paragraph_rows,
-            return_ids=True,
-            connection=connection,
+            rows, connection=connection
         )
-
-        ################################################################
-        # Glossary matching
-        ################################################################
-
-        LOGGER.info("Matching glossary...")
-
         glossary_match_count = glossary.index_paragraph_glossary_terms(
-            connection,
-            paragraphs_for_glossary,
-            glossary_sources,
+            connection, paragraphs_for_glossary, matcher
         )
 
-        ################################################################
-        # Metadata provenance
-        ################################################################
-
-        repository.insert_metadata_provenance(
-            connection=connection,
-            document_id=document_id,
-            fields=metadata.metadata_provenance_fields(document_metadata),
-        )
-
-        ################################################################
-        # Verify FTS index
-        ################################################################
-
-        if not repository.verify_fts_sync(
-            connection=connection,
-        ):
-
-            LOGGER.warning(
-                "FTS verification failed. "
-                "Rebuilding index."
-            )
-
-            repository.rebuild_fts(
-                connection=connection,
-            )
-
-            if not repository.verify_fts_sync(
-                connection=connection,
-            ):
-
-                raise RuntimeError(
-                    "Unable to rebuild FTS index."
-                )
-
-    LOGGER.info(
-        "Finished ingesting '%s' (%d paragraphs)",
-        pdf_path.name,
-        len(paragraph_chunks),
-    )
-
+    LOGGER.info("Finished ingesting '%s' (%d paragraphs)", name, len(chunks))
     return IngestionResult(
         document_id=document_id,
-        paragraphs=len(paragraph_chunks),
+        paragraphs=len(chunks),
         glossary_matches=glossary_match_count,
-        updated=existing_document_id is not None,
-        skipped=False,
+        updated=existing_id is not None,
     )
 
 
@@ -428,61 +292,30 @@ def ingest_document(
 def ingest_directory(
     directory: str | Path,
     *,
-    glossary_sources: dict[str, Path], 
-    doi_map: str | Path | None = None,
+    glossary_sources: dict[str, Path],
+    lookup_path: str | Path,
+    metadata_path: str | Path,
     recursive: bool = True,
 ) -> list[IngestionResult]:
-    """
-    Ingest every PDF within a directory.
-
-    Parameters
-    ----------
-    directory
-        Root directory.
-
-    glossary_sources
-        Path to 2 glossary txt files.
-
-    recursive
-        Search subdirectories recursively.
-
-    Returns
-    -------
-    list[IngestionResult]
-        One result per processed document.
-    """
+    lookup = metadata.load_section_lookup(lookup_path, metadata_path)
 
     directory = Path(directory)
-
     if not directory.exists():
-
         raise FileNotFoundError(directory)
 
-    doi_map = doi_lookup.load_doi_map(Path(doi_map)) if doi_map else {}
+    with repository.transaction() as connection:
+        matcher = glossary.build_matcher(connection, glossary_sources)
 
-    pattern = "**/*.pdf" if recursive else "*.pdf"
-
+    pattern = "**/*.docx" if recursive else "*.docx"
     results: list[IngestionResult] = []
 
-    for pdf in sorted(directory.glob(pattern)):
-
+    for docx in sorted(directory.glob(pattern)):
         try:
-
             results.append(
-                ingest_document(
-                    pdf,
-                    glossary_sources=glossary_sources,
-                    doi_map=doi_map,
-                )
+                ingest_document(docx, matcher=matcher, lookup=lookup)
             )
-
         except Exception:
-
-            LOGGER.exception(
-                "Failed ingesting %s",
-                pdf,
-            )
-
+            LOGGER.exception("Failed ingesting %s", docx)
             raise
 
     return results

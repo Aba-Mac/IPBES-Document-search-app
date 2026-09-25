@@ -1,4 +1,6 @@
 """
+reindex_glossary.py
+
 Recompute glossary term matches for all already-ingested documents,
 without re-running OCR/extraction/chunking.
 

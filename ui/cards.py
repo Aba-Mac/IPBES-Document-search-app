@@ -159,12 +159,16 @@ def _result_card(result, *, query: str):
         else ui.span(result.document_title, class_="result-doi-link")
     )
 
+    section = getattr(result, "section_title", None)
+
     footer = ui.div(
         ui.span("Referenced from:", class_="result-footer-label"),
         title_element,
         ui.span(f" · {result.year}" if result.year else ""),
         ui.span(
-            f" · Page {result.page_number} · Paragraph {result.paragraph_number}"
+            f" · {section} · Paragraph {result.paragraph_number}"
+            if section
+            else f" · Paragraph {result.paragraph_number}"
         ),
         class_="result-footer",
     )

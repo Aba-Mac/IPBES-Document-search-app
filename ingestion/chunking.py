@@ -1,97 +1,53 @@
 """
-Paragraph mapping.
+chunking.py
 
-Each source paragraph-like extracted element becomes one database
-paragraph. This module deliberately does not perform arbitrary
-character-based chunking.
-
-The `paragraphs` table is the canonical representation of extracted
-document structure. Larger RAG chunks should be generated separately.
+Paragraph mapping: one storable element becomes one database paragraph.
+paragraph_number counts within its section (restarts at 1 under each heading).
 """
-
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from typing import Sequence
 
-from ingestion.cleaning import CleanedElement
+from ingestion.extractor import ExtractedElement
 
-logger = logging.getLogger(__name__)
+STORABLE_CATEGORIES = {"paragraph", "list", "table"}
 
 
 @dataclass(frozen=True)
 class ParagraphChunk:
-    """
-    Database-compatible paragraph representation.
-    """
-
     document_id: int
-    page_number: int
+    section_index: int
+    section_title: str | None
     paragraph_number: int
     text: str
-    chunk_method: str
-
-
-STORABLE_CATEGORIES = {
-    "paragraph",
-    "list",
-    "table",
-}
+    is_searchable: bool
 
 
 def chunk_document(
-    *,
-    document_id: int,
-    elements: Sequence[CleanedElement],
+    *, document_id: int, elements: Sequence[ExtractedElement]
 ) -> list[ParagraphChunk]:
-    """
-    Convert cleaned extracted elements into database paragraphs.
-
-    One source element becomes one database paragraph.
-
-    Titles and headings are retained as section metadata but are not
-    stored as paragraphs unless their category is explicitly included
-    in STORABLE_CATEGORIES.
-    """
-
+    counters: dict[int, int] = {}
     output: list[ParagraphChunk] = []
-    page_counters: dict[int, int] = {}
 
     for element in elements:
-
         if element.category not in STORABLE_CATEGORIES:
             continue
-
         text = element.text.strip()
-
         if not text:
             continue
 
-        page = element.page_number
-        page_counters[page] = page_counters.get(page, 0) + 1
-        paragraph_number = page_counters[page]
+        number = counters.get(element.section_index, 0) + 1
+        counters[element.section_index] = number
 
         output.append(
             ParagraphChunk(
                 document_id=document_id,
-                page_number=page,
-                paragraph_number=paragraph_number,
+                section_index=element.section_index,
+                section_title=element.section_title,
+                paragraph_number=number,
                 text=text,
-                chunk_method="extracted_element",
+                is_searchable=element.is_searchable,
             )
         )
-
-    if len(page_counters) > 1:
-        pages_seen = [
-            el.page_number
-            for el in elements
-            if el.category in STORABLE_CATEGORIES and el.text.strip()
-        ]
-        if pages_seen != sorted(pages_seen):
-            logger.warning(
-                "Non-monotonic page order detected during chunking for document_id=%s",
-                document_id,
-            )
-
-    return sorted(output, key=lambda p: (p.page_number, p.paragraph_number))
+    return output

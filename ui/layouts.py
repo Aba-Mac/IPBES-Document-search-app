@@ -249,7 +249,7 @@ def build_header():
 
     return ui.div(
         ui.h1(
-            "IPBES ILK dialogue workshop report search",
+            "IPBES ILK dialogue workshop report explorer",
             class_="app-title",
         ),
 
@@ -331,7 +331,7 @@ def build_footer():
                 ui.span(" | ", class_="footer-separator"),
                 ui.a(
                     "IPBES Glossary",
-                    href="https://www.ipbes.net/glossary",
+                    href="https://www.ipbes.net/glossary?page=0",
                     class_="footer-link",
                 ),
                 ui.span(" | ", class_="footer-separator"),

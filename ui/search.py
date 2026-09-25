@@ -22,9 +22,6 @@ The UI only collects user input and passes it to the service layer.
 
 from __future__ import annotations
 
-from datetime import date
-from typing import Iterable
-
 from shiny import ui
 
 ###############################################################################
@@ -40,18 +37,19 @@ GLOSSARY_LIST_ID = "glossary_list_selection"
 ###############################################################################
 
 
-def build_search_controls(
-    *,
-    years: Iterable[int] = (),
-):
+def build_search_controls():
     """
     Build the complete search control panel.
     """
 
-    years = tuple(years) or (2019, date.today().year)
-    y_min, y_max = min(years), max(years)
-
     return ui.div(
+
+        #
+        # Disclaimer
+        #
+        ui.div(
+            ui.tags.label("Disclaimer: for official use, always consult original documents.", class_="control-title"),
+        ),
 
         #
         # Main search input
@@ -62,10 +60,12 @@ def build_search_controls(
             ui.p(
                 (
                     "Currently, only terms from the glossary list below are searchable. "
-                    "Use AND, OR, NOT, NOR and parentheses, for example:\n"
-                    "Biodiversity AND (Climate OR Environment)\n"
-                    "Biodiversity AND (Conceptual Framework NOR Frameworks)\n" 
-                    "Climate NOT Climate Change"
+                    "Use AND, OR, NOT and parentheses, for example:\n"
+                    "Biodiversity AND (Climate OR Environment) -> returns all sections containing "
+                    "either Biodiversity and Climate or Biodiversity and Environment\n"
+                    "Biodiversity NOT (Conceptual Framework OR Frameworks) -> "
+                    "returns all sections including Biodiversity but excluding Conceptual Framework or Frameworks\n" 
+                    "Climate NOT Climate Change -> returns all sections containing Climate but excluding Climate Change"
                 ),
                 class_="search-hint",
             ),

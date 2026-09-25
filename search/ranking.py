@@ -7,7 +7,8 @@ Executes ranked SQLite FTS5 searches against the paragraph index.
 This module is responsible for translating a parsed Boolean query into
 database calls, applying SQLite FTS5 BM25 ranking, pagination, and
 constructing strongly typed search results for consumption by the
-search service.
+search service. Search results are modified such that no partial sentences
+at the beginning and end of a paragraph are displayed within a result.
 
 Responsibilities
 ----------------
@@ -17,6 +18,7 @@ Responsibilities
 - Apply pagination.
 - Attach glossary term matches.
 - Return paragraph-level results.
+- Trim incomplete sentences at beginning and end of result.
 - Provide a clear extension point for future semantic re-ranking.
 
 This module intentionally does NOT:
@@ -31,12 +33,19 @@ This module intentionally does NOT:
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Protocol
 
 from search.parser import SearchFilters, SearchRequest
 
 logger = logging.getLogger(__name__)
+
+_BULLET_PREFIX_RE = re.compile(
+    r"^(?:[-*+\u2022\u2023\u25e6\u25aa\u25b8]|\d+[.)])\s+"
+)
+_SENTENCE_BOUNDARY_RE = re.compile(r"(?<=[.!?])\s+")
+_TERMINAL_PUNCTUATION = ".?!"
 
 __all__ = [
     "SearchResult",
@@ -45,6 +54,7 @@ __all__ = [
     "SearchRepositoryProtocol",
     "execute_ranked_search",
 ]
+
 
 ###############################################################################
 # Exceptions
@@ -141,11 +151,9 @@ class SearchResult:
 
     year: int | None
 
-    plenary_session: str | None
-
     location: str | None
 
-    page_number: int
+    section_title: str | None
 
     paragraph_number: int
 
@@ -356,11 +364,10 @@ def _build_results(
             filename=row["filename"],
             source=row["source"],
             year=row["year"],
-            plenary_session=row["plenary_session"],
             location=row["location"],
-            page_number=int(row["page_number"]),
+            section_title=row["section_title"],
             paragraph_number=int(row["paragraph_number"]),
-            text=row["paragraph_text"],
+            text=format_paragraph_result(row["paragraph_text"]),
             matched_terms=sorted(
                 glossary_map.get(paragraph_id, [])
             ),
@@ -375,6 +382,23 @@ def _build_results(
     )
 
     return results
+
+
+def format_paragraph_result(text: str) -> str:
+    """Keep search results on sentence or bullet-point boundaries."""
+    text = " ".join(text.split()).strip()
+    if not text:
+        return ""
+
+    if not _BULLET_PREFIX_RE.match(text) and text[0].islower():
+        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(text))
+        if boundaries:
+            text = text[boundaries[0].end():].lstrip()
+
+    if text and text[-1] not in _TERMINAL_PUNCTUATION:
+        text += "."
+
+    return text
 
 
 ###############################################################################
@@ -441,7 +465,7 @@ _REQUIRED_COLUMNS: frozenset[str] = frozenset(
         "year",
         "plenary_session",
         "location",
-        "page_number",
+        "section_title",
         "paragraph_number",
         "paragraph_text",
         "bm25_score",

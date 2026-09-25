@@ -107,6 +107,8 @@ def server(input, output, session) -> None:
 
     submitted_query = reactive.value("")
 
+    search_error = reactive.value(None)
+
     # ---------------------------------------------------------------
     # About section
     # ---------------------------------------------------------------
@@ -128,6 +130,7 @@ def server(input, output, session) -> None:
         if not query:
             return
 
+        search_error.set(None)
         submitted_query.set(query)
         current_page.set(1)
 
@@ -198,9 +201,10 @@ def server(input, output, session) -> None:
                 page=page,
             )
 
-        except SearchServiceError:
-            logger.exception("Search failed.")
-            raise
+        except SearchServiceError as exc:
+            logger.warning("Search failed: %s", exc)
+            search_error.set(str(exc))
+            return None
 
 
     # ---------------------------------------------------------------
@@ -210,6 +214,10 @@ def server(input, output, session) -> None:
     @output
     @render.text
     def page_info():
+        error = search_error.get()
+        if error:
+            return f"Search error: {error}"
+
         response = search_results()
 
         if response is None:
