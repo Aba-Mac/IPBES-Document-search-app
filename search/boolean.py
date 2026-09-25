@@ -61,7 +61,6 @@ __all__ = [
     "NotNode",
     "AndNode",
     "OrNode",
-    "NorNode",
     "BooleanParser",
     "iter_term_nodes",
     "SQLiteFTS5Compiler",
@@ -406,10 +405,6 @@ class BooleanParser:
                 node = OrNode(node, rhs)
                 continue
 
-            if self._accept(TokenType.NOR):
-                rhs = self._and_expression()
-                continue
-
             return node
 
     def _and_expression(self) -> ASTNode:
@@ -507,8 +502,8 @@ class SQLiteFTS5Compiler:
     FTS5's NOT is binary only (``A NOT B``) — there is no unary/bare
     NOT, and there is no way to express a query that excludes terms
     without also requiring at least one positive term (FTS5 has no
-    index structure for "rows NOT containing X" alone). NotNode and
-    NorNode are therefore only compilable when they appear as a
+    index structure for "rows NOT containing X" alone). NotNode is
+    therefore only compilable when it appears as a
     conjunct of an AND chain, where a positive term is guaranteed to
     exist. Any other placement raises BooleanSyntaxError with an
     explanatory message instead of producing invalid SQL that would
