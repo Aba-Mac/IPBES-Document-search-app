@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 _BULLET_PREFIX_RE = re.compile(
     r"^(?:[-*+\u2022\u2023\u25e6\u25aa\u25b8]|\d+[.)])\s+"
 )
-_SENTENCE_BOUNDARY_RE = re.compile(r"(?<=[.!?])\s+")
+_SENTENCE_BOUNDARY_RE = re.compile(r"(?<=[.!?;])\s+")
 _TERMINAL_PUNCTUATION = ".?!;"
 
 __all__ = [
@@ -384,21 +384,57 @@ def _build_results(
     return results
 
 
-def format_paragraph_result(text: str) -> str:
-    """Keep search results on sentence or bullet-point boundaries."""
-    text = " ".join(text.split()).strip()
-    if not text:
+def format_paragraph_result(text: str) -> str | None:
+    """
+    Keep search results on sentence or bullet-point boundaries.
+
+    Line breaks are preserved (chunking.py numbers list items "1. ...",
+    "2. ...", separated by newlines), so bullets stay visually distinct.
+
+    - An incomplete leading sentence on the first line is trimmed, as before.
+    - A trailing fragment ending in ':' (an intro sentence into content
+      that got cut off at the chunk boundary) is stripped back to the last
+      real sentence boundary, one line at a time from the end. A numbered
+      prefix ("3. ") is set aside before searching for that boundary and
+      re-attached afterwards, so "3." itself is never mistaken for a
+      sentence end.
+    - If stripping would remove the entire result -- a single line/sentence
+      ending in ':' with nothing earlier to fall back on -- this returns
+      None instead of silently dropping the result. Callers should append
+      the next stored paragraph's text and retry.
+    """
+    lines = [" ".join(line.split()).strip() for line in text.split("\n")]
+    lines = [line for line in lines if line]
+    if not lines:
         return ""
 
-    if not _BULLET_PREFIX_RE.match(text) and text[0].islower():
-        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(text))
+    # --- leading trim: first line only, skip if it's a bullet ---
+    first = lines[0]
+    if not _BULLET_PREFIX_RE.match(first) and first[0].islower():
+        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(first))
         if boundaries:
-            text = text[boundaries[0].end():].lstrip()
+            lines[0] = first[boundaries[0].end():].lstrip()
 
-    if text and text[-1] not in _TERMINAL_PUNCTUATION:
-        text += "."
+    # --- trailing strip: remove a dangling ':' fragment ---
+    while lines and lines[-1].endswith(":"):
+        last = lines[-1]
+        bullet_match = _BULLET_PREFIX_RE.match(last)
+        prefix = bullet_match.group(0) if bullet_match else ""
+        body = last[len(prefix):]
 
-    return text
+        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(body))
+        if boundaries:
+            lines[-1] = prefix + body[: boundaries[-1].start()]
+            break
+        lines.pop()  # whole line was just the dangling fragment
+
+    if not lines:
+        return None
+
+    result = "\n".join(lines)
+    if result[-1] not in _TERMINAL_PUNCTUATION:
+        result += "."
+    return result
 
 
 ###############################################################################
