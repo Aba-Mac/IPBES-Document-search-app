@@ -2,26 +2,32 @@
 search.boolean
 ==============
 
-Production-grade Boolean query parser for SQLite FTS5.
+Boolean query parser for SQLite FTS5.
 
-This module provides:
+Query syntax
+------------
 
-* lexical analysis (tokenisation)
-* recursive-descent parsing
-* Abstract Syntax Tree (AST)
-* validation with user-friendly error reporting
-* compilation into parameterised SQLite WHERE clauses
-* protection against SQL injection by ensuring user input is always
-  passed as bound parameters rather than interpolated into SQL.
+Operators are recognised ONLY when written in capitals:
 
-Supported operators
--------------------
+    AND    OR    NOT
 
-    AND
-    OR
-    NOT
+Grouping uses SQUARE brackets:
 
-Parentheses may be nested arbitrarily.
+    [ ... ]
+
+Everything else is a search term. Because of this, glossary terms may
+freely contain the words "and"/"or"/"not" in lowercase and may contain
+round parentheses, commas, hyphens etc.:
+
+    peace and security AND [climate change OR water]
+    Convention on Biological Diversity (CBD) NOT tourism
+
+Consecutive bare words are merged into one multiword term, so no quotes
+are needed for multiword terms. Quotes remain available as an escape
+hatch for terms that contain capitalised operator words or square
+brackets:
+
+    "peace AND security" AND [water OR soil]
 
 Operator precedence:
 
@@ -29,19 +35,8 @@ Operator precedence:
     2. AND
     3. OR
 
-Examples
---------
-
-    climate AND adaptation
-
-    (water OR soil) AND governance
-
-    climate AND NOT biodiversity
-
-    (A OR B) AND (C OR D)
-
-The parser is intentionally independent from SQLite so that it can be
-unit-tested without a database connection.
+The parser is independent from SQLite so that it can be unit-tested
+without a database connection.
 """
 
 from __future__ import annotations
@@ -76,8 +71,7 @@ class BooleanSyntaxError(ValueError):
     """
     Raised when a Boolean expression cannot be parsed.
 
-    The message is written for end users rather than developers so that
-    it can safely be displayed by the UI layer.
+    The message is written for end users so it can be shown by the UI.
     """
 
 
@@ -95,8 +89,8 @@ class TokenType(Enum):
     OR = "OR"
     NOT = "NOT"
 
-    LPAREN = "("
-    RPAREN = ")"
+    LBRACKET = "["
+    RBRACKET = "]"
 
     EOF = "EOF"
 
@@ -106,41 +100,29 @@ class Token:
     """
     A lexical token.
 
-    Parameters
-    ----------
-    token_type
-        Token classification.
-
-    value
-        Original token text.
-
-    position
-        Character offset within the original query.
+    ``value`` is the token text; for quoted terms the surrounding quotes
+    are already removed and doubled quotes unescaped.
     """
 
     token_type: TokenType
     value: str
     position: int
+    quoted: bool = False
 
 
 # ---------------------------------------------------------------------
 # Lexer
 # ---------------------------------------------------------------------
 
-
-_TOKEN_PATTERN = re.compile(r"""\(|\)|"(?:[^"]|"")*"|[^\s()]+""",re.VERBOSE,)
+# quoted phrase | [ | ] | any run of characters that are neither
+# whitespace nor square brackets (so "(", ")", ",", "-" stay in terms)
+_TOKEN_PATTERN = re.compile(r'"(?:[^"]|"")*"|\[|\]|[^\s\[\]]+')
 
 
 class BooleanLexer:
-    """
-    Converts a Boolean query into a stream of tokens.
+    """Converts a query into a stream of tokens."""
 
-    Notes
-    -----
-    The lexer performs no semantic validation beyond recognising
-    operators and parentheses.
-    """
-
+    # Case-sensitive on purpose: only capitalised words are operators.
     OPERATORS = {
         "AND": TokenType.AND,
         "OR": TokenType.OR,
@@ -148,68 +130,41 @@ class BooleanLexer:
     }
 
     def tokenize(self, text: str) -> list[Token]:
-        """
-        Tokenise a Boolean query.
-
-        Parameters
-        ----------
-        text
-            Raw user query.
-
-        Returns
-        -------
-        list[Token]
-
-        Raises
-        ------
-        BooleanSyntaxError
-            If the query is empty.
-        """
-
-        if text is None:
-            raise BooleanSyntaxError("Please enter a search query.")
-
-        stripped = text.strip()
-
-        if not stripped:
+        if text is None or not text.strip():
             raise BooleanSyntaxError("Please enter a search query.")
 
         tokens: list[Token] = []
 
         for match in _TOKEN_PATTERN.finditer(text):
-
             value = match.group(0)
+            position = match.start()
 
-            if value == "(":
-                token_type = TokenType.LPAREN
+            if value == "[":
+                tokens.append(Token(TokenType.LBRACKET, value, position))
 
-            elif value == ")":
-                token_type = TokenType.RPAREN
+            elif value == "]":
+                tokens.append(Token(TokenType.RBRACKET, value, position))
+
+            elif value.startswith('"'):
+                if len(value) < 2 or not value.endswith('"'):
+                    raise BooleanSyntaxError("Unbalanced quotation marks.")
+                inner = value[1:-1].replace('""', '"')
+                if not inner.strip():
+                    raise BooleanSyntaxError("Empty quoted phrase.")
+                tokens.append(
+                    Token(TokenType.TERM, inner, position, quoted=True)
+                )
 
             else:
-                upper = value.upper()
-
-                token_type = self.OPERATORS.get(
-                    upper,
-                    TokenType.TERM,
+                tokens.append(
+                    Token(
+                        self.OPERATORS.get(value, TokenType.TERM),
+                        value,
+                        position,
+                    )
                 )
 
-            tokens.append(
-                Token(
-                    token_type=token_type,
-                    value=value,
-                    position=match.start(),
-                )
-            )
-
-        tokens.append(
-            Token(
-                TokenType.EOF,
-                "",
-                len(text),
-            )
-        )
-
+        tokens.append(Token(TokenType.EOF, "", len(text)))
         return tokens
 
 
@@ -224,12 +179,7 @@ class ASTNode(ABC):
 
 @dataclass(slots=True)
 class TermNode(ASTNode):
-    """
-    Leaf node representing one search term.
-
-    Terms are stored exactly as entered by the user (minus any outer
-    quotes removed by the parser).
-    """
+    """Leaf node representing one search term (quotes already removed)."""
 
     value: str
 
@@ -266,34 +216,16 @@ class OrNode(BinaryNode):
 
 class BooleanParser:
     """
-    Production-grade recursive-descent Boolean parser.
+    Recursive-descent Boolean parser.
 
     Grammar
     -------
 
-    expression
-
-        := or_expression
-
-    or_expression
-
-        := and_expression
-           ( OR and_expression )*
-
-    and_expression
-
-        := unary_expression
-           (AND unary_expression)*
-
-    unary_expression
-
-        := NOT unary_expression
-         | primary
-
-    primary
-
-        := TERM
-         | "(" expression ")"
+    expression       := or_expression
+    or_expression    := and_expression ( OR and_expression )*
+    and_expression   := unary_expression ( (AND | NOT) unary_expression )*
+    unary_expression := NOT unary_expression | primary
+    primary          := TERM | "[" expression "]"
     """
 
     def __init__(self) -> None:
@@ -303,16 +235,18 @@ class BooleanParser:
     @staticmethod
     def _merge_adjacent_terms(tokens: list[Token]) -> list[Token]:
         """
-        Merge consecutive bare TERM tokens into a single phrase term.
-        ...
+        Merge consecutive BARE term tokens into one multiword term.
+        Quoted terms are never merged.
         """
         merged: list[Token] = []
 
         for token in tokens:
             if (
                 token.token_type is TokenType.TERM
+                and not token.quoted
                 and merged
                 and merged[-1].token_type is TokenType.TERM
+                and not merged[-1].quoted
             ):
                 previous = merged[-1]
                 merged[-1] = Token(
@@ -333,32 +267,23 @@ class BooleanParser:
         """
         Parse a Boolean query into an AST.
 
-        Parameters
-        ----------
-        query
-            User-entered Boolean expression.
-
-        Returns
-        -------
-        ASTNode
-
         Raises
         ------
         BooleanSyntaxError
-            If parsing fails.
         """
-
-        lexer = BooleanLexer()
-
-        tokens = lexer.tokenize(query)
+        tokens = BooleanLexer().tokenize(query)
         self._tokens = self._merge_adjacent_terms(tokens)
         self._index = 0
 
         root = self._expression()
 
-        if self.current.token_type is not TokenType.EOF:
+        token = self.current
+        if token.token_type is not TokenType.EOF:
+            if token.token_type is TokenType.RBRACKET:
+                raise BooleanSyntaxError("Unexpected closing bracket ']'.")
             raise BooleanSyntaxError(
-                f"Unexpected token '{self.current.value}'."
+                f"Unexpected '{token.value}' - put AND, OR or NOT "
+                "between search terms."
             )
 
         return root
@@ -367,119 +292,80 @@ class BooleanParser:
         if self._index < len(self._tokens) - 1:
             self._index += 1
 
-    def _accept(
-        self,
-        token_type: TokenType,
-    ) -> bool:
-
+    def _accept(self, token_type: TokenType) -> bool:
         if self.current.token_type is token_type:
             self._advance()
             return True
-
         return False
 
-    def _expect(
-        self,
-        token_type: TokenType,
-        message: str,
-    ) -> Token:
-
+    def _expect(self, token_type: TokenType, message: str) -> Token:
         if self.current.token_type is token_type:
             token = self.current
             self._advance()
             return token
-
         raise BooleanSyntaxError(message)
 
     def _expression(self) -> ASTNode:
         return self._or_expression()
 
     def _or_expression(self) -> ASTNode:
-
         node = self._and_expression()
-
-        while True:
-
-            if self._accept(TokenType.OR):
-                rhs = self._and_expression()
-                node = OrNode(node, rhs)
-                continue
-
-            return node
+        while self._accept(TokenType.OR):
+            node = OrNode(node, self._and_expression())
+        return node
 
     def _and_expression(self) -> ASTNode:
-
         node = self._unary_expression()
 
         while True:
-
             if self._accept(TokenType.AND):
-                rhs = self._unary_expression()
-                node = AndNode(node, rhs)
+                node = AndNode(node, self._unary_expression())
                 continue
 
+            # "A NOT B" is shorthand for "A AND NOT B"
             if self._accept(TokenType.NOT):
-                rhs = self._unary_expression()
-                node = AndNode(node, NotNode(rhs))
+                node = AndNode(node, NotNode(self._unary_expression()))
                 continue
 
             return node
 
     def _unary_expression(self) -> ASTNode:
-
         if self._accept(TokenType.NOT):
             return NotNode(self._unary_expression())
-
         return self._primary()
 
     def _primary(self) -> ASTNode:
-
-        if self._accept(TokenType.LPAREN):
-
+        if self._accept(TokenType.LBRACKET):
             expression = self._expression()
-
             self._expect(
-                TokenType.RPAREN,
-                "Missing closing parenthesis.",
+                TokenType.RBRACKET,
+                "Missing closing bracket ']'.",
             )
-
             return expression
 
-        if self.current.token_type is TokenType.TERM:
+        token = self.current
 
-            token = self.current
+        if token.token_type is TokenType.TERM:
             self._advance()
+            return TermNode(token.value)
 
-            value = token.value
+        if token.token_type is TokenType.RBRACKET:
+            raise BooleanSyntaxError("Unexpected closing bracket ']'.")
 
-            if (
-                len(value) >= 2
-                and value.startswith('"')
-                and value.endswith('"')
-            ):
-                value = value[1:-1].replace(
-                    '""',
-                    '"',
-                )
-
-            return TermNode(value)
-
-        if self.current.token_type is TokenType.RPAREN:
-
+        if token.token_type is TokenType.EOF:
             raise BooleanSyntaxError(
-                "Unexpected closing parenthesis."
+                "The search is incomplete - a term is missing after the "
+                "last operator or bracket."
             )
 
         raise BooleanSyntaxError(
-            f"Unexpected token '{self.current.value}'."
+            f"Unexpected '{token.value}' - a search term is expected here."
         )
 
 
 def iter_term_nodes(node: ASTNode) -> Iterator[TermNode]:
-    """
-    Yield every glossary term in a parsed Boolean expression.
-    """
-    
+    """Yield every search term in a parsed Boolean expression."""
+
     if isinstance(node, TermNode):
         yield node
     elif isinstance(node, NotNode):
@@ -499,15 +385,14 @@ class SQLiteFTS5Compiler:
     Compile a validated Boolean AST into a single SQLite FTS5 MATCH
     expression.
 
-    FTS5's NOT is binary only (``A NOT B``) — there is no unary/bare
-    NOT, and there is no way to express a query that excludes terms
-    without also requiring at least one positive term (FTS5 has no
-    index structure for "rows NOT containing X" alone). NotNode is
-    therefore only compilable when it appears as a
-    conjunct of an AND chain, where a positive term is guaranteed to
-    exist. Any other placement raises BooleanSyntaxError with an
-    explanatory message instead of producing invalid SQL that would
-    crash at the database layer.
+    FTS5's NOT is binary only (``A NOT B``), so NotNode is only
+    compilable as a conjunct of an AND chain, where a positive term is
+    guaranteed to exist. Any other placement raises BooleanSyntaxError
+    instead of producing invalid SQL.
+
+    Every term is emitted as a quoted FTS5 string, so characters such as
+    hyphens, apostrophes, colons or ampersands can never cause an FTS5
+    syntax error.
     """
 
     def compile(self, ast: ASTNode) -> tuple[str, list[str]]:
@@ -522,9 +407,7 @@ class SQLiteFTS5Compiler:
             return self._compile_and_chain(node)
 
         if isinstance(node, OrNode):
-            if isinstance(node.left, (NotNode)) or isinstance(
-                node.right, (NotNode)
-            ):
+            if isinstance(node.left, NotNode) or isinstance(node.right, NotNode):
                 raise BooleanSyntaxError(
                     "NOT can't be combined directly with OR. "
                     "Use AND instead of OR, e.g. 'Climate AND NOT Biodiversity'."
@@ -536,7 +419,7 @@ class SQLiteFTS5Compiler:
 
         if isinstance(node, NotNode):
             raise BooleanSyntaxError(
-                "NOT needs a positive search term to exclude from — "
+                "NOT needs a positive search term to exclude from - "
                 "try 'Climate NOT Biodiversity' or "
                 "'Climate AND NOT Biodiversity'."
             )
@@ -550,22 +433,18 @@ class SQLiteFTS5Compiler:
 
             (positive terms ANDed) NOT (excluded terms ORed)
         """
-        conjuncts = self._flatten_and(node)
-
         positives: list[str] = []
         negatives: list[str] = []
 
-        for conjunct in conjuncts:
+        for conjunct in self._flatten_and(node):
             if isinstance(conjunct, NotNode):
                 negatives.append(self._compile_node(conjunct.operand))
-                f"({self._compile_node(conjunct.left)} "
-                f"OR {self._compile_node(conjunct.right)})"
             else:
                 positives.append(self._compile_node(conjunct))
 
         if not positives:
             raise BooleanSyntaxError(
-                "A search needs at least one positive term — "
+                "A search needs at least one positive term - "
                 "NOT alone can't be searched."
             )
 
@@ -601,6 +480,4 @@ class SQLiteFTS5Compiler:
         if not value:
             raise ValueError("Empty search term.")
         escaped = value.replace('"', '""')
-        if any(ch.isspace() for ch in escaped):
-            return f'"{escaped}"'
-        return escaped
+        return f'"{escaped}"'

@@ -18,16 +18,13 @@ from core.paths import GLOSSARY_DIR
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
-glossary_sources = {
-    "ILK": GLOSSARY_DIR / "ilk.txt",
-    "Glossary": GLOSSARY_DIR / "glossary.txt",
-}
+glossary_path = GLOSSARY_DIR / "glossary.txt"
 
-missing = [name for name, path in glossary_sources.items() if not path.exists()]
+missing = [name for name, path in glossary_path.items() if not path.exists()]
 if missing:
     raise FileNotFoundError(f"Missing glossary file(s): {', '.join(missing)}")
 
 with repository.transaction() as connection:
-    match_count = reindex_all_glossary_matches(connection, glossary_sources)
+    match_count = reindex_all_glossary_matches(connection, glossary_path)
 
 LOGGER.info("Reindexed glossary matches: %d paragraph-term rows.", match_count)

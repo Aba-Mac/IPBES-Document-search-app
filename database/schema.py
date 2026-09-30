@@ -10,7 +10,7 @@ be imported by migrations.py and tested independently.
 Features
 --------
 - Foreign key constraints
-- FTS5 full-text search
+- FTS5 full-text search over LEMMATISED paragraph text
 - Trigger-based FTS synchronization
 - Appropriate indexes
 - Idempotent CREATE statements
@@ -26,8 +26,11 @@ The schema supports:
 - embeddings
 - paragraphs_fts (FTS5)
 
-The FTS table indexes paragraph text and is automatically maintained via
-SQLite triggers.
+paragraphs.text holds the original text (used for display).
+paragraphs.lemmas holds the same text as space-separated lowercase
+lemmas (computed at ingestion) and is what paragraphs_fts indexes, so
+that searches match singular/plural and other inflected forms.
+The FTS table is automatically maintained via SQLite triggers.
 """
 
 from __future__ import annotations
@@ -75,6 +78,8 @@ PARAGRAPHS_TABLE = dedent(
 
         text                TEXT NOT NULL,
 
+        lemmas              TEXT NOT NULL DEFAULT '',
+
         is_searchable       INTEGER NOT NULL CHECK(is_searchable IN (0, 1)),
 
         FOREIGN KEY(document_id)
@@ -97,11 +102,7 @@ TERMS_TABLE = dedent(
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        term TEXT NOT NULL COLLATE NOCASE,
-
-        list_name   TEXT NOT NULL DEFAULT 'general',
-
-        UNIQUE(term, list_name)
+        term TEXT NOT NULL COLLATE NOCASE
     );
 """
 )
@@ -207,7 +208,7 @@ FTS_TABLE = dedent(
     CREATE VIRTUAL TABLE IF NOT EXISTS paragraphs_fts
     USING fts5(
 
-        text,
+        lemmas,
 
         content='paragraphs',
         content_rowid='id',
@@ -229,11 +230,11 @@ FTS_INSERT_TRIGGER = dedent(
 
         INSERT INTO paragraphs_fts (
             rowid,
-            text
+            lemmas
         )
         VALUES (
             NEW.id,
-            NEW.text
+            NEW.lemmas
         );
 
     END;
@@ -249,12 +250,12 @@ FTS_DELETE_TRIGGER = dedent(
         INSERT INTO paragraphs_fts(
             paragraphs_fts,
             rowid,
-            text
+            lemmas
         )
         VALUES(
             'delete',
             OLD.id,
-            OLD.text
+            OLD.lemmas
         );
 
     END;
@@ -264,28 +265,28 @@ FTS_DELETE_TRIGGER = dedent(
 FTS_UPDATE_TRIGGER = dedent(
     """
     CREATE TRIGGER IF NOT EXISTS paragraphs_au
-    AFTER UPDATE OF text
+    AFTER UPDATE OF lemmas
     ON paragraphs
     BEGIN
 
         INSERT INTO paragraphs_fts(
             paragraphs_fts,
             rowid,
-            text
+            lemmas
         )
         VALUES(
             'delete',
             OLD.id,
-            OLD.text
+            OLD.lemmas
         );
 
         INSERT INTO paragraphs_fts(
             rowid,
-            text
+            lemmas
         )
         VALUES(
             NEW.id,
-            NEW.text
+            NEW.lemmas
         );
 
     END;
@@ -316,13 +317,6 @@ INDEXES = [
         """
         CREATE INDEX IF NOT EXISTS idx_paragraph_document
         ON paragraphs(document_id);
-        """
-    ),
-
-    dedent(
-        """
-        CREATE INDEX IF NOT EXISTS idx_terms_term
-        ON terms(term);
         """
     ),
 

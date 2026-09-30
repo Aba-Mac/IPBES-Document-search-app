@@ -55,12 +55,6 @@ __all__ = [
 
 _ALLOWED_PAGE_SIZES = frozenset({10, 20, 50})
 
-_BOOLEAN_KEYWORDS = {
-    "AND",
-    "OR",
-    "NOT",
-}
-
 _WHITESPACE_RE = re.compile(r"\s+")
 
 ###############################################################################
@@ -93,16 +87,12 @@ class SearchFilters:
         Publication year.
 
     document
-        Internal document identifier.
-
-    glossary_lists
-        2 lists with glossary terms.    
+        Internal document identifier.    
     """
 
     source: str | None = None
     year: tuple[int, int] | None = None
     document: int | None = None
-    glossary_lists: tuple[str, ...] | None = None  
 
 
 @dataclass(frozen=True, slots=True)
@@ -237,9 +227,6 @@ def _normalise_query(query: str) -> str:
 
     - trim leading/trailing whitespace
     - collapse repeated whitespace
-    - uppercase Boolean keywords
-    - preserve quoted phrases
-    - preserve parentheses
     """
     if query is None:
         raise SearchParserError("Search query cannot be None.")
@@ -253,23 +240,7 @@ def _normalise_query(query: str) -> str:
         raise SearchParserError("Search query cannot be empty.")
 
     query = _WHITESPACE_RE.sub(" ", query)
-
-    tokens = query.split(" ")
-
-    normalised = []
-
-    for token in tokens:
-        upper = token.upper()
-
-        if upper in _BOOLEAN_KEYWORDS:
-            normalised.append(upper)
-        else:
-            normalised.append(token)
-
-    query = " ".join(normalised)
-
     logger.debug("Normalised query: %s", query)
-
     return query
 
 
@@ -293,15 +264,11 @@ def _parse_filters(
         )
 
     source = _parse_source(filters.get("source"))
-    #year = _parse_year(filters.get("year"))
     document = _parse_document(filters.get("document"))
-    glossary_lists = _parse_glossary_lists(filters.get("glossary_lists"))
 
     return SearchFilters(
         source=source,
-        #year=year,
         document=document,
-        glossary_lists=glossary_lists,
     )
 
 
@@ -343,32 +310,6 @@ def _parse_document(value: Any) -> int | None:
         )
 
     return document
-
-
-def _parse_glossary_lists(value: Any) -> tuple[str, ...] | None:
-    """
-    Parse glossary list selection filter.
-
-    Accepts a single list-name string or a sequence of them. Empty
-    entries are dropped; an entirely empty result normalises to None
-    (meaning "no restriction", i.e. search all lists).
-    """
-    if value in ("", None):
-        return None
-
-    if isinstance(value, str):
-        value = (value,)
-
-    if not isinstance(value, (tuple, list)):
-        raise SearchParserError(
-            "glossary_lists filter must be a string or a list of strings."
-        )
-
-    cleaned = tuple(
-        str(item).strip() for item in value if str(item).strip()
-    )
-
-    return cleaned or None
 
 
 ###############################################################################

@@ -104,7 +104,6 @@ class SearchRepositoryProtocol(Protocol):
         source: str | None,
         year: tuple[int, int] | None,
         document_id: int | None,
-        glossary_lists: tuple[str, ...] | None,
         limit: int,
         offset: int,
         connection: Any = None,
@@ -263,8 +262,7 @@ def execute_ranked_search(
                     fts_query=fts_query,
                     source=request.filters.source,
                     year=request.filters.year,
-                    document_id=request.filters.document,
-                    glossary_lists=request.filters.glossary_lists, 
+                    document_id=request.filters.document, 
                     limit=request.limit,
                     offset=request.offset,
                     connection=connection,
@@ -384,57 +382,21 @@ def _build_results(
     return results
 
 
-def format_paragraph_result(text: str) -> str | None:
-    """
-    Keep search results on sentence or bullet-point boundaries.
-
-    Line breaks are preserved (chunking.py numbers list items "1. ...",
-    "2. ...", separated by newlines), so bullets stay visually distinct.
-
-    - An incomplete leading sentence on the first line is trimmed, as before.
-    - A trailing fragment ending in ':' (an intro sentence into content
-      that got cut off at the chunk boundary) is stripped back to the last
-      real sentence boundary, one line at a time from the end. A numbered
-      prefix ("3. ") is set aside before searching for that boundary and
-      re-attached afterwards, so "3." itself is never mistaken for a
-      sentence end.
-    - If stripping would remove the entire result -- a single line/sentence
-      ending in ':' with nothing earlier to fall back on -- this returns
-      None instead of silently dropping the result. Callers should append
-      the next stored paragraph's text and retry.
-    """
-    lines = [" ".join(line.split()).strip() for line in text.split("\n")]
-    lines = [line for line in lines if line]
-    if not lines:
+def format_paragraph_result(text: str) -> str:
+    """Keep search results on sentence or bullet-point boundaries."""
+    text = " ".join(text.split()).strip()
+    if not text:
         return ""
 
-    # --- leading trim: first line only, skip if it's a bullet ---
-    first = lines[0]
-    if not _BULLET_PREFIX_RE.match(first) and first[0].islower():
-        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(first))
+    if not _BULLET_PREFIX_RE.match(text) and text[0].islower():
+        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(text))
         if boundaries:
-            lines[0] = first[boundaries[0].end():].lstrip()
+            text = text[boundaries[0].end():].lstrip()
 
-    # --- trailing strip: remove a dangling ':' fragment ---
-    while lines and lines[-1].endswith(":"):
-        last = lines[-1]
-        bullet_match = _BULLET_PREFIX_RE.match(last)
-        prefix = bullet_match.group(0) if bullet_match else ""
-        body = last[len(prefix):]
+    if text and text[-1] not in _TERMINAL_PUNCTUATION:
+        text += "."
 
-        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(body))
-        if boundaries:
-            lines[-1] = prefix + body[: boundaries[-1].start()]
-            break
-        lines.pop()  # whole line was just the dangling fragment
-
-    if not lines:
-        return None
-
-    result = "\n".join(lines)
-    if result[-1] not in _TERMINAL_PUNCTUATION:
-        result += "."
-    return result
+    return text
 
 
 ###############################################################################

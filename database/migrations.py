@@ -13,6 +13,8 @@ Characteristics
 - Creates the database if it does not exist.
 - Enables SQLite foreign keys and WAL mode.
 - Applies the complete schema from schema.py.
+- Upgrades databases created before the lemma index existed
+  (adds paragraphs.lemmas, backfills it, rebuilds paragraphs_fts).
 - Verifies that required tables, indexes, triggers and the FTS5 virtual
   table exist.
 - Rebuilds the FTS index if required.
@@ -185,6 +187,12 @@ def rebuild_fts(connection: sqlite3.Connection) -> None:
 def _fts_is_populated(connection: sqlite3.Connection) -> bool:
     """
     Return True if the FTS index already contains entries.
+
+    NOTE: paragraphs_fts is an external-content table, so a plain SELECT
+    reads through to ``paragraphs`` and returns True whenever paragraphs
+    has rows, even if the index itself is empty. This is therefore only
+    a cheap first-run check; code that has just recreated the FTS table
+    (see upgrade_to_lemma_index) calls rebuild_fts explicitly.
     """
 
     cursor = connection.execute(
@@ -198,6 +206,81 @@ def _fts_is_populated(connection: sqlite3.Connection) -> bool:
     )
 
     return bool(cursor.fetchone()[0])
+
+
+# ---------------------------------------------------------------------
+# Upgrade: lemma-based FTS index
+# ---------------------------------------------------------------------
+
+
+def _column_names(connection: sqlite3.Connection, table: str) -> set[str]:
+    """Column names of a table or virtual table."""
+    return {
+        row[1] for row in connection.execute(f"PRAGMA table_info({table})")
+    }
+
+
+def upgrade_to_lemma_index(connection: sqlite3.Connection) -> bool:
+    """
+    Upgrade a database created before paragraphs.lemmas existed.
+
+    Steps (order matters):
+
+    1. Drop the old FTS triggers and the old FTS table.
+    2. Add paragraphs.lemmas.
+    3. Backfill lemmas for every existing paragraph. This happens while
+       no triggers exist, so nothing tries to 'delete' entries from an
+       index that was just thrown away (which would corrupt it).
+    4. Re-apply the schema (creates the new FTS table and triggers).
+    5. Rebuild the FTS index from paragraphs.lemmas.
+
+    Paragraph text, glossary tables, anchors and embeddings are not
+    touched.
+
+    Returns
+    -------
+    bool
+        True if an upgrade was performed, False if none was needed.
+    """
+    if (
+        "lemmas" in _column_names(connection, "paragraphs")
+        and "lemmas" in _column_names(connection, "paragraphs_fts")
+    ):
+        return False
+
+    # Imported lazily so ordinary migrations don't load spaCy.
+    from ingestion.glossary import lemmatise_many
+
+    LOGGER.info("Upgrading database to lemma-based full-text index...")
+
+    with connection:
+        for trigger in ("paragraphs_ai", "paragraphs_ad", "paragraphs_au"):
+            connection.execute(f"DROP TRIGGER IF EXISTS {trigger}")
+        connection.execute("DROP TABLE IF EXISTS paragraphs_fts")
+
+        if "lemmas" not in _column_names(connection, "paragraphs"):
+            connection.execute(
+                "ALTER TABLE paragraphs "
+                "ADD COLUMN lemmas TEXT NOT NULL DEFAULT ''"
+            )
+
+    rows = connection.execute("SELECT id, text FROM paragraphs").fetchall()
+    lemma_lists = lemmatise_many(row[1] for row in rows)
+
+    with connection:
+        connection.executemany(
+            "UPDATE paragraphs SET lemmas = ? WHERE id = ?",
+            [
+                (" ".join(lemmas), row[0])
+                for row, lemmas in zip(rows, lemma_lists)
+            ],
+        )
+
+    apply_schema(connection)
+    rebuild_fts(connection)
+
+    LOGGER.info("Lemma index built for %d paragraphs.", len(rows))
+    return True
 
 
 # ---------------------------------------------------------------------
@@ -217,6 +300,8 @@ def migrate() -> None:
     with connect() as connection:
 
         apply_schema(connection)
+
+        upgrade_to_lemma_index(connection)
 
         validate_schema(connection)
 

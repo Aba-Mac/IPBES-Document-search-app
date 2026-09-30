@@ -40,7 +40,6 @@ from ui.layouts import build_page, build_about_modal
 from ui.search import (
     build_search_controls,
     search_query,
-    selected_glossary_lists,
 )
 from ui.styles import app_css
 
@@ -156,8 +155,7 @@ def server(input, output, session) -> None:
 
     @reactive.effect
     async def _update_glossary_terms():
-        lists = selected_glossary_lists(input)
-        terms = get_glossary_terms(list_names=lists or None)
+        terms = get_glossary_terms()
 
         logger.info(
             "Loaded glossary terms for autocomplete: %s",
@@ -180,11 +178,6 @@ def server(input, output, session) -> None:
         if not query:
             return None
 
-        filters: dict[str, object] = {}
-
-        lists = selected_glossary_lists(input)
-        if lists:
-            filters["glossary_lists"] = lists
 
         page = current_page.get()
 
@@ -197,7 +190,6 @@ def server(input, output, session) -> None:
         try:
             return search(
                 query=query,
-                filters=filters or None,
                 page=page,
             )
 

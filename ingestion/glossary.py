@@ -49,7 +49,6 @@ class GlossaryTerm:
 
     term_id: int
     term: str
-    list_name: str = "general"
 
 
 @dataclass(frozen=True)
@@ -143,7 +142,7 @@ class GlossaryMatcher:
         ]
 
 
-def load_terms_txt(path: Path, list_name: str = "general") -> list[GlossaryTerm]:
+def load_terms_txt(path: Path) -> list[GlossaryTerm]:
     """
     Load glossary terms from a plain text file, one term per line.
     Tolerates files saved in a non-UTF-8 encoding (e.g. Windows-1252)
@@ -167,14 +166,14 @@ def load_terms_txt(path: Path, list_name: str = "general") -> list[GlossaryTerm]
     for index, line in enumerate(text.splitlines(), start=1):
         term = line.strip()
         if term:
-            terms.append(GlossaryTerm(term_id=index, term=term, list_name=list_name))
+            terms.append(GlossaryTerm(term_id=index, term=term))
     return terms
 
 
 def upsert_glossary_terms(
     connection: sqlite3.Connection,
     terms: Iterable[GlossaryTerm],
-) -> dict[tuple[str, str], int]:
+) -> dict[str, int]:
     """
     Insert glossary terms into the database.
 
@@ -183,42 +182,23 @@ def upsert_glossary_terms(
             normalised term -> database id
     """
 
-    cursor = connection.cursor()
-    for term in terms:
-        cursor.execute(
-            """
-            INSERT INTO terms(term, list_name)
-            VALUES (?, ?)
-            ON CONFLICT(term, list_name) DO NOTHING
-            """,
-            (term.term, term.list_name),
-        )
-    rows = cursor.execute("SELECT id, term, list_name FROM terms").fetchall()
-    return {(row[1].lower(), row[2]): row[0] for row in rows}
+    connection.executemany(
+        "INSERT INTO terms(term) VALUES (?) ON CONFLICT(term) DO NOTHING",
+        [(t.term,) for t in terms],
+    )
+    return {row[1].lower(): row[0] for row in connection.execute("SELECT id, term FROM terms")}
 
 
-def build_matcher(
-    connection: sqlite3.Connection,
-    glossary_sources: dict[str, Path],
-) -> GlossaryMatcher:
+def build_matcher(connection, glossary_path: Path) -> GlossaryMatcher:
     """
     Load the glossary files, upsert the terms into the database and return
     a compiled matcher that uses the database term ids.
     """
-    loaded = [
-        term
-        for list_name, path in glossary_sources.items()
-        for term in load_terms_txt(path, list_name=list_name)
-    ]
-    database_ids = upsert_glossary_terms(connection, loaded)
 
+    loaded = list({t.term.lower(): t for t in load_terms_txt(glossary_path)}.values())
+    ids = upsert_glossary_terms(connection, loaded)
     return GlossaryMatcher(
-        GlossaryTerm(
-            term_id=database_ids[(t.term.lower(), t.list_name)],
-            term=t.term,
-            list_name=t.list_name,
-        )
-        for t in loaded
+        GlossaryTerm(term_id=ids[t.term.lower()], term=t.term) for t in loaded
     )
 
 
@@ -256,7 +236,7 @@ def index_paragraph_glossary_terms(
 
 def reindex_all_glossary_matches(
     connection: sqlite3.Connection,
-    glossary_sources: dict[str, Path],
+    glossary_path: Path,
 ) -> int:
     """
     Recompute glossary matches for every paragraph and remove terms that
@@ -264,7 +244,7 @@ def reindex_all_glossary_matches(
     """
     from database import repository
 
-    matcher = build_matcher(connection, glossary_sources)
+    matcher = build_matcher(connection, glossary_path)
     paragraphs = repository.get_all_paragraphs_for_glossary(connection=connection)
     inserted = index_paragraph_glossary_terms(connection, paragraphs, matcher)
 

@@ -360,20 +360,8 @@ def count_paragraphs(
     source = getattr(filters, "source", None)
     year = getattr(filters, "year", None)
     document_id = getattr(filters, "document", None)
-    glossary_lists = getattr(filters, "glossary_lists", None)
-
-    joins = ""
     where = ["paragraphs_fts MATCH ?", "p.is_searchable = 1"]
     parameters: list[Any] = [fts_query]
-
-    if glossary_lists:
-        joins = """
-            JOIN paragraph_terms AS pt ON pt.paragraph_id = p.id
-            JOIN terms AS t ON t.id = pt.term_id
-        """
-        placeholders = ",".join("?" for _ in glossary_lists)
-        where.append(f"t.list_name IN ({placeholders})")
-        parameters.extend(glossary_lists)
 
     if source is not None:
         where.append("d.source = ?")
@@ -393,7 +381,6 @@ def count_paragraphs(
         FROM paragraphs_fts
         JOIN paragraphs AS p ON p.id = paragraphs_fts.rowid
         JOIN documents AS d ON d.id = p.document_id
-        {joins}
         WHERE {' AND '.join(where)}
     """
 
@@ -664,7 +651,6 @@ def search_paragraphs(
     source: str | None = None,
     year: tuple[int, int] | None = None,
     document_id: int | None = None,
-    glossary_lists: tuple[str, ...] | None = None,
     limit: int,
     offset: int,
     connection: sqlite3.Connection | None = None,
@@ -676,18 +662,6 @@ def search_paragraphs(
 
     where = ["paragraphs_fts MATCH ?", "p.is_searchable = 1"]
     parameters: list[Any] = [fts_query]
-
-    if glossary_lists:
-        placeholders = ",".join("?" for _ in glossary_lists)
-        where.append(f"""
-            p.id IN (
-                SELECT pt.paragraph_id
-                FROM paragraph_terms AS pt
-                JOIN terms AS t ON t.id = pt.term_id
-                WHERE t.list_name IN ({placeholders})
-            )
-        """)
-        parameters.extend(glossary_lists)
 
     if source is not None:
         where.append("d.source = ?")
@@ -824,27 +798,17 @@ def bulk_insert_terms(
 
 def list_terms(
     *,
-    list_names: tuple[str,...] | None = None,
     connection: sqlite3.Connection | None = None,
 ) -> list[sqlite3.Row]:
     """
     Return every glossary term.
     """
-    if not list_names:
-        return fetch_all(
-            "SELECT * FROM terms ORDER BY term COLLATE NOCASE",
-            connection=connection,
-        )
 
-    placeholders = ",".join("?" for _ in list_names)
-    
     return fetch_all(
         f"""
         SELECT * FROM terms
-        WHERE list_name in ({placeholders})
         ORDER BY term COLLATE NOCASE
         """,
-        list_names,
         connection=connection,
     )
 

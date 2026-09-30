@@ -292,7 +292,7 @@ def ingest_document(
 def ingest_directory(
     directory: str | Path,
     *,
-    glossary_sources: dict[str, Path],
+    glossary_path: Path,
     lookup_path: str | Path,
     metadata_path: str | Path,
     recursive: bool = True,
@@ -304,7 +304,7 @@ def ingest_directory(
         raise FileNotFoundError(directory)
 
     with repository.transaction() as connection:
-        matcher = glossary.build_matcher(connection, glossary_sources)
+        matcher = glossary.build_matcher(connection, glossary_path)
 
     pattern = "**/*.docx" if recursive else "*.docx"
     results: list[IngestionResult] = []

@@ -39,6 +39,7 @@ This module intentionally contains no SQL and no HTML rendering.
 from __future__ import annotations
 
 import logging
+from pydoc import text
 from typing import Any, Protocol
 
 from search.boolean import (
@@ -73,6 +74,11 @@ __all__ = [
     "get_available_documents",
     "configure"
 ]
+
+_PUNCT_MAP = str.maketrans({
+    "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+    "\u2013": "-", "\u2014": "-", "\u00a0": " ",
+})
 
 ###############################################################################
 # Exceptions
@@ -256,7 +262,7 @@ class SearchService:
         try:
             ast = BooleanParser().parse(request.query)
 
-            self._validate_terms(ast, request.filters.glossary_lists)
+            self._validate_terms(ast)
 
             _, params = SQLiteFTS5Compiler().compile(ast)
 
@@ -280,32 +286,15 @@ class SearchService:
                 "Unable to process search query."
             ) from exc
 
-    def _validate_terms(
-        self,
-        ast,
-        glossary_lists: tuple[str, ...] | None,
-    ) -> None:
-        """
-        Reject terms that are not present in the selected glossary lists.
-        """
-        rows = self._repository.list_terms(list_names=glossary_lists)
-        available = {
-            str(row["term"]).casefold().strip()
-            for row in rows
-        }
-
-        invalid = [
-            term.value
-            for term in iter_term_nodes(ast)
-            if term.value.casefold().strip() not in available
-        ]
-
+    def _validate_terms(self, ast) -> None:
+        rows = self._repository.list_terms()
+        available = {_key(row["term"]) for row in rows}
+        invalid = [t.value for t in iter_term_nodes(ast) if _key(t.value) not in available]
         if invalid:
             raise BooleanSyntaxError(
-                "Unknown search term(s): "
-                + ", ".join(f"'{term}'" for term in invalid)
-                + ". Use terms from the glossary and spell Boolean operators exactly as "
-                    "AND, OR, NOT."
+                "Unknown search term(s): " + ", ".join(f"'{t}'" for t in invalid)
+                + ". Write operators in capitals (AND, OR, NOT), group with square "
+                "brackets [ ], and put terms that contain those symbols in quotes."
             )
 
     def _postprocess_response(
@@ -365,6 +354,10 @@ def _service() -> SearchService:
     )
 
 
+def _key(text: str) -> str:
+    return " ".join(str(text).translate(_PUNCT_MAP).split()).casefold()
+
+
 def search(
     query: str,
     filters: dict[str, Any] | None = None,
@@ -390,8 +383,6 @@ def search(
 ###############################################################################
 
 
-def get_glossary_terms(list_names: tuple[str,...] | None = None) -> list[str]:
-    return [
-        row["term"]
-        for row in repository.list_terms(list_names=list_names)
+def get_glossary_terms() -> list[str]:
+    return [row["term"] for row in repository.list_terms()
     ]

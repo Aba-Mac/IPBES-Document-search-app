@@ -30,8 +30,6 @@ from shiny import ui
 
 SEARCH_QUERY_ID = "search_query"
 
-GLOSSARY_LIST_ID = "glossary_list_selection"
-
 ###############################################################################
 # UI construction
 ###############################################################################
@@ -48,7 +46,7 @@ def build_search_controls():
         # Disclaimer
         #
         ui.div(
-            ui.tags.label("Disclaimer: for official use, always consult original documents.", class_="control-title"),
+            ui.tags.label("Disclaimer: for official use, always consult original documents. This explorer does not return report figures.", class_="control-title"),
         ),
 
         #
@@ -59,13 +57,12 @@ def build_search_controls():
 
             ui.p(
                 (
-                    "Currently, only terms from the glossary list below are searchable. "
-                    "Use AND, OR, NOT and parentheses, for example:\n"
-                    "Biodiversity AND (Climate OR Environment) -> returns all sections containing "
+                    "Use AND, OR, NOT and square brackets, for example:\n"
+                    "Biodiversity AND [Climate OR Environment] -> returns all sections containing "
                     "either Biodiversity and Climate or Biodiversity and Environment\n"
-                    "Biodiversity NOT (Conceptual Framework OR Frameworks) -> "
+                    "Biodiversity NOT [Conceptual Framework OR Frameworks] -> "
                     "returns all sections including Biodiversity but excluding Conceptual Framework or Frameworks\n" 
-                    "Climate NOT Climate Change -> returns all sections containing Climate but excluding Climate Change"
+                    "Climate NOT [Climate Change] -> returns all sections containing Climate but excluding Climate Change"
                 ),
                 class_="search-hint",
             ),
@@ -89,22 +86,6 @@ def build_search_controls():
 
             class_="search-input-container",
         ),
-        #
-        # Glossary check box 
-        #
-        ui.div(
-            ui.tags.label("Search term sources:", class_="control-title"),
-
-            ui.input_checkbox_group(
-                GLOSSARY_LIST_ID,
-                label=None,
-                choices={"ILK": "ILK terms", "Glossary": "IPBES Glossary"},
-                selected=["ILK", "Glossary"],
-                inline=True,
-            ),
-
-            class_="glossary-selector",
-        ),
 
         #
         # Search button
@@ -124,11 +105,6 @@ def build_search_controls():
 ###############################################################################
 # Input accessors
 ###############################################################################
-
-
-def selected_glossary_lists(input) -> tuple[str, ...]:
-    value = input[GLOSSARY_LIST_ID]()
-    return tuple(value) if value else ()
 
 
 def search_query(input) -> str:

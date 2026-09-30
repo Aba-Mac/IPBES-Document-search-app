@@ -30,21 +30,18 @@ LOGGER.info(
     len(list(DOCX_DIR.glob("*.docx")))
 )
 
-glossary_sources = {
-    "ILK": GLOSSARY_DIR / "ilk.txt",
-    "Glossary": GLOSSARY_DIR / "glossary.txt",
-}
+glossary_path = GLOSSARY_DIR / "glossary.txt"
 
-missing = [name for name, path in glossary_sources.items() if not path.exists()]
+missing = [name for name, path in glossary_path.items() if not path.exists()]
 if missing:
     raise FileNotFoundError(
-        f"Missing glossary file(s) for: {', '.join(missing)} "
+        f"Missing glossary file for: {', '.join(missing)} "
         f"(looked in {GLOSSARY_DIR.resolve()})"
     )
 
 ingest_directory(
     directory=DOCX_DIR,
-    glossary_sources=glossary_sources,
+    glossary_path=glossary_path,
     lookup_path=SECTION_DOI_DIR,
     metadata_path=SECTION_DOI_DIR.with_name("document_metadata.csv"),
 )

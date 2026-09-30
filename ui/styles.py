@@ -180,9 +180,6 @@ a:focus {
     margin: var(--spacing-xs) 0 0;
 }
 
-.glossary-selector {
-    margin-top: var(--spacing-md);
-}
 
 /* ==========================================================================
    Search interface
