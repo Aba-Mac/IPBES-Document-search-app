@@ -10,7 +10,7 @@ be imported by migrations.py and tested independently.
 Features
 --------
 - Foreign key constraints
-- FTS5 full-text search over LEMMATISED paragraph text
+- FTS5 full-text search over paragraph text
 - Trigger-based FTS synchronization
 - Appropriate indexes
 - Idempotent CREATE statements
@@ -26,10 +26,7 @@ The schema supports:
 - embeddings
 - paragraphs_fts (FTS5)
 
-paragraphs.text holds the original text (used for display).
-paragraphs.lemmas holds the same text as space-separated lowercase
-lemmas (computed at ingestion) and is what paragraphs_fts indexes, so
-that searches match singular/plural and other inflected forms.
+paragraphs.text holds the original text and is indexed by paragraphs_fts.
 The FTS table is automatically maintained via SQLite triggers.
 """
 
@@ -77,8 +74,6 @@ PARAGRAPHS_TABLE = dedent(
         paragraph_number    INTEGER NOT NULL,
 
         text                TEXT NOT NULL,
-
-        lemmas              TEXT NOT NULL DEFAULT '',
 
         is_searchable       INTEGER NOT NULL CHECK(is_searchable IN (0, 1)),
 
@@ -208,7 +203,7 @@ FTS_TABLE = dedent(
     CREATE VIRTUAL TABLE IF NOT EXISTS paragraphs_fts
     USING fts5(
 
-        lemmas,
+        text,
 
         content='paragraphs',
         content_rowid='id',
@@ -230,11 +225,11 @@ FTS_INSERT_TRIGGER = dedent(
 
         INSERT INTO paragraphs_fts (
             rowid,
-            lemmas
+            text
         )
         VALUES (
             NEW.id,
-            NEW.lemmas
+            NEW.text
         );
 
     END;
@@ -250,12 +245,12 @@ FTS_DELETE_TRIGGER = dedent(
         INSERT INTO paragraphs_fts(
             paragraphs_fts,
             rowid,
-            lemmas
+            text
         )
         VALUES(
             'delete',
             OLD.id,
-            OLD.lemmas
+            OLD.text
         );
 
     END;
@@ -265,28 +260,28 @@ FTS_DELETE_TRIGGER = dedent(
 FTS_UPDATE_TRIGGER = dedent(
     """
     CREATE TRIGGER IF NOT EXISTS paragraphs_au
-    AFTER UPDATE OF lemmas
+    AFTER UPDATE OF text
     ON paragraphs
     BEGIN
 
         INSERT INTO paragraphs_fts(
             paragraphs_fts,
             rowid,
-            lemmas
+            text
         )
         VALUES(
             'delete',
             OLD.id,
-            OLD.lemmas
+            OLD.text
         );
 
         INSERT INTO paragraphs_fts(
             rowid,
-            lemmas
+            text
         )
         VALUES(
             NEW.id,
-            NEW.lemmas
+            NEW.text
         );
 
     END;
