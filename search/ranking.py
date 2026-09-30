@@ -388,13 +388,22 @@ def format_paragraph_result(text: str) -> str:
     if not text:
         return ""
 
+    # Trim incomplete sentence at the start.
     if not _BULLET_PREFIX_RE.match(text) and text[0].islower():
         boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(text))
         if boundaries:
             text = text[boundaries[0].end():].lstrip()
 
+    # Trim incomplete sentence at the end (including ones ending in ":").
     if text and text[-1] not in _TERMINAL_PUNCTUATION:
-        text += "."
+        boundaries = list(_SENTENCE_BOUNDARY_RE.finditer(text))
+        if boundaries:
+            text = text[:boundaries[-1].start()].rstrip()
+        else:
+            # Only one fragment: keep it rather than returning nothing.
+            text = text.rstrip(":,- ")
+            if text:
+                text += "."
 
     return text
 
