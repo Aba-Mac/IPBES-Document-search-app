@@ -52,13 +52,20 @@ class ExtractedDocument:
 
 
 def _iter_block_items(parent: DocumentType | _Cell) -> Iterable[Paragraph | Table]:
-    """Yield body blocks in document order, including tables."""
+    """Yield body blocks in document order, descending into tables."""
     parent_element = parent.element.body if isinstance(parent, DocumentType) else parent._tc
     for child in parent_element.iterchildren():
         if isinstance(child, CT_P):
             yield Paragraph(child, parent)
         elif isinstance(child, CT_Tbl):
-            yield Table(child, parent)
+            table = Table(child, parent)
+            seen = set()
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell._tc in seen:
+                        continue
+                    seen.add(cell._tc)
+                    yield from _iter_block_items(cell)
 
 
 def _normalise(text: str) -> str:
