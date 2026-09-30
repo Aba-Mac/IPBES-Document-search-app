@@ -1,999 +1,989 @@
-access and benefit sharing
 ABS
-actor
-adaptability
-adaptation
-afforestation
-agency
-agrobiodiversity
-agrochemical
-agroecology
-agroecosystem
-agroforestry
-ahimsā
-alien invasive species
-alien species
-animism
-anthropocene
-anthropocentric
-anthropocentrism
-anthropogenic
-apiculture
-aquaculture
-aquifer
-arable
-archetype
-asia-pacific region
-ayni
-backcasting
-badland
-barrier
-baseline
-beekeeping
-behaviour change
-beneficiary
-benefit
-benefit sharing
-best practice
-bio-prospectors
-biocentric perspectives
-biocentric worldview
-biocentrism
-biocultural community protocol
-biodiversity
-biofuel
-biological diversity
-biological invasion
-biomass (ecology)
-biome
-bioprospecting
-biosecurity
-biotechnology
-birgejupmi
-bottom-up
-boundary object
-bridging organizations
-buen vivir
-bushmeat
-bycatch
-capitalism
-certainty
-certification (environmental)
-challenge
-citizen science
-civil society
-clean technology
-climate
-co-benefit
-co-creation
-co-management
-co-production
-collaborative governance
-collective action
-colonialism
-coloniality
-commons
-communication
-community (social)
-community forestry
-community-based natural resource management
-CBNRM
-compensation
-concepts
-conceptual framework
-confidence
-conflict
-consumerism
-control
-convention on international trade in endangered species of wild fauna and flora
-CITES
-corridor
-cosmologies
-cosmovision
-cultural keystone species
-culture
-cumulative impacts
-customary law
-customary practices
-daoism
-decision-making
-deforestation
-degraded land
-degrowth
-desertification
-diet (healthy)
-disaster risk reduction
-disease
-diversity
-domestication
-driver
-drought
-dry forest
-drylands
-ecocentrism
-ecological connectivity
-ecosystem
-ecosystem service
-ecotourism
-el nino
-empowerment
-enabling conditions
-endemism
-environmental impact
-environmental impact assessment
-EIA
-epistemology
-equality
-equitable
-equity
-eradication
-established but incomplete (certainty term (q.v.))
-ethics
-ethnobiology
-etuaptmumk
-evaluation (of models)
-extinction
-extractives
-extractivism
-fairness
-fallow
-feedback
-feral
-field
-fishery
-fishing
-food
-food security
-food sovereignty
-food system
-forecast
-forest
-fossil fuel
-fragmentation
-prior and informed consent_ga1_sua
-gathering
-gender
-gene
-genetic engineering
-genetic resources
-genetically modified organism
-GMO
-geographic information systems
-GIS
-gini index
-global warming
-globalisation
-good quality of life
-GQL
-governance
-governance (modes of)
-grassland
-grazing
-green technology
-greenhouse gas
-GHG
-greenwashing
-habitat
-hazard
-health
-herbicide
-holism
-holocene
-homegarden
-homogenisation
-horticulture
-human rights
-human-nature relations
-hunting
-hurai
-identity
-impacts
-inclusive
-inclusive governance
-inconclusive (certainty term (q.v.))
-indicator
-indigenous and community conserved areas
-indigenous and local knowledge
-ILK
-indigenous communities
-Indigenous Peoples and local communities
-IPLC
-inequality
-information systems
-innovation
-insecticide
-institution
-intellectual and cultural property
-ICP
-intellectual property rights
-inter-generational equity
-interconnectedness
-invasive alien species
-IAS
-just
-justice
-kametsa asaike
-kawsak sacha
-kciye
-keystone species
-knowledge system
-kunming-montreal global biodiversity framework
-kyoto protocol
-land grabbing
-land tenure
-land use
-landscape
-learning (traditional and formal)
-livelihoods
-living in harmony with nature
-local
-local communities
-local community
-logging
-malnutrition
-management
-mangrove
-marginalization
-materialism
-migration
-millennium ecosystem assessment
-MEA
-mining
-mitigation
-model
-modernity
-monitoring
-monoculture
-mother earth
-nagoya protocol
-narrative
-national
-national biodiversity strategies and action plans
-NBSAP
-native species
-natural resources
-nature futures framework
-NFF
-nature-based solutions
-nature-based tourism
-nature's contributions to people
-NCP
-neoliberalism
-nexus
-norms
-observing
-oil spill
-one health
-ontology
-organic farming
-other effective area-based conservation measures
-OECM
-paradigms
-parasite
-paris agreement
-pastoralism
-pathways
-patriarchy
-payment for ecosystem services
-PES
-peatland
-perceptions
-permafrost
-pest
-pesticide
-planetary boundary
-planetary health
-plankton
-pluralism
-plurality
-pluriverse
-poaching
-policy
-pollination
-pollinator
-polluter-pays principle
-pollution
-polycentricity
-polycrisis
-poverty
-power
-practice
-precautionary approach
-precautionary principle
-prediction
-preference
-preparedness (in the context of invasive alien species management)
-pressures
-prevention
-principles
-prior informed consent
-PIC
-profit
-projection
-protected area
-public-private partnership
-PPP
-quality of life
-racism
-rangeland
-re-wilding
-reciprocity
-reclamation
-recognition
-reflexivity
-reforestation
-regeneration
-regional
-relational values
-remediation
-remote sensing
-renewable energy
-resilience
-resolution (spatial or temporal)
-respect (towards nature)
-response option
-responsibility
-restoration
-restore
-rewilding
-rightholder
-risk
-sacrilegious
-saffu
-satoumi
-fūdo
-savanna
-sawnwood
-scale
-scaling
-scapes (land/sea) approach
-scenario
-scenarios
-science-policy interface
-sea ice
-seascape
-SEPLS
-seasonal
-sector
-sedentarization
-sense of place
-sewage
-shamanism
-shifting cultivation
-siida
-siloed approach
-silviculture
-silvopastoralism
-social movements
-societies
-soil
-sovereignty principle
-spatial scale
-species
-spirituality
-stability (socio-ecological system)
-stakeholder
-state (socio-ecological system)
-status
-stewardship
-storyline
-subsistence
-suma qamaña
-sumak kawsay and suma qamaña
-summary for policymakers
-SPM
-surveillance
-sustainability
-sustainable development
-sustainable development goals
-SDG
-swidden
-symbiosis
-synergies
-synergy
-synthesis report
-system
-systems of life
-taboo
-target
-technocracy
-technology
-teleconnection
-telecoupling
-temporal scale
-tenure
-tiwizi (ⵜⵉⵡⵉⵣⵉ)
-top down
-totemism
-trade (formal or informal)
-trade-off
-traditional ecological knowledge
-TEK
-traditional knowledge
-TK
-transboundary
-transdisciplinary
-transformation
-transformative change
-transhumance
-transition
-trend
-trophy hunting
-ubuntu
-ukama
-uncertainty
-underlying causes
-unpredictability
-unresolved (certainty term (q.v.))
-upanishad
-upscaling
-urban
-urbanization
-users
-usufruct right
-validation (of models)
-valuation
-value
-valuing
-views
-vision
-visioning
-vulnerability
-waka taurua
-warinyi
-water
-weed
-welfare
-well established (certainty term (q.v.))
-well-being
-wellbeing
-western science
-wetland
-whakapapa
-whakataukī
-wild species
-wilderness
-world heritage site
-worldview
-worldviews
-yindyamarra
-abundance
-accessibility
-aichi (biodiversity) targets
-ancestors
-article 8(j) of the cbd
-aspirations
-balance
-benefits
-biocultural
-buen vivir (sumak kawsay in quechua
-business
-businesses
-challenges
-collaborative
-commercialization
-community-based
-compliance
-conceptualization
-conditions
-conflicts
-connections
-connectivity
-continuity
-co-production (of contributions between nature and people)
-cosmocentric
-cumulative
-customary
-customs
-cycles
-dialogue
-displacement
-dissemination
-el niño
-engagement
-fisherman
-fpic
-free
-funding
-gaps
-implementation
-indicators
-indigenous and local knowledge systems
-indigenous people
-information
-intellectual property
-kmgbf
-la niña
-lessons
-maintaining
-managing
-measurements
-negative
-networking
-objectives
-observation
-oecm
-outcomes
-ownership
-partnership
-planning
-policymaking
-procedures
-protected areas
-protocols
-regulations
-reporting
-resources
-responsibilities
-revalorization
-revitalization
-rights
-risks
-roles
-safeguards
-sharing
-spatial
-spillover (a. reference to populations
-strengths
-sustainable use
-term
-terrestrial
-transmission
-typology
-unsustainable
-use
-violence
-weaving
-wild
-wildlife
-abuse
-aggragate
-aggragation
+Abundance
+Abuse
+Access and benefit sharing
+Accessibility
+Actor
+Adaptability
+Adaptation
+Afforestation
+Afghanistan
+Africa
+Agency
+Aggragate
+Aggragation
 Agricultural
 Agriculture
-animal
-approach
-Arid
-artisinal
-Bee
-Biopiracy 
-braiding
-bridging
-calendar
-Capacity
-carbon
-CARE principles
-cattle
-causes
-CBMIS
-ceremonial
-ceremony
-certification
-certify
-change
-chemical
-coast
-collaborate
-colonial
-colonization
-colonisation
-confidential
-consent
-conservation
-conserved areas
-contamination
-Convention on Biological diversity
-CBD
-coral
-crime
-crisis
-crop
-cultural
-custom
-customary institution
-dam
-data
-decision
-decline
-degradation
-demographic
-destruction
-development
-disaster
-disturbance
-DNA
-Domestic
-Domesticated
-domination
-economic
-economy
-education
-emission
-enabling
-enabling environment
-endangered
-endemic
-energy
-epistemic
-epistemological
-erosion
-expert
-expertise
-extraction
-FAIR principles
-Farm
-fertility
-fertilizer
-Finance
-financing
-fire
-fish
-flock
-forestry
-fragmentation 
-framework
-Fungus
-future
-gather
-genetic
-global
-govern
-government
-grove
-growth
-harass
-harassment
-harmony
-harvest
-healing
-herd
-holistic
-Honey
-hunt
-ICCA
-ice
-ILK
-illegal
-impact
-impact assessment 
-Indigenous and traditional territories 
-ITTs
-Indigenous knowledge
-industrial
-industry
-influence
-instrumental
-integrate
-intergenerational
-intrinsic
-invasive
-IUCN
-jusiprudence
-killing
-kinship
-knowledge
-Kunming Montreal Global Biodiversity Framework
-language
-law
-leader
-learning
-legal
-leverage
-linguistic
-local knowledge
-mammal
-mapping
-maps
-marginalize
-marginalized
-marine
-market
-Medicinal
-Medicine
-method
-mine
-money
-monitor
-moral
-murder
-Mushroom
-natural
-nature
-network
-nomad
-non-timber
-norm
-ocean
-option
-organic
-participation
-participatory
-pastoralist
-people's contributions to nature
-peoples contributions to nature
-peoples' contributions to nature
-philosophy
-plant
-plantation
-plastic
-policy option
-pollutant
-polycentric
-practitioner
-product
-qualitative
-quantitative
-quota
-ramsar
-recreation
-region
-regulation
-relational
-restriction
-revitalize
-rights based
-rights-based
-rightsholder
-ritual
-rotational 
-rules
-sacred
-safety
-science
-sea
-secret
-security
-seed
-shaman
-shrine
-silo
-site
-slash and burn
-small scale
-snow
-social
-socio-ecological
-sovereignty
-spatial planning
-specialist
-spirit
-statistic
-sustainable
-sustainable use
-systematic
-technical
-terminology
-territory
-timber
-tool
-tradition
-transform
-transformative
-tree
-underlying
-units
-values
-victim
-violation
-vulnerable
-waste
-weave
-well being
-western
-wind farm
-Afghanistan
+Agrobiodiversity
+Agrochemical
+Agroecology
+Agroecosystem
+Agroforestry
+Ahimsā
+Aichi targets
 Albania
 Algeria
+Alien invasive species
+Alien species
+Americas
+Ancestors
 Andorra
 Angola
+Animal
+Animism
+Antarctica
+Anthropocene
+Anthropocentric
+Anthropocentrism
+Anthropogenic
 Antigua and Barbuda
+Apiculture
+Approach
+Aquaculture
+Aquifer
+Arable
+Archetype
 Argentina
+Arid
 Armenia
+Article 8(j) of the cbd
+Artisinal
+Asia and the Pacific
+Asia-pacific region
+Aspirations
 Australia
 Austria
+Ayni
 Azerbaijan
+Backcasting
+Badland
 Bahamas
 Bahrain
+Balance
 Bangladesh
 Barbados
+Barrier
+Baseline
+Bee
+Beekeeping
+Behaviour change
 Belarus
 Belgium
 Belize
+Beneficiary
+Benefit
+Benefit sharing
+Benefits
 Benin
+Best practice
 Bhutan
+Biocentric perspectives
+Biocentric worldview
+Biocentrism
+Biocultural
+Biocultural community protocol
+Biodiversity
+Biofuel
+Biological diversity
+Biological invasion
+Biomass
+Biome
+Biopiracy
+Bioprospecting
+Bio-prospectors
+Biosecurity
+Biotechnology
+Birgejupmi
 Bolivia
 Bosnia and Herzegovina
 Botswana
+Bottom-up
+Boundary object
+Braiding
 Brazil
+Bridging
+Bridging organizations
 Brunei Darussalam
+Buen vivir
 Bulgaria
 Burkina Faso
 Burundi
+Bushmeat
+Business
+Businesses
+Bycatch
 Cabo Verde
+Calendar
 Cambodia
 Cameroon
 Canada
+Capacity
+Capitalism
+Carbon
+CARE principles
+Caribbean
+Cattle
+Causes
+CBD
+CBMIS
+CBNRM
+Central Africa
 Central African Republic
+Central and Western Europe
+Central Asia
+Ceremonial
+Ceremony
+Certainty
+Certification
+Certify
 Chad
+Challenge
+Challenges
+Change
+Chemical
 Chile
 China
+CITES
+Citizen science
+Civil society
+Clean technology
+Climate
+Coast
+Co-benefit
+Co-creation
+Collaborate
+Collaborative
+Collaborative governance
+Collective action
 Colombia
+Colonial
+Colonialism
+Coloniality
+Colonisation
+Colonization
+Co-management
+Commercialization
+Commons
+Communication
+Community
+Community forestry
+Community-based
+Community-based natural resource management
 Comoros
+Compensation
+Compliance
+Concepts
+Conceptual framework
+Conceptualization
+Conditions
+Confidence
+Confidential
+Conflict
+Conflicts
 Congo
+Connections
+Connectivity
+Consent
+Conservation
+Conserved areas
+Consumerism
+Contamination
+Continuity
+Control
+Convention on Biological diversity
+Convention on international trade in endangered species of wild fauna and flora
+Co-production
+Coral
+Corridor
+Cosmocentric
+Cosmologies
+Cosmovision
 Costa Rica
 Côte D'Ivoire
+Crime
+Crisis
 Croatia
+Crop
 Cuba
+Cultural
+Cultural keystone species
+Culture
+Cumulative
+Cumulative impacts
+Custom
+Customary
+Customary institution
+Customary law
+Customary practices
+Customs
+Cycles
 Cyprus
 Czechia
+Dam
+Daoism
+Data
+Decision
+Decision-making
+Decline
+Deforestation
+Degradation
+Degraded land
+Degrowth
 Democratic People's Republic of Korea
 Democratic Republic of the Congo
+Demographic
 Denmark
+Desertification
+Destruction
+Development
+Dialogue
+Diet
+Disaster
+Disaster risk reduction
+Disease
+Displacement
+Dissemination
+Disturbance
+Diversity
 Djibouti
+DNA
+Domestic
+Domesticated
+Domestication
+Domination
 Dominica
 Dominican Republic
+Driver
+Drought
+Dry forest
+Drylands
+East Africa and adjacent islands
+Eastern Europe
+Ecocentrism
+Ecological connectivity
+Economic
+Economy
+Ecosystem
+Ecosystem service
+Ecotourism
 Ecuador
+Education
 Egypt
+EIA
+El nino
+El niño
 El Salvador
+Emission
+Empowerment
+Enabling
+Enabling conditions
+Enabling environment
+Endangered
+Endemic
+Endemism
+Energy
+Engagement
+Environmental impact
+Environmental impact assessment
+Epistemic
+Epistemological
+Epistemology
+Equality
 Equatorial Guinea
+Equitable
+Equity
+Eradication
 Eritrea
+Erosion
+Established but incomplete
 Estonia
 Eswatini
+Ethics
 Ethiopia
+Ethnobiology
+Etuaptmumk
+Europe and Central Asia
+Evaluation
+Expert
+Expertise
+Extinction
+Extraction
+Extractives
+Extractivism
+FAIR principles
+Fairness
+Fallow
+Farm
+Feedback
+Feral
+Fertility
+Fertilizer
+Field
 Fiji
+Finance
+Financing
 Finland
+Fire
+Fish
+Fisherman
+Fishery
+Fishing
+Flock
+Food
+Food security
+Food sovereignty
+Food system
+Forecast
+Forest
+Forestry
+Fossil fuel
+FPIC
+Fragmentation
+Framework
 France
+Free
+Fūdo
+Funding
+Fungus
+Future
 Gabon
 Gambia
+Gaps
+Gather
+Gathering
+Gender
+Gene
+Genetic
+Genetic engineering
+Genetic resources
+Genetically modified organism
+Geographic information systems
 Georgia
 Germany
 Ghana
+GHG
+Gini index
+GIS
+Global
+Global warming
+Globalisation
+GMO
+Good quality of life
+Govern
+Governance
+Government
+GQL
+Grassland
+Grazing
 Greece
+Green technology
+Greenhouse gas
+Greenwashing
 Grenada
+Grove
+Growth
 Guatemala
 Guinea
 Guinea Bissau
 Guyana
+Habitat
 Haiti
+Harass
+Harassment
+Harmony
+Harvest
+Hazard
+Healing
+Health
+Herbicide
+Herd
+Holism
+Holistic
+Holocene
+Homegarden
+Homogenisation
 Honduras
+Honey
+Horticulture
+Human rights
+Human-nature relations
 Hungary
+Hunt
+Hunting
+Hurai
+IAS
+ICCA
+Ice
 Iceland
+ICP
+Identity
+ILK
+Illegal
+Impact
+Impact assessment
+Impacts
+Implementation
+Inclusive
+Inclusive governance
+Inconclusive
 India
+Indicator
+Indicators
+Indigenous and community conserved areas
+Indigenous and local knowledge
+Indigenous and local knowledge systems
+Indigenous and traditional territories
+Indigenous communities
+Indigenous knowledge
+Indigenous people
+Indigenous Peoples and local communities
 Indonesia
+Industrial
+Industry
+Inequality
+Influence
+Information
+Information systems
+Innovation
+Insecticide
+Institution
+Instrumental
+Integrate
+Intellectual and cultural property
+Intellectual property
+Intellectual property rights
+Interconnectedness
+Intergenerational
+Inter-generational equity
+Intrinsic
+Invasive
+Invasive alien species
+IPLC
 Iran
 Iraq
 Ireland
 Israel
 Italy
+ITTs
+IUCN
 Jamaica
 Japan
 Jordan
+Jusiprudence
+Just
+Justice
+Kametsa asaike
+Kawsak sacha
 Kazakhstan
+Kciye
 Kenya
+Keystone species
+Killing
+Kinship
 Kiribati
+KMGBF
+Knowledge
+Knowledge system
+Kunming Montreal Global Biodiversity Framework
+Kunming-montreal global biodiversity framework
 Kuwait
+Kyoto protocol
 Kyrgyzstan
+La niña
+Land grabbing
+Land tenure
+Land use
+Landscape
+Language
 Lao People’s Democratic Republic
 Latvia
+Law
+Leader
+Learning
 Lebanon
+Legal
 Lesotho
+Lessons
+Leverage
 Liberia
 Libya
 Liechtenstein
+Linguistic
 Lithuania
+Livelihoods
+Living in harmony with nature
+Local
+Local communities
+Local community
+Local knowledge
+Logging
 Luxembourg
 Madagascar
+Maintaining
 Malawi
 Malaysia
 Maldives
 Mali
+Malnutrition
 Malta
+Mammal
+Management
+Managing
+Mangrove
+Mapping
+Maps
+Marginalization
+Marginalize
+Marginalized
+Marine
+Market
 Marshall Islands
+Materialism
 Mauritania
 Mauritius
+MEA
+Measurements
+Medicinal
+Medicine
+Mesoamerica
+Method
 Mexico
 Micronesia
+Migration
+Millennium ecosystem assessment
+Mine
+Mining
+Mitigation
+Model
+Modernity
 Monaco
+Money
 Mongolia
+Monitor
+Monitoring
+Monoculture
 Montenegro
+Moral
 Morocco
+Mother earth
 Mozambique
+Murder
+Mushroom
 Myanmar
+Nagoya protocol
 Namibia
 Naoero
+Narrative
+National
+National biodiversity strategies and action plans
+Native species
+Natural
+Natural resources
+Nature
+Nature futures framework
+Nature-based solutions
+Nature-based tourism
+Nature's contributions to people
+NBSAP
+NCP
+Negative
+Neoliberalism
 Nepal
 Netherlands
+Network
+Networking
 New Zealand
+Nexus
+NFF
 Nicaragua
 Niger
 Nigeria
+Nomad
+Non-timber
+Norm
+Norms
+North Africa
+North America
 North Macedonia
+North-East Asia
 Norway
+Objectives
+Observation
+Observing
+Ocean
+Oceania
+OECM
+Oil spill
 Oman
+One health
+Ontology
+Option
+Organic
+Organic farming
+Other effective area-based conservation measures
+Outcomes
+Ownership
 Pakistan
 Palau
 Panama
 Papua New Guinea
+Paradigms
 Paraguay
+Parasite
+Paris agreement
+Participation
+Participatory
+Partnership
+Pastoralism
+Pastoralist
+Pathways
+Patriarchy
+Payment for ecosystem services
+Peatland
+Peoples contributions to nature
+Peoples' contributions to nature
+People's contributions to nature
+Perceptions
+Permafrost
 Peru
+PES
+Pest
+Pesticide
 Philippines
+Philosophy
+PIC
+Planetary boundary
+Planetary health
+Plankton
+Planning
+Plant
+Plantation
+Plastic
+Pluralism
+Plurality
+Pluriverse
+Poaching
 Poland
+Policy
+Policy option
+Policymaking
+Pollination
+Pollinator
+Pollutant
+Polluter-pays principle
+Pollution
+Polycentric
+Polycentricity
+Polycrisis
 Portugal
+Poverty
+Power
+PPP
+Practice
+Practitioner
+Precautionary approach
+Precautionary principle
+Prediction
+Preference
+Preparedness
+Pressures
+Prevention
+Principles
+Prior informed consent
+Procedures
+Product
+Profit
+Projection
+Protected area
+Protected areas
+Protocols
+Public-private partnership
 Qatar
+Qualitative
+Quality of life
+Quantitative
+Quota
+Racism
+Ramsar
+Rangeland
+Reciprocity
+Reclamation
+Recognition
+Recreation
+Reflexivity
+Reforestation
+Regeneration
+Region
+Regional
+Regulation
+Regulations
+Relational
+Relational values
+Remediation
+Remote sensing
+Renewable energy
+Reporting
 Republic of Korea
 Republic of Moldova
+Resilience
+Resolution
+Resources
+Respect
+Response option
+Responsibilities
+Responsibility
+Restoration
+Restore
+Restriction
+Revalorization
+Revitalization
+Revitalize
+Rewilding
+Re-wilding
+Rightholder
+Rights
+Rights based
+Rights-based
+Rightsholder
+Risk
+Risks
+Ritual
+Roles
 Romania
+Rotational
+Rules
 Russian Federation
 Rwanda
+Sacred
+Sacrilegious
+Safeguards
+Safety
+Saffu
 Saint Kitts and Nevis
 Saint Lucia
 Saint Vincent and the Grenadines
 Samoa
 San Marino
 Sao Tome and Principe
+Satoumi
 Saudi Arabia
+Savanna
+Sawnwood
+Scale
+Scaling
+Scapes approach
+Scenario
+Scenarios
+Science
+Science-policy interface
+SDG
+Sea
+Sea ice
+Seascape
+Seasonal
+Secret
+Sector
+Security
+Sedentarization
+Seed
 Senegal
+Sense of place
+SEPLS
 Serbia
+Sewage
 Seychelles
+Shaman
+Shamanism
+Sharing
+Shifting cultivation
+Shrine
 Sierra Leone
+Siida
+Silo
+Siloed approach
+Silviculture
+Silvopastoralism
 Singapore
+Site
+Slash and burn
 Slovakia
 Slovenia
+Small scale
+Snow
+Social
+Social movements
+Societies
+Socio-ecological
+Soil
 Solomon Islands
 Somalia
 South Africa
+South America
+South Asia
 South Sudan
+South-East Asia
+Southern Africa
+Sovereignty
+Sovereignty principle
 Spain
+Spatial
+Spatial planning
+Spatial scale
+Specialist
+Species
+Spillover
+Spirit
+Spirituality
+SPM
 Sri Lanka
+Stability
+Stakeholder
+State
+Statistic
+Status
+Stewardship
+Storyline
+Strengths
+Subsistence
 Sudan
+Suma qamaña
+Sumak kawsay and suma qamaña
+Summary for policymakers
 Suriname
+Surveillance
+Sustainability
+Sustainable
+Sustainable development
+Sustainable development goals
+Sustainable use
+Sustainable use
 Sweden
+Swidden
 Switzerland
+Symbiosis
+Synergies
+Synergy
+Synthesis report
 Syrian Arab Republic
+System
+Systematic
+Systems of life
+Taboo
 Tajikistan
+Target
+Technical
+Technocracy
+Technology
+TEK
+Teleconnection
+Telecoupling
+Temporal scale
+Tenure
+Term
+Terminology
+Terrestrial
+Territory
 Thailand
+Timber
 Timor-Leste
+Tiwizi (ⵜⵉⵡⵉⵣⵉ)
+TK
 Togo
 Tonga
+Tool
+Top down
+Totemism
+Trade
+Trade-off
+Tradition
+Traditional ecological knowledge
+Traditional knowledge
+Transboundary
+Transdisciplinary
+Transform
+Transformation
+Transformative
+Transformative change
+Transhumance
+Transition
+Transmission
+Tree
+Trend
 Trinidad and Tobago
+Trophy hunting
 Tunisia
 Türkiye
 Turkmenistan
 Tuvalu
+Typology
+Ubuntu
 Uganda
+Ukama
 Ukraine
+Uncertainty
+Underlying
+Underlying causes
 United Arab Emirates
 United Kingdom of Great Britain and Northern Ireland
 United Republic of Tanzania
 United States of America
+Units
+Unpredictability
+Unresolved
+Unsustainable
+Upanishad
+Upscaling
+Urban
+Urbanization
 Uruguay
+Use
+Users
+Usufruct right
 Uzbekistan
+Validation
+Valuation
+Value
+Values
+Valuing
 Vanuatu
 Venezuela
+Victim
 Viet Nam
+Views
+Violation
+Violence
+Vision
+Visioning
+Vulnerability
+Vulnerable
+Waka taurua
+Warinyi
+Waste
+Water
+Weave
+Weaving
+Weed
+Welfare
+Well being
+Well established
+Wellbeing
+Well-being
+West Africa
+Western
+Western Asia
+Western science
+Wetland
+Whakapapa
+Whakataukī
+Wild
+Wild species
+Wilderness
+Wildlife
+Wind farm
+World heritage site
+Worldview
+Worldviews
 Yemen
+Yindyamarra
 Zambia
 Zimbabwe
-Africa
-Americas
-Antarctica
-Asia and the Pacific
-Europe and Central Asia
-Caribbean
-Central Africa
-Central and Western Europe
-Central Asia
-East Africa and adjacent islands
-Eastern Europe
-Mesoamerica
-North Africa
-North America
-North-East Asia
-Oceania
-South America
-South Asia
-South-East Asia
-Southern Africa
-West Africa
-Western Asia
-

@@ -27,7 +27,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 DATA_DIR: Final[Path] = PROJECT_ROOT / "data"
 
 DOCX_DIR: Final[Path] = DATA_DIR / "docx"
-GLOSSARY_DIR: Final[Path] = DATA_DIR / "glossary"
+GLOSSARY_PATH: Final[Path] = DATA_DIR / "glossary" / "IPBES_explorer_search_terms.txt"
 SECTION_DOI_DIR: Final[Path] = DOCX_DIR / "section_lookup.csv"
 
 ###############################################################################
@@ -43,7 +43,8 @@ LOG_DIR: Final[Path] = PROJECT_ROOT / "logs"
 for directory in (
     DATA_DIR,
     DOCX_DIR,
-    GLOSSARY_DIR,
     LOG_DIR,
 ):
     directory.mkdir(parents=True, exist_ok=True)
+
+GLOSSARY_PATH.parent.mkdir(parents=True, exist_ok=True)

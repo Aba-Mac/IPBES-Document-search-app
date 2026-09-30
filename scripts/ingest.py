@@ -11,7 +11,7 @@ import logging
 from database import repository
 from database.migrations import migrate
 from ingestion.pipeline import ingest_directory
-from core.paths import DOCX_DIR, GLOSSARY_DIR, SECTION_DOI_DIR
+from core.paths import DOCX_DIR, GLOSSARY_PATH, SECTION_DOI_DIR
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,18 +30,15 @@ LOGGER.info(
     len(list(DOCX_DIR.glob("*.docx")))
 )
 
-glossary_path = GLOSSARY_DIR / "glossary.txt"
-
-missing = [name for name, path in glossary_path.items() if not path.exists()]
-if missing:
+if not GLOSSARY_PATH.exists():
     raise FileNotFoundError(
-        f"Missing glossary file for: {', '.join(missing)} "
-        f"(looked in {GLOSSARY_DIR.resolve()})"
+        f"Missing glossary file: {GLOSSARY_PATH.name} "
+        f"(looked in {GLOSSARY_PATH.resolve()})"
     )
 
 ingest_directory(
     directory=DOCX_DIR,
-    glossary_path=glossary_path,
+    glossary_path=GLOSSARY_PATH,
     lookup_path=SECTION_DOI_DIR,
     metadata_path=SECTION_DOI_DIR.with_name("document_metadata.csv"),
 )

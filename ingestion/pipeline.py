@@ -292,23 +292,27 @@ def ingest_document(
 def ingest_directory(
     directory: str | Path,
     *,
-    glossary_path: Path,
+    glossary_path: str | Path,
     lookup_path: str | Path,
     metadata_path: str | Path,
     recursive: bool = True,
 ) -> list[IngestionResult]:
     lookup = metadata.load_section_lookup(lookup_path, metadata_path)
-
+ 
     directory = Path(directory)
     if not directory.exists():
         raise FileNotFoundError(directory)
-
+ 
+    glossary_path = Path(glossary_path)
+    if not glossary_path.exists():
+        raise FileNotFoundError(glossary_path)
+ 
     with repository.transaction() as connection:
         matcher = glossary.build_matcher(connection, glossary_path)
-
+ 
     pattern = "**/*.docx" if recursive else "*.docx"
     results: list[IngestionResult] = []
-
+ 
     for docx in sorted(directory.glob(pattern)):
         try:
             results.append(
@@ -317,5 +321,5 @@ def ingest_directory(
         except Exception:
             LOGGER.exception("Failed ingesting %s", docx)
             raise
-
+ 
     return results

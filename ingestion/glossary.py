@@ -189,16 +189,28 @@ def upsert_glossary_terms(
     return {row[1].lower(): row[0] for row in connection.execute("SELECT id, term FROM terms")}
 
 
-def build_matcher(connection, glossary_path: Path) -> GlossaryMatcher:
+def build_matcher(
+    connection: sqlite3.Connection,
+    glossary_path: Path,
+) -> GlossaryMatcher:
     """
-    Load the glossary files, upsert the terms into the database and return
+    Load ONE glossary file, upsert its terms into the database and return
     a compiled matcher that uses the database term ids.
+ 
+    Parameters
+    ----------
+    glossary_path
+        Path to the glossary .txt file (one term per line).
     """
-
-    loaded = list({t.term.lower(): t for t in load_terms_txt(glossary_path)}.values())
-    ids = upsert_glossary_terms(connection, loaded)
+    loaded = load_terms_txt(glossary_path)
+    database_ids = upsert_glossary_terms(connection, loaded)
+ 
     return GlossaryMatcher(
-        GlossaryTerm(term_id=ids[t.term.lower()], term=t.term) for t in loaded
+        GlossaryTerm(
+            term_id=database_ids[(t.term.lower())],
+            term=t.term,
+        )
+        for t in loaded
     )
 
 
